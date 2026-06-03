@@ -1,0 +1,44 @@
+version: 1
+name: tui-stress-test
+max_parallel: 3
+fail_fast: false
+
+tasks:
+  - id: fetch-data
+    description: "Simulate fetching data from API"
+    command: ["python", "-c", "import time,sys\nfor i in range(1,6):\n    print(f'Fetching page {i}/5...',flush=True); time.sleep(0.4)\nprint('Got 1000 records',flush=True)"]
+
+  - id: validate
+    description: "Validate fetched data"
+    depends_on: [fetch-data]
+    command: ["python", "-c", "import time,sys\nprint('Checking schema...',flush=True); time.sleep(0.5)\nprint('Checking types...',flush=True); time.sleep(0.5)\nprint('Checking nulls...',flush=True); time.sleep(0.5)\nprint('All records valid',flush=True)"]
+
+  - id: transform-a
+    description: "Transform batch A"
+    depends_on: [validate]
+    command: ["python", "-c", "import time,sys\nfor i in range(0,101,20):\n    print(f'Batch A: {i}% complete',flush=True); time.sleep(0.5)\nprint('Batch A: 500 rows done',flush=True)"]
+
+  - id: transform-b
+    description: "Transform batch B"
+    depends_on: [validate]
+    command: ["python", "-c", "import time,sys\nfor i in range(0,101,25):\n    print(f'Batch B: {i}% complete',flush=True); time.sleep(0.5)\nprint('Batch B: 500 rows done',flush=True)"]
+
+  - id: transform-c
+    description: "Transform batch C"
+    depends_on: [validate]
+    command: ["python", "-c", "import time,sys\nfor i in range(0,101,33):\n    print(f'Batch C: {i}% complete',flush=True); time.sleep(0.4)\nprint('Batch C: 300 rows done',flush=True)"]
+
+  - id: merge
+    description: "Merge all transformed batches"
+    depends_on: [transform-a, transform-b, transform-c]
+    command: ["python", "-c", "import time,sys\nprint('Loading batch A...',flush=True); time.sleep(0.3)\nprint('Loading batch B...',flush=True); time.sleep(0.3)\nprint('Loading batch C...',flush=True); time.sleep(0.3)\nprint('Merging...',flush=True); time.sleep(0.6)\nprint('Merged 1300 rows',flush=True)"]
+
+  - id: quality-check
+    description: "Run quality checks"
+    depends_on: [merge]
+    command: ["python", "-c", "import time,sys\nfor check in ['nulls','types','ranges','duplicates','integrity']:\n    print(f'Checking {check}...',flush=True); time.sleep(0.4)\nprint('Quality score: 98.5%',flush=True)"]
+
+  - id: export
+    description: "Export final dataset"
+    depends_on: [quality-check]
+    command: ["python", "-c", "import time,sys\nprint('Writing CSV...',flush=True); time.sleep(0.4)\nprint('Compressing...',flush=True); time.sleep(0.3)\nprint('Exported to output.csv',flush=True)"]

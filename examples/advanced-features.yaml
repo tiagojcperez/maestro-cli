@@ -1,0 +1,130 @@
+# ============================================================================
+# Example: Advanced Maestro Features
+# Shows: prompt_md_file, pre_command, verify_command, max_retries,
+#        allow_failure, templates, env, resume
+#
+# DAG:
+#   setup
+#     |
+#     +-> impl-a (claude:sonnet, prompt from markdown)
+#     +-> impl-b (claude:haiku, inline prompt)
+#           |
+#           +-> verify (shell, allow_failure)
+#                 |
+#                 +-> review (claude:sonnet, depends on all)
+# ============================================================================
+
+name: advanced-features-demo
+version: 1
+
+max_parallel: 2
+fail_fast: true
+
+defaults:
+  env:
+    PYTHONUTF8: "1"
+  timeout_sec: 300
+  requires_clean_worktree: false
+  claude:
+    model: sonnet
+    args: ["--dangerously-skip-permissions"]
+
+tasks:
+  # ------------------------------------------------------------------
+  # Setup: pre_command example + env vars
+  # ------------------------------------------------------------------
+  - id: setup
+    description: "Create workspace and verify tools"
+    timeout_sec: 30
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-c"
+      - |-
+        echo "Workspace: {{ workspace_root }}"
+        echo "Plan: {{ plan_name }}"
+        echo "Task: {{ task_id }}"
+        echo "Setup complete"
+
+  # ------------------------------------------------------------------
+  # Implementation A: prompt from markdown file
+  # ------------------------------------------------------------------
+  # The prompt is extracted from a ## heading in a .md file.
+  # The heading text must NOT include "## " -- Maestro adds it.
+  # The prompt content must be inside a ```text code fence.
+  #
+  # Example .md structure:
+  #   ## My Task Heading
+  #   ```text
+  #   This is the actual prompt.
+  #   ```
+  # ------------------------------------------------------------------
+  - id: impl-a
+    description: "Implementation using markdown prompt extraction"
+    depends_on: [setup]
+    engine: claude
+    model: sonnet
+    # prompt_md_file: "C:/path/to/prompts.md"
+    # prompt_md_heading: "My Task Heading"
+    # For this demo, using inline prompt instead:
+    prompt: |-
+      This task demonstrates how prompt_md_file works.
+      In a real plan, you'd use prompt_md_file + prompt_md_heading
+      to extract prompts from a shared markdown document.
+
+  # ------------------------------------------------------------------
+  # Implementation B: pre_command + allow_failure
+  # ------------------------------------------------------------------
+  - id: impl-b
+    description: "Task with pre_command gate"
+    depends_on: [setup]
+    engine: claude
+    model: haiku
+    timeout_sec: 120
+    env:
+      FEATURE_FLAG: "enabled"
+    pre_command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-c"
+      - |-
+        echo "Pre-flight check: verifying prerequisites..."
+        # If this fails, the main task won't run
+        echo "Prerequisites OK"
+    prompt: "Fix the typo in the README file."
+
+  # ------------------------------------------------------------------
+  # Verify: soft failure + verify_command + max_retries
+  # ------------------------------------------------------------------
+  - id: verify
+    description: "Non-critical audit (allow_failure + verify_command + retry)"
+    depends_on: [impl-a, impl-b]
+    allow_failure: true
+    max_retries: 1
+    timeout_sec: 30
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-c"
+      - |-
+        echo "Running audit..."
+        # This might fail but won't block the review task
+        grep -r "TODO" . --include="*.py" || echo "No TODOs found"
+        echo "Audit complete (informational only)"
+    verify_command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-c"
+      - |-
+        echo "Post-verification: checking audit results..."
+        # This runs after the main command succeeds
+        echo "Verification passed"
+
+  # ------------------------------------------------------------------
+  # Review: quality gate (depends on all previous)
+  # ------------------------------------------------------------------
+  - id: review
+    description: "Code review of all changes"
+    depends_on: [verify]
+    engine: claude
+    model: sonnet
+    prompt: |-
+      Review all changes made in this session.
+      Check for code quality, consistency, and correctness.
+      Report findings as a checklist with PASS/FAIL per item.

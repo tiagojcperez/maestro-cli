@@ -1,0 +1,269 @@
+# =============================================================================
+# Pitfall Audit Plan — Maestro CLI v0.10.0
+# =============================================================================
+# Demonstrates: YAML anchors, judge with typed assertions + rubric + g_eval,
+# verify_command, context_from, context_mode: recursive, guard_command,
+# max_retries with retry_delay_sec, budget controls, and workspace indexing.
+# =============================================================================
+
+version: 1
+name: pitfall-audit
+workspace_root: "C:/py/maestro-cli"
+max_parallel: 2
+fail_fast: false
+max_cost_usd: 5.0
+budget_warning_pct: 0.7
+
+defaults:
+  timeout_sec: 600
+  claude:
+    model: sonnet
+  env:
+    PYTHONUTF8: "1"
+
+# -- Shared task settings via YAML anchors --
+_impl_defaults: &impl_defaults
+  engine: claude
+  model: sonnet
+  max_retries: 1
+  retry_delay_sec: [2.0, 5.0]
+
+_review_defaults: &review_defaults
+  engine: claude
+  model: opus
+  reasoning_effort: high
+
+tasks:
+  # =========================================================================
+  # Phase 1: Implement new warning detectors
+  # =========================================================================
+  - id: implement-warnings
+    <<: *impl_defaults
+    description: "Implement 7 new pitfall warning detectors in loader.py"
+    context_mode: recursive
+    workspace_index_exclude:
+      - "tests/**"
+      - ".maestro-runs/**"
+      - "docs/**"
+      - "examples/**"
+    prompt: |
+      {{ workspace_brief }}
+
+      Implement 7 new non-blocking validation warnings in `_collect_warnings()`
+      in `src/maestro_cli/loader.py`. Each warning must be appended to
+      `plan.validation_warnings` (never raise PlanValidationError).
+
+      ## W1: guard_command in shell/bash warning loop
+      Add `("guard_command", task.guard_command)` to the fields checked for:
+      - String command shell=True warning (Windows only)
+      - Wrong Git Bash binary (usr/bin/bash) warning (Windows only)
+
+      ## W2: prompt_md_heading starts with '#'
+      If `task.prompt_md_heading` starts with `#`, warn that the loader
+      prepends `## ` automatically and the `#` should be removed.
+
+      ## W3: Unrecognised template variables
+      Extract template variables (double-brace syntax) from prompt, command (str), pre_command (str),
+      verify_command (str). Check against known patterns:
+      - Globals: workspace_root, plan_name, task_id, upstream_synthesis, workspace_brief
+      - Prefixed: matrix.*, <task-id>.(status|exit_code|stdout_tail|log|duration|
+        files_changed|decisions|errors|warnings|result_text|summary)
+      Warn on unrecognised variables.
+
+      ## W4: run_dir backslash check
+      Add `plan.run_dir` to the backslash path field checks.
+
+      ## W5: Bash-only syntax in string commands (Windows)
+      On Windows, detect heredoc (`<<\s*['"]?\w+`) and process substitution
+      (`[<>]\(`) in string commands/pre_command/verify_command/guard_command.
+
+      ## W6: retry_delay_sec list shorter than max_retries
+      Warn when `retry_delay_sec` is a list shorter than `max_retries`.
+
+      ## W7: Env var references in commands vs available env
+      Extract `$VAR` and `${VAR}` from string commands. Cross-reference
+      against `_ENV_ALLOWLIST` + plan env + task env. Skip bash specials
+      ($?, $!, $@, $*, $#, $$, $0-$9, $_).
+
+      Import `_ENV_ALLOWLIST` from `.runners` and `_TEMPLATE_RE` from `.utils`.
+      Add necessary constants (_KNOWN_GLOBAL_VARS, _KNOWN_CONTEXT_SUFFIXES,
+      _BASH_SPECIAL_VARS, regex patterns) near _MAX_TIMEOUT_WARNINGS.
+
+    verify_command:
+      - "py"
+      - "-m"
+      - "pytest"
+      - "tests/test_validation_warnings.py"
+      - "-x"
+      - "-q"
+      - "--tb=short"
+
+    guard_command:
+      - "py"
+      - "-c"
+      - |
+        import sys
+        code = open('src/maestro_cli/loader.py', encoding='utf-8').read()
+        checks = [
+            'guard_command' in code and '_collect_warnings' in code,
+            '_KNOWN_GLOBAL_VARS' in code,
+            '_KNOWN_CONTEXT_SUFFIXES' in code,
+            '_HEREDOC_RE' in code or 'heredoc' in code.lower(),
+            '_ENV_REF_RE' in code or 'ENV_REF' in code,
+            'prompt_md_heading' in code and "starts with" in code,
+            'run_dir' in code and 'backslash' in code,
+            'retry_delay_sec' in code and 'max_retries' in code,
+        ]
+        missing = [i for i, ok in enumerate(checks) if not ok]
+        if missing:
+            print(f'Missing checks at indices: {missing}', file=sys.stderr)
+            sys.exit(1)
+        print('All 8 guard checks passed')
+
+    judge:
+      method: g_eval
+      model: sonnet
+      aggregation: weighted_mean
+      criteria:
+        - type: contains
+          value: "_collect_warnings"
+        - type: contains
+          value: "guard_command"
+        - type: contains
+          value: "_KNOWN_GLOBAL_VARS"
+        - type: rubric
+          name: "completeness"
+          weight: 3.0
+          min_score: 3
+          levels:
+            - score: 1
+              description: "Only 1-2 of the 7 warnings implemented"
+            - score: 2
+              description: "3-4 warnings implemented"
+            - score: 3
+              description: "5-6 warnings implemented"
+            - score: 4
+              description: "All 7 warnings implemented"
+            - score: 5
+              description: "All 7 warnings implemented with clean, consistent style"
+        - type: llm-rubric
+          value: "The implementation follows existing _collect_warnings patterns: appends to ws list, uses f-strings, checks os.name for Windows-only warnings"
+      pass_threshold: 0.75
+      on_fail: retry
+
+  # =========================================================================
+  # Phase 2: Write comprehensive tests
+  # =========================================================================
+  - id: write-tests
+    <<: *impl_defaults
+    description: "Write pytest tests for all new warning detectors"
+    depends_on: [implement-warnings]
+    context_from: [implement-warnings]
+    prompt: |
+      Based on the changes from implement-warnings:
+      {{ implement-warnings.stdout_tail }}
+
+      Write comprehensive pytest tests in `tests/test_validation_warnings.py`
+      for all 7 new warning detectors (W1-W7). Follow existing test patterns:
+      - Use `_make_plan()` helper with `_collect_warnings()`
+      - Use `monkeypatch` for Windows-specific tests (os.name = "nt")
+      - Test both positive (warning triggered) and negative (no warning) cases
+      - Use `TaskSpec` directly, not YAML parsing
+      - Group tests in classes: TestGuardCommandShellWarning, TestHeadingHashPrefixWarning,
+        TestTemplateVarWarning, TestRunDirBackslashWarning, TestBashSyntaxWarning,
+        TestRetryDelayLengthWarning, TestEnvRefWarning
+
+      Target: at least 25 new test methods covering all warning paths.
+
+    verify_command:
+      - "py"
+      - "-m"
+      - "pytest"
+      - "tests/test_validation_warnings.py"
+      - "-x"
+      - "-q"
+      - "--tb=short"
+
+    judge:
+      criteria:
+        - type: regex
+          pattern: "passed"
+        - type: llm-rubric
+          value: "Tests cover all 7 warning types (W1-W7) with both positive and negative test cases"
+      pass_threshold: 0.8
+      on_fail: retry
+
+  # =========================================================================
+  # Phase 3: Quality review
+  # =========================================================================
+  - id: review-quality
+    <<: *review_defaults
+    description: "Review code quality and completeness of warning implementations"
+    depends_on: [implement-warnings, write-tests]
+    context_from: [implement-warnings, write-tests]
+    context_mode: summarized
+    prompt: |
+      Review the implementation quality of the new pitfall warning detectors.
+
+      Implementation summary: {{ implement-warnings.summary }}
+      Test summary: {{ write-tests.summary }}
+
+      Check for:
+      1. All 7 warnings (W1-W7) are correctly implemented in _collect_warnings()
+      2. No false positives (legitimate patterns should not trigger warnings)
+      3. Warning messages are clear and actionable
+      4. Code follows existing patterns (f-strings, ws.append, etc.)
+      5. Tests cover positive and negative cases for each warning
+      6. No regressions in existing 1487 tests
+
+      Report any issues found. If everything is clean, confirm with
+      "REVIEW PASSED: All 7 warnings correctly implemented and tested."
+
+    verify_command:
+      - "py"
+      - "-m"
+      - "pytest"
+      - "tests/"
+      - "-x"
+      - "-q"
+      - "--tb=short"
+
+    judge:
+      preset: code_quality
+      on_fail: warn
+
+  # =========================================================================
+  # Phase 4: Update documentation
+  # =========================================================================
+  - id: update-pitfalls-doc
+    <<: *impl_defaults
+    description: "Update PITFALLS.md prevention percentages"
+    depends_on: [review-quality]
+    context_from: [review-quality]
+    prompt: |
+      Update `docs/PITFALLS.md` with the new prevention percentages based on
+      the implemented warnings:
+
+      - Pitfall 1 (Windows Shell): 75% -> 85% (guard_command + bash syntax detection)
+      - Pitfall 2 (Markdown Prompt): 90% -> 98% (# prefix detection)
+      - Pitfall 4 (Path Formatting): 65% -> 75% (run_dir added)
+      - Pitfall 9 (Env Isolation): 65% -> 80% ($VAR detection)
+      - Pitfall 12 (Heredoc/Bash): 50% -> 75% (heredoc + process sub detection)
+
+      Update the "Maestro Prevention: X%" lines in each section header.
+      Also update the description text to mention the new detection capabilities.
+
+      Review result: {{ review-quality.stdout_tail }}
+
+    judge:
+      criteria:
+        - type: contains
+          value: "85%"
+        - type: contains
+          value: "98%"
+        - type: contains
+          value: "75%"
+        - type: contains
+          value: "80%"
+      pass_threshold: 1.0
+      on_fail: retry

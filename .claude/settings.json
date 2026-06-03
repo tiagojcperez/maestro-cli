@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "WebSearch",
+      "WebFetch",
+      "mcp__maestro__validate_plan",
+      "mcp__maestro__run_plan_tool",
+      "mcp__maestro__audit_plan",
+      "mcp__maestro__blame_run",
+      "mcp__maestro__cleanup_runs",
+      "mcp__maestro__diff_runs",
+      "mcp__maestro__doctor",
+      "mcp__maestro__explain_plan",
+      "mcp__maestro__plan_status",
+      "mcp__maestro__scaffold_plan",
+      "mcp__maestro__suggest_plan",
+      "mcp__maestro__verify_events"
+    ]
+  }
+}

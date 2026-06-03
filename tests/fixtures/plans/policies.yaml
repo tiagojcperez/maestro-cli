@@ -1,0 +1,27 @@
+version: 1
+name: policies
+max_cost_usd: 20.0
+
+policies:
+  - name: require-budget-for-opus
+    rule: "model != 'opus' or has_judge"
+    action: warn
+    message: "Opus tasks should have a judge for quality control"
+  - name: block-yolo-without-approval
+    rule: "execution_profile != 'yolo' or requires_approval"
+    action: block
+    message: "Yolo profile requires approval gate"
+  - name: audit-expensive
+    rule: "cost_usd < 5.0"
+    action: audit
+    message: "Task cost exceeded $5"
+
+routing_strategy: balanced
+
+tasks:
+  - id: impl
+    engine: claude
+    model: auto
+    prompt: "Implement a feature"
+    timeout_sec: 300
+    tags: [implementation, backend]

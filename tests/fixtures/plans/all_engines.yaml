@@ -1,0 +1,42 @@
+version: 1
+name: all-engines
+defaults:
+  timeout_sec: 300
+  codex:
+    model: "5.4"
+    reasoning_effort: medium
+  claude:
+    model: sonnet
+  gemini:
+    model: flash
+  copilot:
+    model: sonnet
+  qwen:
+    model: coder
+  ollama:
+    model: llama3
+  llama:
+    model: llama3
+
+tasks:
+  - id: codex-task
+    engine: codex
+    prompt: "Hello from codex"
+  - id: claude-task
+    engine: claude
+    prompt: "Hello from claude"
+  - id: gemini-task
+    engine: gemini
+    prompt: "Hello from gemini"
+  - id: copilot-task
+    engine: copilot
+    prompt: "Hello from copilot"
+  - id: qwen-task
+    engine: qwen
+    prompt: "Hello from qwen"
+  - id: ollama-task
+    engine: ollama
+    prompt: "Hello from ollama"
+  - id: llama-task
+    engine: llama
+    prompt: "Hello from llama"

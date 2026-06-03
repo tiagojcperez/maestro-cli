@@ -1,0 +1,42 @@
+###############################################################################
+# context-passing.yaml — Inter-Task Context Passing Example
+#
+# Demonstrates how tasks can pass outputs to downstream tasks using
+# context_from and template variables like {{ task-id.stdout_tail }}.
+#
+# Run with:
+#   maestro validate examples/context-passing.yaml
+#   maestro run examples/context-passing.yaml --dry-run
+###############################################################################
+
+version: 1
+name: context-passing-demo
+max_parallel: 2
+fail_fast: true
+run_dir: .maestro-runs
+
+tasks:
+  # Wave 1: Two independent data-gathering tasks
+  - id: gather-metrics
+    description: "Collect project metrics (lines of code, test count)"
+    command: "echo 'Lines of code: 2659 | Tests: 242 | Coverage: 82%'"
+
+  - id: gather-deps
+    description: "List project dependencies"
+    command: "echo 'PyYAML==6.0.2 | Python>=3.11 | No other deps'"
+
+  # Wave 2: Review task that receives output from both upstream tasks.
+  # context_from: ["*"] means "give me results from ALL depends_on".
+  - id: summary-report
+    description: "Generate summary from gathered data"
+    depends_on: [gather-metrics, gather-deps]
+    context_from: ["*"]
+    command: "echo 'Report: metrics={{ gather-metrics.status }}, deps={{ gather-deps.status }}'"
+
+  # Wave 3: A focused task that only needs one upstream output.
+  # context_from: [gather-metrics] — only that specific task's data.
+  - id: quality-check
+    description: "Check quality based on metrics"
+    depends_on: [summary-report]
+    context_from: [summary-report]
+    command: "echo 'QA check — upstream status: {{ summary-report.status }}, exit: {{ summary-report.exit_code }}'"

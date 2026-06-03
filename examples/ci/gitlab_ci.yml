@@ -1,0 +1,117 @@
+# Platform matrix (rendered as explicit jobs for deterministic CI output):
+#   platform | validate job     | test job      | runner                  | coverage
+#   linux    | validate_linux   | test_linux    | shared/container runner | default-on
+#   windows  | validate_windows | test_windows  | tagged windows runner   | opt-in
+#   macos    | validate_macos   | test_macos    | tagged macos runner     | opt-in
+# Windows guidance: keep CI scripts portable (`python -m ...`, `maestro ...`).
+# For Maestro plan tasks on Windows, prefer YAML list commands such as
+# `["C:\Program Files\Git\bin\bash.exe", "-lc", "python -m pytest -q"]`
+# and avoid bash-only string commands such as `bash -lc "python -m pytest -q"`.
+# Inside Git Bash snippets, keep paths in forward-slash form such as `/c/project`.
+
+workflow:
+  name: 'Demo CI'
+
+stages:
+  - validate
+  - test
+  - maestro
+
+variables:
+  # linux runs by default. windows and macos lanes require matching tagged runners.
+  MAESTRO_ENABLE_WINDOWS: '0'
+  MAESTRO_ENABLE_MACOS: '0'
+  # Set to 1 when manually starting a pipeline to expose the real-engine lane.
+  MAESTRO_RUN_REAL_ENGINE: '0'
+
+.linux_job:
+  image: 'python:3.12'
+  before_script:
+    - 'python -m pip install --upgrade pip'
+    - 'python -m pip install -e . pytest'
+
+.windows_job:
+  tags:
+    - windows
+  before_script:
+    - 'python -m pip install --upgrade pip'
+    - 'python -m pip install -e . pytest'
+
+.macos_job:
+  tags:
+    - macos
+  before_script:
+    - 'python -m pip install --upgrade pip'
+    - 'python -m pip install -e . pytest'
+
+# GitLab cannot provide hosted Windows or macOS runners here, so those lanes are explicit
+# and only run when your project has matching tagged runners and the variables are enabled.
+validate_linux:
+  extends: .linux_job
+  stage: validate
+  script:
+    - 'maestro validate plans/demo.yaml'
+
+validate_windows:
+  extends: .windows_job
+  stage: validate
+  rules:
+    - if: $MAESTRO_ENABLE_WINDOWS == "1"
+    - when: never
+  script:
+    - 'maestro validate plans/demo.yaml'
+
+validate_macos:
+  extends: .macos_job
+  stage: validate
+  rules:
+    - if: $MAESTRO_ENABLE_MACOS == "1"
+    - when: never
+  script:
+    - 'maestro validate plans/demo.yaml'
+
+test_linux:
+  extends: .linux_job
+  stage: test
+  needs:
+    - job: validate_linux
+  script:
+    - 'python -m pytest -q'
+
+test_windows:
+  extends: .windows_job
+  stage: test
+  rules:
+    - if: $MAESTRO_ENABLE_WINDOWS == "1"
+    - when: never
+  needs:
+    - job: validate_windows
+  script:
+    - 'python -m pytest -q'
+
+test_macos:
+  extends: .macos_job
+  stage: test
+  rules:
+    - if: $MAESTRO_ENABLE_MACOS == "1"
+    - when: never
+  needs:
+    - job: validate_macos
+  script:
+    - 'python -m pytest -q'
+
+run_maestro_real_engine:
+  extends: .linux_job
+  stage: maestro
+  rules:
+    - if: $MAESTRO_RUN_REAL_ENGINE == "1"
+      when: manual
+    - when: never
+  needs:
+    - job: test_linux
+    - job: test_windows
+      optional: true
+    - job: test_macos
+      optional: true
+  script:
+    - 'maestro run plans/demo.yaml --auto-approve'

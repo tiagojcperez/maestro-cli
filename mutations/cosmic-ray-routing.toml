@@ -1,0 +1,8 @@
+[cosmic-ray]
+module-path = "src/maestro_cli/routing.py"
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest tests/test_routing.py -x --tb=no -q"
+
+[cosmic-ray.distributor]
+name = "local"

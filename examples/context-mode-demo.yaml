@@ -1,0 +1,78 @@
+version: 1
+name: context-mode-demo
+max_parallel: 3
+fail_fast: true
+run_dir: ".maestro-runs"
+
+defaults:
+  env:
+    PYTHONUTF8: "1"
+  timeout_sec: 600
+  claude:
+    model: sonnet
+    args: ["--dangerously-skip-permissions"]
+
+tasks:
+  # --- Wave 1: Implementation tasks (run in parallel) ---
+  - id: impl-models
+    description: "Create User and Role data models"
+    engine: claude
+    prompt: "Create User and Role dataclasses in models.py with proper validation"
+
+  - id: impl-api
+    description: "Create REST API endpoints for user management"
+    engine: claude
+    depends_on: [impl-models]
+    prompt: "Create REST endpoints for user CRUD in api.py"
+
+  - id: impl-tests
+    description: "Write unit tests for user management"
+    engine: claude
+    depends_on: [impl-api]
+    prompt: "Write pytest tests for User model and API endpoints"
+
+  # --- Wave 2: Code review uses map_reduce (synthesizes all impl outputs) ---
+  - id: code-review
+    description: "Review all implementation changes"
+    depends_on: [impl-models, impl-api, impl-tests]
+    context_from: ["*"]
+    context_mode: map_reduce
+    engine: claude
+    agent: code-reviewer
+    prompt: |
+      Review all code changes made by the implementation tasks.
+
+      ## Synthesized upstream analysis
+      {{ upstream_synthesis }}
+
+      Check for: correctness, type safety, error handling, test coverage.
+      Provide a structured review with PASS/FAIL verdict.
+
+  # --- Wave 2: QA uses summarized (individual task summaries) ---
+  - id: qa-verification
+    description: "Verify implementations pass tests and quality gates"
+    depends_on: [impl-models, impl-api, impl-tests]
+    context_from: ["*"]
+    context_mode: summarized
+    engine: claude
+    agent: qa-engineer
+    prompt: |
+      Verify the implementation tasks produced correct results.
+
+      ## Task summaries
+      ### Models: {{ impl-models.summary }}
+      ### API: {{ impl-api.summary }}
+      ### Tests: {{ impl-tests.summary }}
+
+      ## Structured details
+      Files changed by models: {{ impl-models.files_changed }}
+      Errors in API: {{ impl-api.errors }}
+
+      Check: unit tests pass, no regressions, edge cases handled.
+      Provide a structured QA report with PASS/FAIL verdict.
+
+  # --- Wave 3: Build verification ---
+  - id: build-verify
+    description: "Verify the project builds successfully"
+    depends_on: [code-review, qa-verification]
+    command: "echo 'TODO: replace with actual build command'"

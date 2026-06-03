@@ -1,0 +1,23 @@
+version: 1
+name: watch-block
+
+watch:
+  metric: test_count
+  metric_source: stdout_regex
+  metric_pattern: "(\\d+) passed"
+  metric_direction: higher_is_better
+  max_iterations: 10
+  warmup_iterations: 1
+  plateau_threshold: 3
+  plateau_action: stop
+  on_regression: rollback
+  max_cost_usd: 15.0
+  target_metric: 100.0
+
+tasks:
+  - id: write-tests
+    engine: claude
+    model: sonnet
+    prompt: "Write more tests. Iteration {{ watch.iteration }}, best={{ watch.best_metric }}"
+    timeout_sec: 300
+    verify_command: ["echo", "42 passed"]

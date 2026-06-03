@@ -1,0 +1,75 @@
+version: 1
+name: security-baseline-demo
+workspace_root: "."
+max_cost_usd: 1.0
+
+# Reference the security baseline audit pack.
+# Run: maestro audit examples/audit-packs/security-baseline-demo.yaml
+# or:  maestro run  examples/audit-packs/security-baseline-demo.yaml
+audit_packs:
+  - examples/audit-packs/security-baseline.yaml
+
+tasks:
+  # Task 1: Verify the test suite is discoverable.
+  # Demonstrates contract_type: test-manifest — downstream tasks can consume
+  # test result counts via {{ contract.check-tests.summary }}.
+  - id: check-tests
+    command: ["python", "-m", "pytest", "--collect-only", "-q", "--tb=no"]
+    description: "Verify test suite is discoverable"
+    contract_type: test-manifest
+    timeout_sec: 30
+    allow_failure: true
+    assert:
+      - type: glob_exists
+        glob: "tests/**/*.py"
+        rule: DEMO001
+        severity: warning
+        message: "No test files found under tests/"
+
+  # Task 2: Check workspace security hygiene.
+  # Demonstrates typed assertions against workspace files.
+  - id: check-gitignore
+    command: ["python", "-c", "import pathlib; p=pathlib.Path('.gitignore'); print(p.read_text(encoding='utf-8') if p.exists() else 'MISSING')"]
+    description: "Verify .gitignore exists and excludes sensitive files"
+    depends_on: [check-tests]
+    timeout_sec: 10
+    assert:
+      - type: glob_exists
+        glob: ".gitignore"
+        rule: DEMO002
+        severity: warning
+        message: "No .gitignore found — build artifacts may be committed"
+      - type: file_not_contains
+        path: ".gitignore"
+        pattern: "!.env"
+        rule: DEMO003
+        severity: warning
+        message: ".gitignore should not re-include .env via negation"
+
+  # Task 3: Produce an OpenAPI schema fragment.
+  # Demonstrates contract_type: api-schema — contract metadata includes
+  # path_count and schema_count extracted from the JSON output.
+  - id: emit-api-schema
+    command:
+      - python
+      - -c
+      - |
+        import json
+        schema = {
+          "openapi": "3.0.0",
+          "info": {"title": "Demo API", "version": "1.0.0"},
+          "paths": {
+            "/health": {"get": {"summary": "Health check"}},
+            "/tasks": {"get": {"summary": "List tasks"}, "post": {"summary": "Create task"}}
+          },
+          "components": {
+            "schemas": {
+              "Task": {"type": "object"},
+              "Error": {"type": "object"}
+            }
+          }
+        }
+        print(json.dumps(schema))
+    description: "Emit API schema for contract verification"
+    contract_type: api-schema
+    timeout_sec: 15

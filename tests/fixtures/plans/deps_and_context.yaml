@@ -1,0 +1,58 @@
+version: 1
+name: deps-and-context
+workspace_root: "."
+max_cost_usd: 5.0
+
+tasks:
+  - id: generate
+    engine: claude
+    model: haiku
+    prompt: "Generate some output"
+    timeout_sec: 120
+
+  - id: consume-raw
+    engine: claude
+    model: haiku
+    prompt: "Process raw output from {{ generate.stdout_tail }}"
+    depends_on: [generate]
+    context_from: [generate]
+    context_mode: raw
+    timeout_sec: 120
+
+  - id: consume-summarized
+    engine: claude
+    model: haiku
+    prompt: "Process summarized output"
+    depends_on: [generate]
+    context_from: [generate]
+    context_mode: summarized
+    context_budget_tokens: 2000
+    timeout_sec: 120
+
+  - id: consume-map-reduce
+    engine: claude
+    model: haiku
+    prompt: "Synthesize: {{ upstream_synthesis }}"
+    depends_on: [generate]
+    context_from: [generate]
+    context_mode: map_reduce
+    timeout_sec: 120
+
+  - id: consume-recursive
+    engine: claude
+    model: haiku
+    prompt: "Work with: {{ workspace_brief }}"
+    depends_on: [generate]
+    context_from: [generate]
+    context_mode: recursive
+    timeout_sec: 120
+
+  - id: consume-layered
+    engine: claude
+    model: haiku
+    prompt: "Layered context"
+    depends_on: [generate]
+    context_from: [generate]
+    context_mode: layered
+    context_budget_tokens: 4000
+    timeout_sec: 120

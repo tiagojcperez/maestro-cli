@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Maestro runs (never commit run outputs)
+.maestro-runs/
+
+# Maestro cache (content-addressable cache + workspace indices)
+.maestro-cache/
+
+# Maestro git worktrees (ephemeral task workspaces)
+.maestro-worktrees/
+
+# Private plans (project-specific, not for the repo)
+plans/
+!tests/fixtures/plans/
+
+# Audit reports (project-specific)
+docs/audits/
+docs/PROMPTS_*.md
+
+# IDE / Editor
+*.code-workspace
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Pytest
+.pytest_cache/
+
+# Ruff linter cache
+.ruff_cache/
+
+# Logs
+*.log
+
+# Mutation testing (cosmic-ray sessions and reports)
+*.sqlite
+*mutation-survivors.txt
+mutations/*.sqlite
+mutations/*-survivors.txt
+
+# Coverage / trace artifacts (never commit)
+.coverage
+coverage.xml
+htmlcov/
+.trace/
+
+# Local scratch / demo dirs (kept locally, not for the public repo)
+improve-demo/
+batch-demo/
+bugs/
+
+# Internal working notes, session reports, archived plans (kept locally, not public)
+docs/internal/
+
+# Claude Code session tooling and locks (local only, not for the public repo)
+.claude/workflows/
+.claude/scheduled_tasks.lock

@@ -1,0 +1,86 @@
+# Dynamic Task Decomposition Demo (T2.1)
+#
+# This plan demonstrates dynamic_group: true — the planner task analyzes
+# the codebase and generates sub-tasks at runtime. The LLM decides what
+# to do; Maestro validates, sandboxes, and executes the generated plan.
+#
+# Run:  maestro run examples/dynamic-group-demo.yaml --output tui
+# Cost: ~$0.20-0.50 (haiku planner + haiku sub-tasks + sonnet review)
+
+version: 1
+name: dynamic-group-demo
+workspace_root: "."
+max_cost_usd: 2.0
+max_parallel: 3
+
+defaults:
+  claude:
+    model: haiku
+
+tasks:
+  # Phase 1: The planner reads the codebase and generates sub-tasks as JSON.
+  # Phase 2: Maestro builds a PlanSpec from the JSON and runs it as nested DAG.
+  - id: plan-analysis
+    engine: claude
+    model: haiku
+    agent: dynamic-planner
+    dynamic_group: true
+    description: "Generate analysis sub-plan (JSON only, no tool use)"
+    output_schema:
+      type: object
+      required: [name, tasks]
+      properties:
+        name:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: object
+            required: [id, engine, prompt]
+            properties:
+              id: {type: string}
+              engine: {type: string}
+              prompt: {type: string}
+              model: {type: string}
+              description: {type: string}
+              depends_on:
+                type: array
+                items: {type: string}
+              tags:
+                type: array
+                items: {type: string}
+    prompt: |
+      IMPORTANT: You are a PLANNER, not an executor. Your ONLY job is to output JSON.
+      Do NOT read files. Do NOT analyze code. Do NOT use tools. ONLY output the JSON plan.
+
+      Output a JSON object with a "name" and "tasks" array containing exactly 3 tasks:
+
+      1. id: "review-dynamic", engine: "claude", model: "haiku"
+         prompt: "Read src/maestro_cli/dynamic.py and identify potential issues with error handling, edge cases, or missing validation. List each issue with line number and severity."
+
+      2. id: "review-knowledge", engine: "claude", model: "haiku"
+         prompt: "Read src/maestro_cli/knowledge.py and identify potential issues with the time-decay formula, dedup logic, or storage format. List each issue with line number and severity."
+
+      3. id: "cross-module-analysis", engine: "claude", model: "haiku", depends_on: ["review-dynamic", "review-knowledge"]
+         prompt: "Based on findings from previous tasks, identify integration concerns between dynamic.py and knowledge.py. Could knowledge records grow unbounded? Could the allowlist miss new fields?"
+
+      Output ONLY the JSON object. No markdown, no explanation, no tool calls.
+
+  # This task sees the merged output from all dynamic sub-tasks
+  - id: summary
+    engine: claude
+    model: sonnet
+    depends_on: [plan-analysis]
+    context_from: [plan-analysis]
+    description: "Synthesize findings from the dynamic analysis"
+    prompt: |
+      The dynamic analysis sub-plan has completed. Here are the results:
+
+      {{ plan-analysis.stdout_tail }}
+
+      Synthesize the findings into a concise report with:
+      1. Critical issues (if any)
+      2. Minor improvements worth considering
+      3. Overall assessment of code quality
+
+      Be brief — 10 lines maximum.

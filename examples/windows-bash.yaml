@@ -1,0 +1,101 @@
+# ============================================================================
+# Example: Windows-specific patterns for Maestro CLI
+# Shows: Git Bash execution, MySQL paths, forward slashes, env isolation
+#
+# This example is designed for a XAMPP + Git Bash environment on Windows.
+# All shell tasks use the YAML list-format command to bypass cmd.exe entirely.
+# On macOS/Linux, the same tools can usually run with standard bash commands,
+# but on Windows keep the executable path and each argument in separate items.
+# ============================================================================
+
+name: windows-patterns-demo
+version: 1
+
+max_parallel: 2
+fail_fast: false
+
+defaults:
+  env:
+    PYTHONUTF8: "1"
+  timeout_sec: 120
+
+tasks:
+  # ------------------------------------------------------------------
+  # Pattern 1: Git Bash with list-format (CORRECT way on Windows)
+  # ------------------------------------------------------------------
+  - id: bash-example
+    description: "Run bash commands via Git Bash (not WSL, not cmd.exe)"
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-lc"
+      - |-
+        # Inside here, use forward slashes (Unix-style)
+        cd /c/xampp/htdocs/myproject
+        echo "Current dir: $(pwd)"
+        echo "Files: $(ls -la | wc -l)"
+        echo "Git branch: $(git branch --show-current)"
+
+  # ------------------------------------------------------------------
+  # Pattern 2: MySQL/MariaDB with full path
+  # ------------------------------------------------------------------
+  - id: db-check
+    description: "Query database using full MySQL path"
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-lc"
+      - |-
+        # XAMPP MySQL is NOT on PATH -- use full path
+        /c/xampp/mysql/bin/mysql -u root -e "SHOW DATABASES"
+
+  # ------------------------------------------------------------------
+  # Pattern 3: Database backup with mysqldump
+  # ------------------------------------------------------------------
+  - id: db-backup
+    description: "Backup database before making changes"
+    depends_on: [db-check]
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-lc"
+      - |-
+        BACKUP_FILE="/c/xampp/htdocs/myproject/backup_$(date +%Y%m%d_%H%M%S).sql"
+        /c/xampp/mysql/bin/mysqldump -u root mydb > "$BACKUP_FILE"
+        echo "Backup saved to: $BACKUP_FILE"
+        ls -lh "$BACKUP_FILE"
+
+  # ------------------------------------------------------------------
+  # Pattern 4: Git operations
+  # ------------------------------------------------------------------
+  - id: git-branch
+    description: "Create feature branch safely"
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-lc"
+      - |-
+        cd /c/xampp/htdocs/myproject
+        BRANCH="feature/my-feature"
+        git checkout -b "$BRANCH" 2>/dev/null || git checkout "$BRANCH"
+        echo "On branch: $(git branch --show-current)"
+
+  # ------------------------------------------------------------------
+  # Pattern 5: Chained commands with error handling
+  # ------------------------------------------------------------------
+  - id: build-and-verify
+    description: "Build then verify (chained with set -e)"
+    depends_on: [bash-example]
+    allow_failure: true
+    command:
+      - "C:\\Program Files\\Git\\bin\\bash.exe"
+      - "-lc"
+      - |-
+        set -e  # Exit on first error
+
+        cd /c/xampp/htdocs/myproject
+
+        echo "=== Installing dependencies ==="
+        npm install
+
+        echo "=== Building ==="
+        npm run build
+
+        echo "=== Verifying output ==="
+        test -f dist/index.js && echo "Build OK" || (echo "Build FAILED" && exit 1)

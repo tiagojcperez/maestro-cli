@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Viewer — Maestro UI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/static/index.html" class="logo">
+                <div class="logo-icon">M</div>
+                Maestro
+            </a>
+            <nav class="header-nav">
+                <a href="/static/index.html">Dashboard</a>
+                <a href="/static/new-run.html">New Run</a>
+                <a href="/docs" target="_blank">API Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page">
+            <!-- Log header -->
+            <div class="log-page-header">
+                <div>
+                    <a id="log-back-link" href="/static/index.html" class="btn btn-ghost btn-sm">&larr; Back to Run</a>
+                </div>
+                <div class="log-page-title">
+                    Task: <code id="log-task-id">—</code>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="log-toolbar">
+                <div class="log-search-group">
+                    <input type="text" id="log-search" class="log-search-input" placeholder="Search log..." oninput="searchLog()">
+                    <span class="log-match-counter" id="match-counter"></span>
+                    <button class="btn btn-ghost btn-xs" onclick="prevMatch()" title="Previous (Shift+Enter)">&uarr;</button>
+                    <button class="btn btn-ghost btn-xs" onclick="nextMatch()" title="Next (Enter)">&darr;</button>
+                </div>
+                <select id="filter-level" class="filter-select" onchange="filterByLevel(this.value)">
+                    <option value="all">All levels</option>
+                    <option value="error">Errors only</option>
+                    <option value="warn">Warnings only</option>
+                    <option value="info">Info only</option>
+                </select>
+                <div class="log-jump-group">
+                    <input type="number" id="jump-line" class="log-jump-input" placeholder="Line #" min="1">
+                    <button class="btn btn-ghost btn-xs" onclick="jumpToLine()">Go</button>
+                </div>
+            </div>
+
+            <!-- Log content -->
+            <div class="log-page-content" id="log-content">
+                <div class="log-loading">Loading...</div>
+            </div>
+
+            <!-- Status bar -->
+            <div class="log-status-bar">
+                <span id="log-total-lines">—</span>
+                <span id="log-error-count" class="text-failed">—</span>
+                <span id="log-warn-count" class="text-warning">—</span>
+                <span id="log-shown-lines" class="text-2"></span>
+                <span class="log-shortcuts text-3">Ctrl+F search &middot; G jump &middot; E errors &middot; W warnings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/log-viewer.js"></script>
+    <script>initLogViewer();</script>
+</body>
+</html>

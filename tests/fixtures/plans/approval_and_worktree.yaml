@@ -1,0 +1,20 @@
+version: 1
+name: approval-and-worktree
+workspace_root: "."
+
+tasks:
+  - id: safe-change
+    engine: claude
+    model: sonnet
+    prompt: "Make a safe change"
+    timeout_sec: 300
+    worktree: true
+
+  - id: dangerous-change
+    engine: claude
+    model: opus
+    prompt: "Make a dangerous change"
+    timeout_sec: 600
+    requires_approval: true
+    approval_message: "This task modifies production config. Approve?"
+    depends_on: [safe-change]

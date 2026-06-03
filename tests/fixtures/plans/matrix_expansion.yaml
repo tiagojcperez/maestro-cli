@@ -1,0 +1,14 @@
+version: 1
+name: matrix-expansion
+
+tasks:
+  - id: lint
+    engine: claude
+    model: haiku
+    prompt: "Lint {{ matrix.module }} for issues"
+    timeout_sec: 120
+    matrix:
+      module: [loader, runners, scheduler]
+
+  # No report task — matrix deps use expanded IDs which are only
+  # valid after expansion; this plan tests matrix expansion itself.

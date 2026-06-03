@@ -1,0 +1,64 @@
+###############################################################################
+# scaffold-brief.yaml — Example Brief for Plan Scaffolding
+#
+# A brief is a simplified description of a plan. Maestro's scaffold command
+# generates a complete plan YAML from it, including model routing, quality
+# gates, and build verification.
+#
+# Generate a full plan:
+#   maestro scaffold examples/scaffold-brief.yaml --validate --cost-check
+#
+# Save to file:
+#   maestro scaffold examples/scaffold-brief.yaml -o generated-plan.yaml --validate
+###############################################################################
+
+name: driver-app-api
+goal: "Add REST API endpoints for driver session management"
+workspace_root: "C:/projects/driver-app"
+branch_name: feature/driver-sessions-api
+max_parallel: 3
+fail_fast: true
+
+# include_quality_gates: true   (default — adds code-review + qa-verification)
+# include_build_verify: true    (default — adds build-verify task)
+
+tasks:
+  # task_type determines automatic model routing:
+  #   implementation    → claude:sonnet
+  #   trivial-fix       → claude:haiku
+  #   security-audit    → claude:opus (high reasoning)
+  #   code-review       → claude:sonnet + code-reviewer agent
+  #   qa-verification   → claude:sonnet + qa-engineer agent
+
+  - id: db-migration
+    description: "Create migration for ms_driver_sessions table"
+    task_type: implementation
+    prompt_hint: |
+      Create a SQL migration that adds the ms_driver_sessions table with:
+      - id (UUID, PK)
+      - driver_id (FK to ms_drivers)
+      - started_at, ended_at (timestamps)
+      - status (enum: active, completed, cancelled)
+
+  - id: api-endpoints
+    description: "Add CRUD endpoints for driver sessions"
+    task_type: implementation
+    depends_on: [db-migration]
+    prompt_hint: |
+      Create REST endpoints:
+      - POST /api/v1/driver-sessions (start session)
+      - GET  /api/v1/driver-sessions/:id (get session)
+      - PATCH /api/v1/driver-sessions/:id (update status)
+      - GET  /api/v1/drivers/:id/sessions (list by driver)
+
+  - id: auth-middleware
+    description: "Add JWT validation for driver session endpoints"
+    task_type: implementation
+    depends_on: [api-endpoints]
+    prompt_hint: "Add JWT middleware that validates driver tokens on session endpoints"
+
+  - id: security-review
+    description: "Audit authentication and authorization flow"
+    task_type: security-audit
+    depends_on: [auth-middleware]
+    prompt_hint: "Review auth flow for OWASP top 10 vulnerabilities"

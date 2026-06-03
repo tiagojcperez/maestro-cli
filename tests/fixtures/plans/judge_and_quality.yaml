@@ -1,0 +1,49 @@
+version: 1
+name: judge-and-quality
+
+tasks:
+  - id: impl
+    engine: claude
+    model: sonnet
+    prompt: "Implement a function"
+    timeout_sec: 300
+    max_retries: 2
+    verify_command: ["echo", "verify ok"]
+    guard_command: ["echo", "guard ok"]
+    judge:
+      criteria:
+        - "Code is correct and handles edge cases"
+        - {type: contains, value: "def "}
+        - {type: regex, pattern: "def \\w+"}
+        - {type: is-json}
+        - {type: cost_under, value: 2.0}
+        - {type: duration_under, value: 300.0}
+        - type: rubric
+          name: Quality
+          levels:
+            - {score: 1, description: "Poor"}
+            - {score: 3, description: "Acceptable"}
+            - {score: 5, description: "Excellent"}
+          min_score: 3
+          weight: 2.0
+      pass_threshold: 0.7
+      on_fail: retry
+      method: direct
+      aggregation: weighted_mean
+      timeout_sec: 60
+
+  - id: quorum-review
+    engine: claude
+    model: sonnet
+    prompt: "Review the implementation"
+    depends_on: [impl]
+    context_from: [impl]
+    timeout_sec: 300
+    judge:
+      criteria:
+        - "Code review passes"
+      pass_threshold: 0.8
+      on_fail: warn
+      quorum: 3
+      quorum_strategy: majority
+    max_iterations: 5

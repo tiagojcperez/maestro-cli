@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Detail — Maestro UI</title>
+    <link rel="stylesheet" href="/static/style.css?v=20260301a">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/static/index.html" class="logo">
+                <div class="logo-icon">M</div>
+                Maestro
+            </a>
+            <nav class="header-nav">
+                <a href="/static/index.html">Dashboard</a>
+                <a href="/static/new-run.html">New Run</a>
+                <a href="/docs" target="_blank">API Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page">
+            <!-- Run header -->
+            <div class="run-header">
+                <div>
+                    <h2>
+                        <span id="run-plan-name">...</span>
+                        <span id="run-status"></span>
+                    </h2>
+                    <p class="run-meta">
+                        Run: <code id="run-id-display"></code>
+                    </p>
+                </div>
+                <div class="run-stats">
+                    <div class="stat">
+                        <div class="stat-label">Duration</div>
+                        <div class="stat-value" id="run-duration">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Progress</div>
+                        <div class="stat-value" id="progress-text">0 / 0 tasks</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="progress-bar">
+                <div class="fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="stats-grid" id="run-metrics">
+                <!-- Populated by run-detail.js -->
+            </div>
+
+            <!-- Collaboration Surface -->
+            <div class="collab-grid" id="collaboration-surface">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Collaboration</span>
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-icon">&#128101;</div>
+                        <h4>Loading collaboration surface...</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Charts -->
+            <div class="chart-row hidden" id="task-charts">
+                <div class="chart-card" id="chart-task-duration">
+                    <div class="chart-card-title">Task Duration</div>
+                    <div class="chart-canvas-container chart-canvas-tall">
+                        <canvas id="canvas-task-duration"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" id="chart-task-status">
+                    <div class="chart-card-title">Task Status</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-task-status"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost + Engine Cost (only visible when cost data exists) -->
+            <div class="chart-row hidden" id="task-cost-charts">
+                <div class="chart-card" id="chart-task-cost">
+                    <div class="chart-card-title">Task Cost</div>
+                    <div class="chart-canvas-container chart-canvas-tall">
+                        <canvas id="canvas-task-cost"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" id="chart-engine-cost">
+                    <div class="chart-card-title">Cost by Engine</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-engine-cost"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token Usage + Engine Tokens (only visible when token data exists) -->
+            <div class="chart-row hidden" id="task-token-charts">
+                <div class="chart-card" id="chart-task-tokens">
+                    <div class="chart-card-title">Token Usage by Task</div>
+                    <div class="chart-canvas-container chart-canvas-tall">
+                        <canvas id="canvas-task-tokens"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" id="chart-engine-tokens">
+                    <div class="chart-card-title">Tokens by Engine</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-engine-tokens"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token Breakdown Stacked (full width, only visible when token data exists) -->
+            <div class="chart-row chart-row-full hidden" id="task-token-breakdown">
+                <div class="chart-card" id="chart-task-tokens-stacked">
+                    <div class="chart-card-title">Token Breakdown by Task</div>
+                    <div class="chart-canvas-container chart-canvas-tall">
+                        <canvas id="canvas-task-tokens-stacked"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Timeline -->
+            <div id="gantt-timeline" class="hidden mt-md">
+                <!-- Populated by run-detail.js -->
+            </div>
+
+            <!-- Tasks section -->
+            <div class="card-header mt-md">
+                <span class="section-label mb-0">Tasks</span>
+                <a href="/static/index.html" class="btn btn-ghost btn-sm">Back to Dashboard</a>
+            </div>
+
+            <!-- Task list (populated by JS) -->
+            <div id="task-list">
+                <div class="empty-state">
+                    <div class="empty-icon">&#9881;</div>
+                    <h4>Loading tasks...</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js?v=20260301a"></script>
+    <script src="/static/charts.js?v=20260301a"></script>
+    <script src="/static/run-detail.js?v=20260301a"></script>
+    <script>initRunDetail();</script>
+</body>
+</html>

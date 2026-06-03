@@ -1,0 +1,41 @@
+# Example: Custom workflow library (external file)
+#
+# A workflow library provides reusable task templates that can be
+# referenced from briefs via `library: path/to/this-file.yaml`.
+#
+# Usage in a brief:
+#   library: examples/custom-workflow-library.yaml
+
+description: "Data pipeline workflow (ingest + transform + validate + deploy)"
+goal: "Build a data processing pipeline"
+topology: linear
+include_quality_gates: true
+include_build_verify: true
+
+tasks:
+  - id: setup-infra
+    description: "Set up pipeline infrastructure (queues, storage)"
+    task_type: shell
+
+  - id: implement-ingestion
+    description: "Implement data ingestion from source"
+    task_type: implementation
+    depends_on: [setup-infra]
+    prompt_hint: "Create data ingestion module with error handling and retry logic."
+
+  - id: implement-transform
+    description: "Implement data transformation pipeline"
+    task_type: complex-implementation
+    depends_on: [implement-ingestion]
+    prompt_hint: "Create data transformation steps with validation at each stage."
+
+  - id: implement-validation
+    description: "Implement data quality validation"
+    task_type: qa-verification
+    depends_on: [implement-transform]
+    prompt_hint: "Write data quality checks: schema validation, null checks, range checks."
+
+  - id: deploy-pipeline
+    description: "Deploy pipeline to staging"
+    task_type: shell
+    depends_on: [implement-validation]

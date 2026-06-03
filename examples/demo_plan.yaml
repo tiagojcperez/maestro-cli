@@ -1,0 +1,36 @@
+version: 1
+name: demo
+max_parallel: 2
+fail_fast: true
+run_dir: .maestro-runs
+
+defaults:
+  env: {}
+  codex:
+    model: null
+    reasoning_effort: null    # minimal|low|medium|high|xhigh
+    args: []
+  claude:
+    model: null
+    reasoning_effort: null    # low|medium|high (Opus 4.6 only)
+    args: []
+
+tasks:
+  - id: a
+    description: Task A
+    command: "python -c \"print('A done')\""
+
+  - id: b
+    description: Task B
+    depends_on: [a]
+    command: "python -c \"print('B done')\""
+
+  - id: c
+    description: Task C (parallel with B after A)
+    depends_on: [a]
+    command: "python -c \"print('C done')\""
+
+  - id: d
+    description: Task D depends on B+C
+    depends_on: [b, c]
+    command: "python -c \"print('D done')\""

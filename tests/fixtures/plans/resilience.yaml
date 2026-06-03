@@ -1,0 +1,30 @@
+version: 1
+name: resilience
+max_cost_usd: 10.0
+budget_warning_pct: 0.8
+
+circuit_breaker:
+  max_total_failures: 3
+  action: fail
+
+tasks:
+  - id: primary
+    engine: claude
+    model: sonnet
+    prompt: "Do the work"
+    timeout_sec: 300
+    max_retries: 2
+    retry_delay_sec: [1.0, 2.0]
+    retry_strategy: exponential
+    escalation: [haiku, sonnet, opus]
+    fallback_engine: gemini
+    fallback_model: flash
+    allow_failure: true
+
+  - id: conditional
+    engine: claude
+    model: haiku
+    prompt: "Only run if primary succeeded: {{ primary.status }}"
+    depends_on: [primary]
+    when: "{{ primary.status }} == success"
+    timeout_sec: 120

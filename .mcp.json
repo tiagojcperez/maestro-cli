@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "maestro": {
+      "command": "py",
+      "args": ["-m", "maestro_cli.mcp_server"]
+    }
+  }
+}

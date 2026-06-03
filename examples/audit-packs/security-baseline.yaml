@@ -1,0 +1,65 @@
+# Security Baseline Audit Pack
+#
+# Usage in your plan:
+#   audit_packs:
+#     - examples/audit-packs/security-baseline.yaml
+#
+# Run with: maestro audit <plan.yaml>
+#
+# Each rule checks a workspace-level condition. Failed rules appear as
+# audit findings alongside the built-in SEC001-SEC016 checks.
+#
+# Supported assertion types:
+#   glob_exists, file_contains, file_contains_count, file_not_contains,
+#   file_regex, file_regex_absent, json_path_exists,
+#   composer_package_present, npm_package_present
+
+rules:
+  # --- Git hygiene ---
+  - type: glob_exists
+    glob: ".gitignore"
+    message: "No .gitignore found — secrets and build artifacts may be committed"
+    severity: warning
+    rule: BL001
+
+  - type: file_contains
+    path: ".gitignore"
+    pattern: ".env"
+    message: ".gitignore includes .env exclusion"
+    severity: warning
+    rule: BL002
+
+  # --- Test infrastructure ---
+  - type: glob_exists
+    glob: "tests/**/*.py"
+    message: "No test files found in tests/ — no automated tests"
+    severity: warning
+    rule: BL003
+
+  - type: glob_exists
+    glob: "pyproject.toml"
+    message: "No pyproject.toml — project metadata and build config missing"
+    severity: info
+    rule: BL004
+
+  # --- Documentation ---
+  - type: glob_exists
+    glob: "README.md"
+    message: "No README.md — project lacks basic documentation"
+    severity: info
+    rule: BL005
+
+  # --- Security-sensitive files should not exist ---
+  - type: file_regex_absent
+    path: "."
+    pattern: "\\.(env|pem|key)$"
+    message: "Sensitive files (.env, .pem, .key) found in workspace root"
+    severity: error
+    rule: BL006
+
+  # --- Dependency pinning ---
+  - type: glob_exists
+    glob: "{requirements.txt,pyproject.toml,package.json,Gemfile}"
+    message: "No dependency manifest found — dependencies are not tracked"
+    severity: warning
+    rule: BL007

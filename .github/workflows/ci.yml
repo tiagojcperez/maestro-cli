@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Offline-first: no engine CLIs, no secrets. Real-engine tests
+# (tests/test_e2e_real_engines.py, marked `real_engine`) stay skipped because
+# MAESTRO_RUN_REAL_ENGINE_TESTS is intentionally never set here.
+
+jobs:
+  doc-lint:
+    name: doc-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run documentation lint
+        run: python scripts/doc_lint.py
+
+  test:
+    name: test (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+        include:
+          # Single Windows lane keeps cross-platform coverage without
+          # multiplying the full matrix across every Python version.
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install maestro-cli with optional extras
+        run: pip install -e ".[live,web,tui,agui,mcp,otel]"
+      - name: Install pytest (not a runtime dependency)
+        run: pip install pytest
+      - name: Run test suite
+        run: python -m pytest tests/ -q
+
+  mypy:
+    name: mypy
+    # Run mypy on Windows: the codebase is a Windows-first project whose
+    # `# type: ignore` comments are calibrated for the Windows mypy view. mypy's
+    # results differ by host OS even with platform=win32, so running on Linux
+    # produced unused-ignore/attribute churn that does not reflect a real defect.
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install maestro-cli with optional extras
+        # Install the optional extras so mypy can resolve rich/textual/fastapi/
+        # etc. imports (live.py, tui/, web/) instead of erroring on missing stubs.
+        run: pip install -e ".[live,web,tui,agui,mcp,otel]"
+      - name: Install mypy + type stubs
+        # Pin mypy to the version the codebase is verified against; newer mypy
+        # releases change unused-ignore / attribute checks and would flag churn
+        # unrelated to the code itself.
+        run: pip install mypy==1.19.1 types-PyYAML
+      - name: Run strict mypy over the package
+        run: python -m mypy

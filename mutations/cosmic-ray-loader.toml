@@ -1,0 +1,8 @@
+[cosmic-ray]
+module-path = "src/maestro_cli/loader.py"
+timeout = 45.0
+excluded-modules = []
+test-command = "pytest tests/test_loader.py tests/test_validation_warnings.py -x --tb=no -q"
+
+[cosmic-ray.distributor]
+name = "local"

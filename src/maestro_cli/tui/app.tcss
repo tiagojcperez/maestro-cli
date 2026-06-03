@@ -1,0 +1,43 @@
+Screen {
+    layout: vertical;
+}
+
+PlanHeader {
+    dock: top;
+    height: 1;
+    background: $surface;
+    color: $text;
+}
+
+#main-area {
+    height: 1fr;
+}
+
+DAGPanel {
+    width: 3fr;
+}
+
+DetailPanel {
+    width: 2fr;
+    border-left: solid $surface-lighten-2;
+    padding: 0 1;
+}
+
+EventFeed {
+    dock: bottom;
+    height: 12;
+    border-top: solid $surface-lighten-2;
+    background: $surface;
+}
+
+Footer {
+    dock: bottom;
+}
+
+ApprovalModal {
+    dock: bottom;
+    height: 8;
+    background: $surface;
+    border: solid yellow;
+    display: none;
+}

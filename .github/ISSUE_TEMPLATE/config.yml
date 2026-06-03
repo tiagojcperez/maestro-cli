@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and discussion
+    url: https://github.com/tiagojcperez/maestro-cli/discussions
+    about: Ask questions, share plans, or discuss ideas before opening an issue.
+  - name: Security report
+    url: https://github.com/tiagojcperez/maestro-cli/security/advisories/new
+    about: Report a security vulnerability privately (see docs/SECURITY.md).

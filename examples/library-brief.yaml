@@ -1,0 +1,40 @@
+# Example: Using a built-in workflow library
+#
+# The `library` field loads a pre-built task template.
+# Tasks listed here override library tasks (by ID) or extend (new IDs).
+#
+# Built-in libraries: rest-api, refactor, security-review
+# Run `maestro scaffold --list-libraries` to see all available.
+#
+# Usage:
+#   maestro scaffold examples/library-brief.yaml -o plan.yaml --validate
+
+name: user-service-api
+goal: "Build a REST API for user management with JWT authentication"
+workspace_root: C:/projects/user-service
+library: rest-api
+
+# Override library tasks — only the fields you specify are changed
+tasks:
+  # Override the endpoints task with a specific prompt
+  - id: implement-endpoints
+    prompt_hint: |
+      Create these REST endpoints:
+      - POST /api/users — register a new user
+      - POST /api/auth/login — authenticate and return JWT
+      - GET /api/users/me — get current user profile (requires auth)
+      - PUT /api/users/me — update profile (requires auth)
+      Use Express.js with Joi validation and bcrypt for passwords.
+
+  # Override the models task
+  - id: implement-models
+    prompt_hint: |
+      Create a User model with fields: id, email, password_hash, name, created_at.
+      Use PostgreSQL with Knex.js migrations.
+
+  # Add an extra task not in the library
+  - id: add-rate-limiting
+    description: "Add rate limiting to auth endpoints"
+    task_type: implementation
+    depends_on: [implement-endpoints]
+    prompt_hint: "Add express-rate-limit to POST /api/auth/login (max 5 per minute)."

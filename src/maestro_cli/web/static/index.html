@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maestro UI</title>
+    <link rel="stylesheet" href="/static/style.css?v=20260301a">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/static/index.html" class="logo">
+                <div class="logo-icon">M</div>
+                Maestro
+            </a>
+            <nav class="header-nav">
+                <a href="/static/index.html" class="active">Dashboard</a>
+                <a href="/static/new-run.html">New Run</a>
+                <a href="/docs" target="_blank">API Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Manage and monitor your execution plans</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="section-label">Overview</div>
+            <div class="stats-grid" id="stats-grid">
+                <!-- Populated by dashboard.js -->
+            </div>
+
+            <!-- Charts Row -->
+            <div class="chart-row hidden" id="dashboard-charts">
+                <div class="chart-card" id="chart-status-donut">
+                    <div class="chart-card-title">Task Status Distribution</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-status-donut"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" id="chart-duration-trend">
+                    <div class="chart-card-title">Run Duration Trend</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-duration-trend"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Charts Row (only visible when cost data exists) -->
+            <div class="chart-row hidden" id="dashboard-cost-charts">
+                <div class="chart-card hidden" id="chart-cost-trend">
+                    <div class="chart-card-title">Cost Trend</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-cost-trend"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card hidden" id="chart-cost-by-model">
+                    <div class="chart-card-title">Cost by Model</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-cost-by-model"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token Charts Row (only visible when token data exists) -->
+            <div class="chart-row hidden" id="dashboard-token-charts">
+                <div class="chart-card hidden" id="chart-token-trend">
+                    <div class="chart-card-title">Token Trend</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-token-trend"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card hidden" id="chart-token-by-model">
+                    <div class="chart-card-title">Tokens by Model</div>
+                    <div class="chart-canvas-container chart-canvas-std">
+                        <canvas id="canvas-token-by-model"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-label">Quick Actions</div>
+            <div class="actions-grid">
+                <div class="action-card" onclick="window.location.href='/static/new-run.html'">
+                    <div class="action-icon run">&#9654;</div>
+                    <h3>Run a Plan</h3>
+                    <p>Execute a YAML plan file</p>
+                </div>
+                <div class="action-card" onclick="toggleCollapsible('validate-section')">
+                    <div class="action-icon validate">&#10003;</div>
+                    <h3>Validate YAML</h3>
+                    <p>Check plan structure and syntax</p>
+                </div>
+                <div class="action-card" onclick="window.open('/docs', '_blank')">
+                    <div class="action-icon docs">&#123;&#125;</div>
+                    <h3>API Docs</h3>
+                    <p>Browse the REST API reference</p>
+                </div>
+            </div>
+
+            <!-- Recent Runs -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Recent Runs</span>
+                    <div class="table-filters">
+                        <select id="filter-status" class="filter-select" title="Filter by status">
+                            <option value="all">All statuses</option>
+                            <option value="success">Success</option>
+                            <option value="failed">Failed</option>
+                            <option value="running">Running</option>
+                        </select>
+                        <input type="text" id="filter-search" class="filter-input" placeholder="Search plans...">
+                    </div>
+                </div>
+                <div class="runs-roots hidden" id="runs-roots"></div>
+                <div id="runs-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">&#9776;</div>
+                        <h4>Loading...</h4>
+                    </div>
+                </div>
+                <div class="pagination" id="runs-pagination"></div>
+            </div>
+
+            <!-- Validate Plan (collapsible) -->
+            <div class="card mt-lg hidden" id="validate-section">
+                <div class="card-header">
+                    <span class="card-title">Validate Plan</span>
+                    <button class="btn btn-ghost btn-sm" onclick="hideValidateSection()">&#10005;</button>
+                </div>
+                <div class="form-group">
+                    <label for="validate-yaml">Paste plan YAML</label>
+                    <textarea id="validate-yaml" rows="8" placeholder="version: 1&#10;name: my-plan&#10;tasks:&#10;  - id: task-1&#10;    command: echo hello"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="validatePlan()">Validate</button>
+                <div class="validate-result" id="validate-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js?v=20260301a"></script>
+    <script src="/static/charts.js?v=20260301a"></script>
+    <script src="/static/dashboard.js?v=20260301a"></script>
+    <script>initDashboard();</script>
+</body>
+</html>

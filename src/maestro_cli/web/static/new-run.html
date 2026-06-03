@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Run — Maestro</title>
+    <link rel="stylesheet" href="/static/style.css?v=20260226e">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/static/index.html" class="logo">
+                <div class="logo-icon">M</div>
+                Maestro
+            </a>
+            <nav class="header-nav">
+                <a href="/static/index.html">Dashboard</a>
+                <a href="/static/new-run.html" class="active">New Run</a>
+                <a href="/docs" target="_blank">API Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">New Run</h1>
+                    <p class="page-subtitle">Configure and launch an execution plan</p>
+                </div>
+            </div>
+
+            <!-- Wizard Stepper -->
+            <div class="wizard-stepper">
+                <div class="wizard-step active" data-step="1">
+                    <div class="wizard-step-circle">1</div>
+                    <div class="wizard-step-label">Select Plan</div>
+                </div>
+                <div class="wizard-step-connector" id="connector-1-2"></div>
+                <div class="wizard-step" data-step="2">
+                    <div class="wizard-step-circle">2</div>
+                    <div class="wizard-step-label">Configure</div>
+                </div>
+                <div class="wizard-step-connector" id="connector-2-3"></div>
+                <div class="wizard-step" data-step="3">
+                    <div class="wizard-step-circle">3</div>
+                    <div class="wizard-step-label">Launch</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Select Plan -->
+            <div class="wizard-panel active" id="step-plan">
+                <div class="card" id="plan-file-card">
+                    <div class="card-header">
+                        <span class="card-title">Plan File</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="plan-path-input">Path to YAML plan file</label>
+                        <div class="plan-input-row">
+                            <div class="plan-input-group">
+                                <input type="text" id="plan-path-input" placeholder="examples/demo_plan.yaml" autocomplete="off">
+                                <div class="validation-indicator" id="validation-indicator"></div>
+                            </div>
+                            <button type="button" class="btn btn-ghost" id="btn-browse" onclick="openFileBrowser()">Browse</button>
+                        </div>
+                    </div>
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <div class="drop-zone-icon">&#128196;</div>
+                            <div>Drop a <strong>.yaml</strong> file here</div>
+                        </div>
+                    </div>
+                    <div id="example-chips" class="example-chips"></div>
+                    <div id="validation-error" class="validation-error"></div>
+                </div>
+
+                <!-- File Browser Modal -->
+                <div class="modal-overlay" id="file-browser-modal">
+                    <div class="modal modal-lg">
+                        <div class="card-header modal-header-spaced">
+                            <span class="card-title">Select Plan File</span>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="closeFileBrowser()">&#10005;</button>
+                        </div>
+                        <div id="file-browser-list" class="file-browser-list">
+                            <div class="empty-state"><h4>Loading...</h4></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="plan-summary" class="plan-summary hidden"></div>
+
+                <div class="wizard-nav">
+                    <div></div>
+                    <div class="wizard-nav-right">
+                        <button class="btn btn-primary" id="btn-next-1" disabled onclick="goToStep(2)">Next &rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Configure -->
+            <div class="wizard-panel" id="step-configure">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Tasks <span class="text-2" id="task-count-label"></span></span>
+                        <div>
+                            <button class="btn btn-ghost btn-sm" onclick="toggleAllTasks(true)">Select All</button>
+                            <button class="btn btn-ghost btn-sm" onclick="toggleAllTasks(false)">Clear</button>
+                        </div>
+                    </div>
+                    <div class="task-select-list" id="task-select-list"></div>
+                    <div id="dep-warnings"></div>
+                </div>
+
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <span class="card-title">Execution Options</span>
+                    </div>
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="cfg-profile">Execution Profile</label>
+                            <select id="cfg-profile" onchange="onProfileChange()">
+                                <option value="plan">plan</option>
+                                <option value="safe">safe</option>
+                                <option value="yolo">yolo</option>
+                            </select>
+                            <div class="profile-desc" id="profile-desc">Use YAML args exactly as written</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cfg-parallel">Max Parallel</label>
+                            <input type="number" id="cfg-parallel" min="1" max="32" value="1">
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:0.3rem">
+                            <label class="checkbox-label" for="cfg-dry-run">
+                                <input type="checkbox" id="cfg-dry-run">
+                                Dry Run
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-nav">
+                    <button class="btn btn-ghost" onclick="goToStep(1)">&larr; Back</button>
+                    <div class="wizard-nav-right">
+                        <button class="btn btn-primary" id="btn-next-2" onclick="goToStep(3)">Next &rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Launch -->
+            <div class="wizard-panel" id="step-review">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Review</span>
+                    </div>
+                    <div id="review-content" class="review-grid"></div>
+                </div>
+
+                <div id="launch-error" class="launch-error"></div>
+
+                <button class="btn btn-primary btn-launch" id="btn-launch" onclick="launchRun()">Launch Run</button>
+
+                <div class="wizard-nav" style="border-top:none;margin-top:0.5rem">
+                    <button class="btn btn-ghost" onclick="goToStep(2)">&larr; Back</button>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js?v=20260226e"></script>
+    <script src="/static/new-run.js?v=20260226e"></script>
+    <script>initNewRun();</script>
+</body>
+</html>

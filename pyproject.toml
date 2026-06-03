@@ -1,0 +1,103 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maestro-cli"
+version = "2.4.0"
+description = "CLI orchestrator for multi-step AI execution plans (Codex, Claude, Gemini, Copilot, Qwen, Ollama, Llama)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Tiago Perez" },
+]
+keywords = [
+  "ai", "cli", "orchestration", "llm", "dag",
+  "claude", "codex", "gemini", "workflow", "agents",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Build Tools",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tiagojcperez/maestro-cli"
+Repository = "https://github.com/tiagojcperez/maestro-cli"
+Issues = "https://github.com/tiagojcperez/maestro-cli/issues"
+Changelog = "https://github.com/tiagojcperez/maestro-cli/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+live = [
+  "rich>=13.0.0",
+]
+web = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+]
+tui = [
+  "textual>=1.0.0,<9.0.0",
+]
+agui = [
+  "ag-ui-protocol>=0.1.14",
+]
+mcp = [
+  "mcp>=1.26.0",
+]
+otel = [
+  "opentelemetry-api>=1.20.0",
+  "opentelemetry-sdk>=1.20.0",
+  "opentelemetry-exporter-otlp>=1.20.0",
+]
+
+[project.scripts]
+maestro = "maestro_cli.cli:main"
+maestro-benchmark = "maestro_cli.benchmark:main"
+
+# Custom engines are discovered from this entry-point group at runtime.
+# Built-in engines stay in the internal registry and are not exposed here.
+[project.entry-points."maestro_cli.engines"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+maestro_cli = ["py.typed"]
+
+[tool.pytest.ini_options]
+markers = [
+  "real_engine: opt-in tests that make real engine CLI calls",
+]
+
+[tool.mypy]
+python_version = "3.11"
+# Type-check against the Windows view so results are identical on the Windows
+# dev machines and the Linux CI runner: some code paths use Windows-only
+# stdlib attributes (subprocess.CREATE_NEW_PROCESS_GROUP / list2cmdline) guarded
+# at runtime by os.name checks, and the type: ignore comments are calibrated for
+# that view. Without this, Linux mypy reports "module has no attribute" and
+# "unused type: ignore" churn that does not reflect a real defect.
+platform = "win32"
+strict = true
+pretty = true
+show_error_codes = true
+warn_unused_configs = true
+
+# Full strict coverage — all 61 source modules.
+files = ["src/maestro_cli/"]
