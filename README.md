@@ -9,15 +9,17 @@
   CLI orchestrator for multi-step AI execution plans
 ```
 
+# Maestro CLI
+
 [![CI](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 **Maestro turns a YAML file into a parallel, dependency-aware pipeline of AI agents and shell commands.**
-You declare tasks and how they depend on each other; Maestro schedules them as a DAG across the engines you
-choose, passes context between steps, enforces cost budgets and quality gates, and records every run
-deterministically -- all from one dependency-light CLI (PyYAML is the only required dependency, everything
-else is stdlib or optional).
+Instead of gluing engine CLIs together with bash, you declare the pipeline once and get parallel DAG
+scheduling, context passing between steps, cost budgets, quality gates, and deterministic, replayable logs
+for free -- across Claude, Codex, Gemini, Copilot, Qwen, Ollama, and Llama, from one dependency-light CLI
+(PyYAML is the only required dependency; everything else is stdlib or optional).
 
 ```yaml
 # the smallest useful plan
@@ -33,35 +35,32 @@ tasks:
 maestro run plan.yaml      # runs the DAG; one engine call, deterministic logs in .maestro-runs/
 ```
 
+> That example needs the `claude` CLI on PATH. To try Maestro with **zero setup and no API keys**, run the engine-free [`examples/demo_plan.yaml`](examples/demo_plan.yaml) from the [Quickstart](#quickstart) below.
+
 ### Supported Engines
 
 <p>
 <img src="https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white" alt="Claude"> <img src="https://img.shields.io/badge/Codex-412991?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMi4yODIgOS44MjFhNS45ODUgNS45ODUgMCAwIDAtLjUxNi00LjkxIDYuMDQ2IDYuMDQ2IDAgMCAwLTYuNTEtMi45QTYuMDY1IDYuMDY1IDAgMCAwIDQuOTgxIDQuMThhNS45ODUgNS45ODUgMCAwIDAtMy45OTggMi45IDYuMDQ2IDYuMDQ2IDAgMCAwIC43NDMgNy4wOTcgNS45OCA1Ljk4IDAgMCAwIC41MSA0LjkxMSA2LjA1MSA2LjA1MSAwIDAgMCA2LjUxNSAyLjlBNS45ODUgNS45ODUgMCAwIDAgMTMuMjYgMjRhNi4wNTYgNi4wNTYgMCAwIDAgNS43NzItNC4yMDYgNS45OSA1Ljk5IDAgMCAwIDMuOTk3LTIuOSA2LjA1NiA2LjA1NiAwIDAgMC0uNzQ3LTcuMDczek0xMy4yNiAyMi40M2E0LjQ3NiA0LjQ3NiAwIDAgMS0yLjg3Ni0xLjA0bC4xNDEtLjA4MSA0Ljc3OS0yLjc1OGEuNzk1Ljc5NSAwIDAgMCAuMzkyLS42ODF2LTYuNzM3bDIuMDIgMS4xNjhhLjA3MS4wNzEgMCAwIDEgLjAzOC4wNTJ2NS41ODNhNC41MDQgNC41MDQgMCAwIDEtNC40OTQgNC40OTR6TTMuNiAxOC4zMDRhNC40NyA0LjQ3IDAgMCAxLS41MzUtMy4wMTRsLjE0Mi4wODUgNC43ODMgMi43NTlhLjc3MS43NzEgMCAwIDAgLjc4IDBsNS44NDMtMy4zNjl2Mi4zMzJhLjA4LjA4IDAgMCAxLS4wMzMuMDYyTDkuNzQgMTkuOTVhNC41IDQuNSAwIDAgMS02LjE0LTEuNjQ2ek0yLjM0IDcuODk2YTQuNDg1IDQuNDg1IDAgMCAxIDIuMzY2LTEuOTczVjExLjZhLjc2Ni43NjYgMCAwIDAgLjM4OC42NzdsNS44MTUgMy4zNTUtMi4wMiAxLjE2OGEuMDc2LjA3NiAwIDAgMS0uMDcxIDBsLTQuODMtMi43ODZBNC41MDQgNC41MDQgMCAwIDEgMi4zNCA3Ljg3MnptMTYuNTk3IDMuODU1bC01LjgzMy0zLjM4N0wxNS4xMTkgNy4yYS4wNzYuMDc2IDAgMCAxIC4wNzEgMGw0LjgzIDIuNzkxYTQuNDk0IDQuNDk0IDAgMCAxLS42NzYgOC4xMDV2LTUuNjc4YS43OS43OSAwIDAgMC0uNDA3LS42Njd6bTIuMDEtMy4wMjNsLS4xNDEtLjA4NS00Ljc3NC0yLjc4MmEuNzc2Ljc3NiAwIDAgMC0uNzg1IDBMOS40MDkgOS4yM1Y2Ljg5N2EuMDY2LjA2NiAwIDAgMSAuMDI4LS4wNjFsNC44My0yLjc4N2E0LjUgNC41IDAgMCAxIDYuNjggNC42NnptLTEyLjY0IDQuMTM1bC0yLjAyLTEuMTY0YS4wOC4wOCAwIDAgMS0uMDM4LS4wNTdWNi4wNzVhNC41IDQuNSAwIDAgMSA3LjM3NS0zLjQ1M2wtLjE0Mi4wOEw4LjcwNCA1LjQ2YS43OTUuNzk1IDAgMCAwLS4zOTMuNjgxem0xLjA5Ny0yLjM2NWwyLjYwMi0xLjUgMi42MDcgMS41djIuOTk5bC0yLjU5NyAxLjUtMi42MDctMS41eiIvPjwvc3ZnPg==&logoColor=white" alt="Codex"> <img src="https://img.shields.io/badge/Gemini-886FBF?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini"> <img src="https://img.shields.io/badge/Copilot-000?style=for-the-badge&logo=githubcopilot&logoColor=white" alt="Copilot"> <img src="https://img.shields.io/badge/Qwen-5A29E4?style=for-the-badge&logo=alibabadotcom&logoColor=white" alt="Qwen"> <img src="https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white" alt="Ollama"> <img src="https://img.shields.io/badge/Llama-0467DF?style=for-the-badge&logo=meta&logoColor=white" alt="Llama">
 </p>
 
+**Contents:** [Why Maestro?](#why-maestro) · [Python SDK](#python-sdk) · [Install](#install) · [Quickstart](#quickstart) · [Features](#features) · [Plan Schema](#plan-schema-compact) · [CLI Commands](#cli-commands) · [Writing Plans](#writing-effective-plans) · [Models](#models-quick-reference) · [Architecture](#architecture) · [Troubleshooting](#troubleshooting)
+
 ## Why Maestro?
 
-- **DAG scheduling** -- declare dependencies between tasks, Maestro runs them in the right order with configurable parallelism; matrix tasks for Cartesian product expansion; task groups for nested sub-plans; batch task mode for chunked item processing
-- **Engine-agnostic** -- mix `codex exec`, `claude --print`, `gemini`, `copilot`, `qwen`, `ollama`, `llama` (local via llama-cpp), and raw shell commands in the same plan; per-engine model aliases and reasoning effort control
-- **Zero framework deps** -- only PyYAML; shells out to engine CLIs (no AI SDK lock-in)
-- **Smart context** -- 9 context modes: raw, selective (BM25 chunk-level), summarized, map_reduce, recursive, layered (L0/L1/L2 tiers), structural (package-aware code symbol extraction with re-export resolution and PageRank scoring), council (multi-model deliberation), knowledge_graph (entity extraction); progressive compaction (5-stage pipeline); intent-driven BM25 filtering; priority-based eviction; privacy-aware pipeline (`output_redact`, `context_allowlist`); automatic compression on retry; context retrieval trajectory (`explain --context`)
-- **LLM-as-Judge** -- quality gates with typed assertions (`contains`, `regex`, `is-json`, `cost_under`, `duration_under`), Likert-scale rubrics, G-Eval two-phase scoring, adversarial debate judge (`method: debate`), comparative evaluation, named presets, `guard_command` validators, quorum voting (majority/unanimous/any), and timeout auto-scaling
-- **Content-addressable caching** -- policy-versioned SHA-256 Merkle DAG hash per task, short-lived negative cache for failures (`negative_cache_ttl_sec`), and contamination-aware cache bypass for untrusted/tainted/partial/tool-failure outputs; `maestro explain` shows cache hit/miss reasons; `maestro status` shows task staleness
-- **Cost-aware** -- per-task cost and token tracking, budget limits with warning thresholds, cross-run budget tracking (`budget_period`), per-engine pricing tables, `maestro diff` to compare runs
-- **Resilient** -- retries with backoff strategies, error feedback injection, auto-escalation (retry with higher-tier model), cross-engine fallback, checkpoint protocol, handoff reports, resume from failure, declarative runtime policies (block/warn/audit), circuit breakers
-- **Adaptive** -- mid-task signals (`signals: true`) for progress reporting, budget queries, timeout extensions; dynamic task decomposition (`dynamic_group: true`) for LLM-generated sub-plans at runtime; prompt-relevant cross-run knowledge auto-injection with lightweight `{{ knowledge_index }}`; MCTS workflow search (`mcts.py`) with draft/debug/improve trichotomy and `tree.jsonl` persistence; self-evolving `maestro replan` with multi-variant search, tournament selection, elitism, diversity floor, novelty/knowledge priors, and stepping-stone continuity
-- **Persistent memory** -- SQLite-backed Knowledge + Memory v2 with WAL, automatic JSONL migration, bi-temporal records, provenance/trust labels, retrieval-dominance quarantine, and score history (`plan_hash`, `quality_score`) for future pruning/search
-- **Blame attribution** -- `maestro blame` traces failure causality via dependency graph backward walk, classifies root causes, provides confidence scores and suggested fixes
-- **Security** -- `context_trust: trusted | untrusted` with transitive taint propagation and injection stripping; control flow integrity (`observation_block`); trajectory-level guardrails (`trajectory_guard`); semantic firewall for MCP metadata (`mcp_servers[].description`, role filtering, untrusted tool-doc reminders, `mcp_servers[].is_concurrency_safe`) plus optional pass-2 classification via top-level `firewall_model`; phantom workspace for destructive commands; 23 security audit rules (SEC001-SEC023); `maestro audit --fix` auto-remediation; cross-phase security contract (machine-generated plans audited before execution, tainted variants blocked, consolidation safety gates)
-- **Protocol integration** -- AG-UI event stream (`POST /api/agui/runs`) for any compatible frontend; MCP server (`maestro mcp-server`) exposes 12 tools, 8 resources, 3 prompts via stdio; MCP client (`mcp_servers` + `mcp_tools`) lets tasks use external MCP tool providers; OTLP exporter (`maestro export-otel`) emits `gen_ai.*` attributes, optional content capture/redaction, and task events such as `knowledge_poison_alert` and `memory_write`
-- **Production-ready** -- secrets masking, plan imports for DRY composition, tags for task filtering, approval gates for human-in-the-loop, `allowed_tools:` per-task tool restriction for prompt injection containment, semantic model routing (`model: auto`) with adaptive temporal routing and cross-task affinity learning, population-based search (best-of-N models), git worktree isolation per task, skill registry with recommendations/trigger metadata (`maestro skill`), CI failure analysis (`maestro ci-analyze`)
-- **Observable** -- Web UI dashboard with collaboration surfaces (owners, blockers, recent activity), JSONL streaming, webhook notifications, HTML reports, event sourcing with tamper detection, `suggest`, `eval`, `report`, `diff`, `doctor`, and more
+- **One YAML, many engines** -- orchestrate Claude, Codex, Gemini, Copilot, Qwen, Ollama, and Llama (plus raw shell commands) in a single plan, with per-engine model aliases and reasoning-effort control.
+- **Parallel DAG scheduling** -- declare dependencies and Maestro runs tasks in the right order with configurable parallelism, matrix expansion, and nested sub-plans.
+- **Context that flows** -- pass outputs between tasks with 9 context modes, from zero-cost BM25 selection to multi-model council deliberation, with token budgets and progressive compaction.
+- **Quality gates built in** -- LLM-as-Judge (rubrics, G-Eval, debate, quorum), zero-cost typed assertions, and `verify_command` retries with feedback injection keep results honest.
+- **Cost-aware and resilient** -- per-task and cross-run budgets, retries with backoff, auto-escalation to stronger models, cross-engine fallback, and circuit breakers.
+- **Deterministic and observable** -- every run is logged to JSON/JSONL with hash-chained, tamper-detectable events; watch it live in a TUI, a Web UI, or `maestro report`.
+- **Secure by default** -- untrusted-context taint tracking, prompt-injection containment (`allowed_tools:`), and 23 audit rules via `maestro audit`.
+- **Dependency-light** -- PyYAML is the only required dependency; everything else is stdlib or an optional extra.
 
-v1 stability contract: [docs/V1_API_FREEZE.md](docs/V1_API_FREEZE.md) | Migration from 0.x: [docs/MIGRATING_TO_V1.md](docs/MIGRATING_TO_V1.md)
+For the exhaustive capability list, see [Features](#features) below. &nbsp;|&nbsp; v1 stability contract: [docs/V1_API_FREEZE.md](docs/V1_API_FREEZE.md) &nbsp;|&nbsp; Migration from 0.x: [docs/MIGRATING_TO_V1.md](docs/MIGRATING_TO_V1.md)
 
 ## Python SDK
 
-Maestro CLI ships with a programmatic API and `py.typed` marker for static analysis:
+Maestro CLI ships with a programmatic API (29 stable exports) and a `py.typed` marker for static analysis:
 
 ```python
 from maestro_cli import load_plan, run_plan
@@ -94,6 +93,10 @@ Requires Python >= 3.11 and at least one engine CLI on PATH (`codex`, `claude`, 
 maestro validate examples/demo_plan.yaml
 # -> "Plan is valid: ... name: demo, tasks: 4"
 
+# Run it -- the demo uses only shell tasks, so no API keys are needed
+maestro run examples/demo_plan.yaml
+# -> "... 4 ok / 0 failed / 0 skipped"  (artifacts written to .maestro-runs/)
+
 # Dry run (build commands without executing)
 maestro run examples/demo_plan.yaml --dry-run
 
@@ -109,12 +112,9 @@ maestro run examples/demo_plan.yaml --output jsonl
 # Run multiple plans with shared budget
 maestro run examples/demo_plan.yaml examples/demo_plan.yaml --parallel
 
-# Adaptive re-planning on failure
+# Adaptive re-planning on failure (multi-variant search, tournament selection,
+# elitism and diversity floors are documented in docs/CLI_REFERENCE.md)
 maestro replan examples/demo_plan.yaml --max-attempts 3
-maestro replan examples/demo_plan.yaml --variants 4 --selection-policy ucb1 --exploration-constant 1.4
-maestro replan examples/demo_plan.yaml --variants 4 --population-strategy tournament --tournament-size 3
-maestro replan examples/demo_plan.yaml --variants 6 --population-strategy tournament --tournament-size 3 --elite-count 2
-maestro replan examples/demo_plan.yaml --variants 6 --population-strategy tournament --tournament-size 4 --elite-count 2 --diversity-floor 0.35
 
 # Autonomous metric-driven iteration loop (your plan needs a watch: block)
 maestro watch your-plan.yaml --output tui
@@ -131,6 +131,8 @@ maestro doctor --json
 # Security audit a plan
 maestro audit examples/demo_plan.yaml --fix
 ```
+
+**Next steps:** write your own plan with the [Plan Guide](docs/PLAN_GUIDE.md) -> copy a ready-made recipe from the [Playbook](docs/PLAYBOOK.md) -> look up any flag in the [CLI Reference](docs/CLI_REFERENCE.md).
 
 ## Features
 
@@ -239,8 +241,8 @@ Full annotated schema with all fields: [docs/PLAN_GUIDE.md](docs/PLAN_GUIDE.md)
 
 | Group | Commands |
 |-------|----------|
-| **Plan lifecycle** | `validate`, `run`, `replan`, `scaffold`, `watch` |
-| **Observability** | `report`, `diff`, `explain`, `status`, `eval`, `suggest`, `blame` |
+| **Plan lifecycle** | `validate`, `check`, `run`, `replan`, `scaffold`, `watch` |
+| **Observability** | `report`, `diff`, `explain`, `status`, `eval`, `suggest`, `blame`, `budget` |
 | **Security** | `audit`, `verify` |
 | **Infrastructure** | `doctor`, `ci`, `ci-analyze`, `cleanup`, `backfill-costs`, `ui`, `mcp-server`, `export-otel` |
 | **Interactive** | `chat`, `shell` |
@@ -283,7 +285,7 @@ Complete guide with examples: [docs/PLAN_GUIDE.md](docs/PLAN_GUIDE.md)
 | Engine | Example Aliases | Reasoning Effort | Cost Model |
 |--------|----------------|-----------------|------------|
 | **Claude** | `haiku`, `sonnet`, `opus` | `low`/`medium`/`high` (Opus only) | Per-token |
-| **Codex** | `5-mini`, `5.1`, `5.4` | `minimal`→`xhigh` | Per-token |
+| **Codex** | `5.4-mini`, `5.4`, `5.5` | `minimal` to `xhigh` | Per-token |
 | **Gemini** | `flash`, `pro`, `pro-3.1` | N/A (use model selection) | Per-token |
 | **Copilot** | `sonnet`, `gpt-5.4-codex`, `grok` | N/A | Subscription |
 | **Qwen** | `coder`, `max`, `qwq` | N/A | Per-token |
@@ -407,7 +409,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full release history and [docs/ROADMAP.md](
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, CI, and code conventions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, CI, and code conventions. Please also read our [Code of Conduct](CODE_OF_CONDUCT.md), and the [security policy](SECURITY.md) for reporting vulnerabilities privately.
 
 Full documentation index: [docs/README.md](docs/README.md).
 
