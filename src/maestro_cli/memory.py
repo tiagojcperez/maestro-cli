@@ -165,6 +165,22 @@ class RetrievalDominanceAlert:
     action: str = "quarantine"
     signal: str = "retrieval_dominance"
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "record_id": self.record_id,
+            "task_id": self.task_id,
+            "kind": self.kind,
+            "insight": self.insight,
+            "insight_key": self.insight_key,
+            "query_cluster": self.query_cluster,
+            "retrieval_count": self.retrieval_count,
+            "cluster_mean": round(self.cluster_mean, 3),
+            "cluster_stddev": round(self.cluster_stddev, 3),
+            "z_score": round(self.z_score, 3),
+            "action": self.action,
+            "signal": self.signal,
+        }
+
 
 def _normalized_source_id(source_type: str, source_id: str, task_id: str) -> str:
     """Attach the task id to task-scoped provenance pointers when missing."""
@@ -186,22 +202,6 @@ def _merge_trust_label(existing: str, incoming: str) -> str:
     if ranks.get(incoming, 0) > ranks.get(existing, 0):
         return incoming
     return existing
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "record_id": self.record_id,
-            "task_id": self.task_id,
-            "kind": self.kind,
-            "insight": self.insight,
-            "insight_key": self.insight_key,
-            "query_cluster": self.query_cluster,
-            "retrieval_count": self.retrieval_count,
-            "cluster_mean": round(self.cluster_mean, 3),
-            "cluster_stddev": round(self.cluster_stddev, 3),
-            "z_score": round(self.z_score, 3),
-            "action": self.action,
-            "signal": self.signal,
-        }
 
 
 # ---------------------------------------------------------------------------

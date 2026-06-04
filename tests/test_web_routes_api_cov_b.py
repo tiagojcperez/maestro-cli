@@ -392,6 +392,12 @@ class TestBrowseFilesOSError:
 # ===========================================================================
 
 class TestStartRunThreadFallback:
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_thread_match_fallback_binds_result(
         self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:

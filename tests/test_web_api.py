@@ -341,6 +341,14 @@ class TestValidate:
 # ===========================================================================
 
 class TestStartRun:
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so plans created under it pass the new containment guard.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_start_run_returns_plan_info(
         self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -392,13 +400,13 @@ class TestStartRun:
         assert captured_kwargs.get("dry_run") is True
 
     def test_start_run_invalid_plan_returns_400(
-        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         def _raise(_path: Any) -> None:
             raise PlanValidationError("bad plan")
 
         monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _raise)
-        resp = client.post("/api/runs", json={"plan_path": "/nonexistent.yaml"})
+        resp = client.post("/api/runs", json={"plan_path": str(tmp_path / "nonexistent.yaml")})
         assert resp.status_code == 400
         assert "bad plan" in resp.json()["detail"]
 
@@ -532,6 +540,14 @@ class TestStartRun:
 # ===========================================================================
 
 class TestListRuns:
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so a plan_path under it is treated as in-root.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_empty_state_no_filesystem(
         self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -811,16 +827,28 @@ class TestListRuns:
         assert "corrupt-json" not in ids
 
     def test_plan_path_load_failure_returns_empty_historical(
-        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """If the plan_path cannot be loaded, historical runs are skipped gracefully."""
+        """If an in-root plan_path cannot be loaded, historical runs are skipped gracefully."""
         def _raise(_path: Any) -> None:
             raise PlanValidationError("bad plan")
 
         monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _raise)
-        resp = client.get("/api/runs", params={"plan_path": "/bad.yaml"})
+        resp = client.get("/api/runs", params={"plan_path": str(tmp_path / "bad.yaml")})
         assert resp.status_code == 200
         # Should still return a list (possibly empty)
+        assert isinstance(resp.json(), list)
+
+    def test_plan_path_outside_root_skips_historical(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """An out-of-root plan_path is skipped (not a 400) — load_plan is never reached."""
+        def _boom(_path: Any) -> None:  # pragma: no cover - must never be called
+            raise AssertionError("load_plan should not run for an out-of-root path")
+
+        monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _boom)
+        resp = client.get("/api/runs", params={"plan_path": "/etc/passwd"})
+        assert resp.status_code == 200
         assert isinstance(resp.json(), list)
 
     def test_historical_runs_discovered_in_deep_nested_run_root(
@@ -1104,6 +1132,18 @@ class TestGetRunDetail:
         assert resp.status_code == 404
         assert "not found" in resp.json()["detail"].lower()
 
+    def test_safe_id_not_found_returns_404(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # A safe (non-traversal) run_id that exists nowhere reaches the final
+        # 404 after the discovery loop — not the traversal guard.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api._discover_run_roots", lambda: [],
+        )
+        resp = client.get("/api/runs/safe-but-absent-run")
+        assert resp.status_code == 404
+        assert "not found" in resp.json()["detail"].lower()
+
     def test_corrupt_task_result_json_skipped(
         self, client: TestClient, tmp_path: Path,
     ) -> None:
@@ -1294,6 +1334,14 @@ class TestDeleteRun:
 # ===========================================================================
 
 class TestCleanup:
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so the cleanup plan_path is treated as in-root.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_cleanup_calls_cleanup_runs(
         self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -1353,13 +1401,13 @@ class TestCleanup:
         assert captured_kwargs.get("dry_run") is True
 
     def test_cleanup_invalid_plan_returns_400(
-        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         def _raise(_path: Any) -> None:
             raise PlanValidationError("bad plan")
 
         monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _raise)
-        resp = client.post("/api/cleanup", json={"plan_path": "/nonexistent.yaml"})
+        resp = client.post("/api/cleanup", json={"plan_path": str(tmp_path / "nonexistent.yaml")})
         assert resp.status_code == 400
         assert "bad plan" in resp.json()["detail"]
 
@@ -2020,6 +2068,14 @@ class TestBrowseFiles:
 
 
 class TestStartRunYamlContent:
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so a plan_path under it is treated as in-root.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_yaml_content_creates_temp_and_runs(
         self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -2073,3 +2129,147 @@ class TestStartRunYamlContent:
         assert resp.status_code == 200
         # Should use plan_path, not yaml_content (temp file)
         assert captured_path[0] == str(plan_file)
+
+
+class TestCorsConfig:
+    """_cors_kwargs(): secure local-first default with explicit-origin opt-in."""
+
+    def test_default_is_localhost_regex(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        import re
+
+        from maestro_cli.web.app import _cors_kwargs
+
+        monkeypatch.delenv("MAESTRO_UI_ALLOW_ORIGINS", raising=False)
+        kw = _cors_kwargs()
+        assert "allow_origins" not in kw
+        regex = kw["allow_origin_regex"]
+        assert re.match(regex, "http://localhost:3000")
+        assert re.match(regex, "http://127.0.0.1:8000")
+        assert re.match(regex, "https://localhost")
+        # A public website you might visit must NOT match.
+        assert not re.match(regex, "https://evil.example.com")
+
+    def test_env_wildcard_restores_permissive(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from maestro_cli.web.app import _cors_kwargs
+
+        monkeypatch.setenv("MAESTRO_UI_ALLOW_ORIGINS", "*")
+        assert _cors_kwargs() == {"allow_origins": ["*"]}
+
+    def test_env_explicit_origins(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from maestro_cli.web.app import _cors_kwargs
+
+        monkeypatch.setenv(
+            "MAESTRO_UI_ALLOW_ORIGINS", "https://a.example, https://b.example",
+        )
+        assert _cors_kwargs() == {
+            "allow_origins": ["https://a.example", "https://b.example"],
+        }
+
+    def test_env_blank_falls_back_to_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from maestro_cli.web.app import _cors_kwargs
+
+        monkeypatch.setenv("MAESTRO_UI_ALLOW_ORIGINS", " , , ")
+        assert "allow_origin_regex" in _cors_kwargs()
+
+
+class TestPathContainment:
+    """_contained_plan_path / _require_contained_path confinement helper."""
+
+    def test_inside_root_returns_resolved(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from maestro_cli.web import routes_api
+
+        monkeypatch.setattr(routes_api, "get_project_root", lambda: tmp_path)
+        monkeypatch.setattr(routes_api, "get_project_roots", lambda: [tmp_path])
+        plan = tmp_path / "plan.yaml"
+        assert routes_api._contained_plan_path(str(plan)) == plan.resolve()
+
+    def test_outside_root_returns_none(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from maestro_cli.web import routes_api
+
+        # Duplicate root in the list exercises the `seen` dedup branch.
+        monkeypatch.setattr(routes_api, "get_project_root", lambda: tmp_path)
+        monkeypatch.setattr(routes_api, "get_project_roots", lambda: [tmp_path])
+        outside = tmp_path.parent / "outside.yaml"
+        assert routes_api._contained_plan_path(str(outside)) is None
+
+    def test_require_returns_inside(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from maestro_cli.web import routes_api
+
+        monkeypatch.setattr(routes_api, "get_project_root", lambda: tmp_path)
+        monkeypatch.setattr(routes_api, "get_project_roots", lambda: [tmp_path])
+        plan = tmp_path / "plan.yaml"
+        assert routes_api._require_contained_path(str(plan)) == plan.resolve()
+
+    def test_require_raises_outside(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from fastapi import HTTPException
+
+        from maestro_cli.web import routes_api
+
+        monkeypatch.setattr(routes_api, "get_project_root", lambda: tmp_path)
+        monkeypatch.setattr(routes_api, "get_project_roots", lambda: [tmp_path])
+        outside = tmp_path.parent / "x.yaml"
+        with pytest.raises(HTTPException) as excinfo:
+            routes_api._require_contained_path(str(outside))
+        assert excinfo.value.status_code == 400
+        assert "project root" in str(excinfo.value.detail).lower()
+
+
+class TestRunIdContainment:
+    """run_id / task_id traversal guard on run-scoped endpoints.
+
+    The httpx TestClient normalizes ``..`` in the URL before sending, so the
+    guard is exercised by calling the endpoint coroutines directly with a
+    traversal id (what a non-normalizing client like ``curl --path-as-is`` or a
+    ``%2E%2E`` payload would reach the handler with).
+    """
+
+    def test_is_safe_path_component(self) -> None:
+        from maestro_cli.web.routes_api import _is_safe_path_component
+
+        assert _is_safe_path_component("20260226_demo-plan")
+        for bad in ("", ".", "..", "../x", "a/b", "a\\b", "/abs"):
+            assert not _is_safe_path_component(bad)
+
+    def test_get_run_detail_rejects_traversal(self) -> None:
+        import asyncio
+
+        from fastapi import HTTPException
+
+        from maestro_cli.web.routes_api import get_run_detail
+
+        with pytest.raises(HTTPException) as excinfo:
+            asyncio.run(get_run_detail(".."))
+        assert excinfo.value.status_code == 404
+
+    def test_delete_run_rejects_traversal(self) -> None:
+        import asyncio
+
+        from fastapi import HTTPException
+
+        from maestro_cli.web.routes_api import delete_run
+
+        with pytest.raises(HTTPException) as excinfo:
+            asyncio.run(delete_run("../evil"))
+        assert excinfo.value.status_code == 404
+
+    def test_get_task_log_rejects_traversal(self) -> None:
+        import asyncio
+
+        from fastapi import HTTPException
+
+        from maestro_cli.web.routes_api import get_task_log
+
+        with pytest.raises(HTTPException) as excinfo:
+            asyncio.run(get_task_log("..", "t1"))
+        assert excinfo.value.status_code == 404
+        with pytest.raises(HTTPException) as excinfo2:
+            asyncio.run(get_task_log("run", "../etc/passwd"))
+        assert excinfo2.value.status_code == 404

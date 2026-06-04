@@ -5,7 +5,7 @@
   ██   ██ ██  ██ ██        ██   ██   ██ ██  ██  ██
   ██   ██ ██  ██ ██████ ████    ██   ██  ██  ████
 
-  Maestro CLI -- Version 2.4.0
+  Maestro CLI -- Version 2.5.0
   CLI orchestrator for multi-step AI execution plans
 ```
 
@@ -59,7 +59,7 @@ maestro run plan.yaml      # runs the DAG; one engine call, deterministic logs i
 - **Quality gates built in** -- LLM-as-Judge (rubrics, G-Eval, debate, quorum), zero-cost typed assertions, and `verify_command` retries with feedback injection keep results honest.
 - **Cost-aware and resilient** -- per-task and cross-run budgets, retries with backoff, auto-escalation to stronger models, cross-engine fallback, and circuit breakers.
 - **Deterministic and observable** -- every run is logged to JSON/JSONL with hash-chained, tamper-detectable events; watch it live in a TUI, a Web UI, or `maestro report`.
-- **Secure by default** -- untrusted-context taint tracking, prompt-injection containment (`allowed_tools:`), and 23 audit rules via `maestro audit`.
+- **Secure by default** -- untrusted-context taint tracking, prompt-injection containment (`allowed_tools:`), and 23 audit rules via `maestro audit`. The optional Web UI/API confines plan and run paths to the project root and limits CORS to same-machine origins by default.
 - **Dependency-light** -- PyYAML is the only required dependency; everything else is stdlib or an optional extra.
 
 For the exhaustive capability list, see [Features](#features) below. &nbsp;|&nbsp; v1 stability contract: [docs/V1_API_FREEZE.md](docs/V1_API_FREEZE.md) &nbsp;|&nbsp; Migration from 0.x: [docs/MIGRATING_TO_V1.md](docs/MIGRATING_TO_V1.md)
@@ -162,7 +162,7 @@ maestro audit examples/demo_plan.yaml --fix
 | **Reliability** | `verify_command`, workspace assertions (`assert:`), `max_retries` with feedback injection, retry strategies (constant/linear/exponential), `allow_failure`, auto-escalation, cross-engine fallback, circuit breakers, `checkpoint` protocol |
 | **Cost control** | Per-task cost/token tracking, budget limits (`max_cost_usd`), cross-run budget tracking (`budget_period`), per-engine pricing tables, budget warning thresholds |
 | **Quality gates** | LLM-as-Judge with typed assertions, Likert rubrics, G-Eval, adversarial debate judge, comparative eval, named presets, `guard_command`, quorum voting, timeout auto-scaling |
-| **Security** | `maestro audit` (SEC001-SEC023) + `--fix`; `allowed_tools:` per-task restriction; untrusted-context detection and taint propagation; control flow integrity; trajectory guardrails; semantic firewall for MCP metadata; phantom workspace; git worktree isolation per task |
+| **Security** | `maestro audit` (SEC001-SEC023) + `--fix`; `allowed_tools:` per-task restriction; untrusted-context detection and taint propagation; control flow integrity; trajectory guardrails; semantic firewall for MCP metadata; phantom workspace; git worktree isolation per task; Web UI/API path confinement + localhost-default CORS |
 | **Caching** | Policy-versioned SHA-256 Merkle DAG keys, short-lived negative cache (`negative_cache_ttl_sec`), contamination-aware bypass, pre-hash normalization, eviction "why" fields, `--no-cache`, `maestro explain` / `maestro status` |
 | **Flow control** | Conditional execution (`when`), `fail_fast`, `--only`/`--skip` filtering, `--tags`/`--skip-tags`, approval gates |
 | **Secrets** | `secrets:` plan field (explicit list or `auto`), `--mask-secrets` CLI flag |
@@ -461,7 +461,7 @@ For Windows-specific pitfalls, see [docs/PITFALLS.md](docs/PITFALLS.md).
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history and [docs/ROADMAP.md](docs/ROADMAP.md) for planned features.
 
-**Current repo state**: `v2.4.0` is the latest tagged release; `main` also carries early `v2.5.0` session-memory foundations for long-horizon `watch` loops on top of the completed Phase 3 work. 7 engines, 9 context modes, SQLite-backed memory, durable watch `session_snapshots`, and ~11.3K tests in the latest full-suite run.
+**Current repo state**: `v2.5.0` is the latest release — a post-launch security-hardening tranche (Web UI/API path confinement, CORS lockdown) on top of the local-first follow-on work (session memory, chat context bootstrap, skill registry v2, Web UI collaboration surfaces). 7 engines, 9 context modes, SQLite-backed memory, durable watch `session_snapshots`, and ~13.3K tests in the latest full-suite run.
 
 ## Requirements
 

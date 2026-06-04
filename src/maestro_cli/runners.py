@@ -487,7 +487,7 @@ _RETRY_FEEDBACK_TEMPLATE = (
 )
 _FAILURE_PATTERNS: list[tuple[FailureCategory, re.Pattern[str]]] = [
     ("timeout", re.compile(
-        r"timed?\s*out|timeout|deadline\s+exceeded|watchdog",
+        r"timed?\s*out|deadline\s+exceeded|watchdog",
         re.IGNORECASE,
     )),
     ("compilation_error", re.compile(
@@ -3114,7 +3114,7 @@ def _build_mcp_config(
     for server in servers:
         entry: dict[str, Any] = {}
         if server.command:
-            entry["command"] = server.command[0] if len(server.command) == 1 else server.command[0]
+            entry["command"] = server.command[0]
             entry["args"] = server.command[1:] if len(server.command) > 1 else []
         if server.url:
             entry["url"] = server.url

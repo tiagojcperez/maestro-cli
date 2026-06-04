@@ -326,8 +326,7 @@ def _apply_historical_signal(
 
     # Rule 1: cheap model succeeds 100% (≥3 runs) → push cheaper
     if low_rec and low_rec.runs >= _HISTORY_MIN_MODEL_RUNS:
-        success_rate = low_rec.successes / low_rec.runs
-        if success_rate == 1.0:
+        if low_rec.successes == low_rec.runs:
             adjustment -= 0.15
         # Rule 2: cheap model fails ≥50% → push stronger
         elif low_rec.failures / low_rec.runs >= 0.5:
@@ -335,7 +334,7 @@ def _apply_historical_signal(
 
     # Rule 3: medium model 100% success, no cheap data → modest push cheaper
     if low_rec is None and medium_rec and medium_rec.runs >= _HISTORY_MIN_MODEL_RUNS:
-        if medium_rec.successes / medium_rec.runs == 1.0:
+        if medium_rec.successes == medium_rec.runs:
             adjustment -= 0.10
 
     # Rule 4: any model with ≥40% timeout rate → push stronger
