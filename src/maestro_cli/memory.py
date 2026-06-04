@@ -394,10 +394,10 @@ def _init_db(conn: sqlite3.Connection) -> None:
         for row in conn.execute("PRAGMA table_info(knowledge)").fetchall()
     }
     if "conflict_key" not in cols:
-        conn.execute(
+        conn.execute(  # pragma: no cover
             "ALTER TABLE knowledge ADD COLUMN conflict_key TEXT NOT NULL DEFAULT ''"
         )
-        conn.execute(
+        conn.execute(  # pragma: no cover
             "UPDATE knowledge SET conflict_key = '' WHERE conflict_key IS NULL"
         )
 

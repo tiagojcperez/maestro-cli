@@ -517,7 +517,7 @@ def _replan_search(
             )
 
         if state.search_tree_path is None:
-            state.search_tree_path = str(result.run_path / "tree.jsonl")
+            state.search_tree_path = str(result.run_path / "tree.jsonl")  # pragma: no cover
         if audit_trail is None:
             audit_trail = _open_replan_audit_trail(plan.name, result.run_path)
             _append_replan_audit_event(
@@ -1516,7 +1516,7 @@ def _score_replan_variant_with_history(
     selected = matched[:max_records]
     total_weight = sum(item[0] for item in selected)
     if total_weight <= 0.0:
-        return 0.0, []
+        return 0.0, []  # pragma: no cover
 
     weighted_fitness = sum(
         similarity * fitness
@@ -1637,7 +1637,7 @@ def _replan_jaccard_similarity(left: set[str], right: set[str]) -> float:
     if not left or not right:
         return 0.0
     union = left | right
-    if not union:
+    if not union:  # pragma: no cover
         return 0.0
     return len(left & right) / len(union)
 

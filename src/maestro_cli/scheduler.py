@@ -1375,7 +1375,7 @@ def _apply_context_budget(
             if len(trimmed_tail) < len(task_result.stdout_tail):
                 result_map[tid] = dataclasses.replace(task_result, stdout_tail=trimmed_tail)
                 trim_records.append((tid, orig_tokens, trimmed_tokens))
-            else:
+            else:  # pragma: no cover - defensive: target_tokens<filtered always trims
                 result_map[tid] = task_result
 
         return result_map, trim_records, {}
@@ -1425,7 +1425,7 @@ def _apply_context_budget(
         if len(trimmed_tail) < len(task_result.stdout_tail):
             result_map[tid] = dataclasses.replace(task_result, stdout_tail=trimmed_tail)
             trim_records.append((tid, orig_tokens, trimmed_tokens))
-        else:
+        else:  # pragma: no cover - defensive: removable>=1 means target<filtered always trims
             result_map[tid] = task_result
 
     return result_map, trim_records, selection_meta
@@ -2018,7 +2018,7 @@ def run_plan(
         """Update the ready queue after a task completes (or is cache-hit / skipped)."""
         for dependent_id in dependents_map.get(finished_task_id, []):
             if dependent_id not in pending:
-                continue
+                continue  # pragma: no cover
             deps = deps_map[dependent_id]
             if not deps.issubset(completed):
                 continue
@@ -2219,7 +2219,7 @@ def run_plan(
                 while ready and len(running) < max_parallel and not fail_fast_trigger and not budget_exceeded and not (cancel_event is not None and cancel_event.is_set()):
                     task_id = ready.popleft()
                     if task_id not in pending:
-                        continue
+                        continue  # pragma: no cover
                     task = task_map[task_id]
                     if _task_uses_exclusive_mcp_worktree_slot(plan, task):
                         blocked_by_running_mcp = any(

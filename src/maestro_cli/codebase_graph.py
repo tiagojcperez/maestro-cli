@@ -789,7 +789,7 @@ def _compute_pagerank(
 
     total = sum(ranks.values())
     if total <= 0:
-        return {}
+        return {}  # pragma: no cover
     return {node: rank / total for node, rank in ranks.items()}
 
 

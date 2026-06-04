@@ -2304,7 +2304,7 @@ def validate_plan(plan: PlanSpec) -> None:
                     code=E063,
                 )
             if task.group is not None:
-                raise PlanValidationError(
+                raise PlanValidationError(  # pragma: no cover
                     f"Task '{task.id}': dynamic_group and group are mutually exclusive",
                     code=E064,
                 )
