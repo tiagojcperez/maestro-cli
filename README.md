@@ -406,9 +406,8 @@ across Python 3.11 / 3.12 / 3.13 plus a Windows lane, alongside strict `mypy`,
 a documentation lint, and CodeQL. Engine calls are **mocked** in CI; the
 real-engine end-to-end tests are opt-in (`MAESTRO_RUN_REAL_ENGINE_TESTS=1`, they
 need provider credentials and cost money) and run on a separate, manually-enabled
-lane. Coverage is uploaded to Codecov and Coveralls (with optional SonarCloud,
-Codacy, and Code Climate backends — see
-[docs/COVERAGE_PLATFORMS.md](docs/COVERAGE_PLATFORMS.md)).
+lane. Coverage is uploaded to Codecov and Coveralls (with optional SonarCloud and
+Codacy backends — see [docs/COVERAGE_PLATFORMS.md](docs/COVERAGE_PLATFORMS.md)).
 
 | Area | Unit | Integration | Real-engine |
 |------|:----:|:-----------:|:-----------:|

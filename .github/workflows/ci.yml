@@ -32,7 +32,6 @@ jobs:
     # need no token on public repos.)
     env:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
     strategy:
       fail-fast: false
       matrix:
@@ -89,15 +88,6 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: ./coverage.xml
-      # Code Climate: runs only once CC_TEST_REPORTER_ID is added to repo secrets.
-      - name: Upload coverage to Code Climate
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && env.CC_TEST_REPORTER_ID != '' }}
-        continue-on-error: true
-        run: |
-          curl -fsSL https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 -o cc-test-reporter
-          chmod +x cc-test-reporter
-          ./cc-test-reporter format-coverage coverage.lcov -t lcov -o codeclimate.json
-          ./cc-test-reporter upload-coverage -i codeclimate.json
 
   mypy:
     name: mypy
