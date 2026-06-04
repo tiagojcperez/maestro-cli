@@ -284,8 +284,8 @@ Complete guide with examples: [docs/PLAN_GUIDE.md](docs/PLAN_GUIDE.md)
 
 | Engine | Example Aliases | Reasoning Effort | Cost Model |
 |--------|----------------|-----------------|------------|
-| **Claude** | `haiku`, `sonnet`, `opus` | `low`/`medium`/`high` (Opus only) | Per-token |
-| **Codex** | `5.4-mini`, `5.4`, `5.5` | `minimal` to `xhigh` | Per-token |
+| **Claude** | `haiku`, `sonnet`, `opus` | `low` to `max` (Opus; `xhigh`/`max` are Opus-tier) | Per-token |
+| **Codex** | `5.4-mini`, `5.4`, `5.5` | `none` to `xhigh` | Per-token |
 | **Gemini** | `flash`, `pro`, `pro-3.1` | N/A (use model selection) | Per-token |
 | **Copilot** | `sonnet`, `gpt-5.4-codex`, `gemini-pro` | N/A | Subscription |
 | **Qwen** | `coder`, `max`, `qwq` | N/A | Per-token |
