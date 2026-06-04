@@ -6,6 +6,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). T
 v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 [docs/V1_API_FREEZE.md](docs/V1_API_FREEZE.md).
 
+> **A note on dates.** Maestro was developed privately and entries below carry
+> their internal development dates. The project was **first published publicly as
+> v2.4.0 on 2026-06-04**; earlier entries document the internal history leading
+> up to that release rather than separate public releases.
+
 ---
 
 ## [Unreleased]
@@ -21,7 +26,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ---
 
-## [2.4.0] — 2026-04-09
+## [2.4.0] — 2026-04-09 _(first published publicly 2026-06-04)_
 
 ### Added
 - **Simulation cache for Phase 3 replan search** — successful `ScoreRecord` entries now persist a model-family-normalized `simulation_plan_hash`, and multi-variant `replan` reuses matching successful simulations with a bounded confidence discount instead of re-executing equivalent topologies. Cache hits are recorded in candidate metadata, `tree.jsonl`, and the replan audit trail via `replan_candidate_cache_hit`.
