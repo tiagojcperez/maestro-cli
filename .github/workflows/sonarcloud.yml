@@ -40,15 +40,16 @@ jobs:
           pip install -e ".[live,web,tui,agui,mcp,otel]"
           pip install pytest pytest-cov
           python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
-      - name: Set up Java 17 for the Sonar Scanner
+      - name: Set up Java 21 for the Sonar Scanner
         # The v6 action ships Sonar Scanner CLI 7.x, which otherwise tries to
         # auto-provision a JRE from scanner.sonarcloud.io (HTTP 403 on our
-        # setup). We supply Java 17 ourselves and skip provisioning below.
+        # setup). We supply Java ourselves and skip provisioning below.
+        # Java 21 (not 17): SonarQube Cloud ends Java 17 scanner support 2026-07.
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - name: SonarQube Cloud scan
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v6
