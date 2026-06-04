@@ -51,9 +51,15 @@ jobs:
       - name: Install maestro-cli with optional extras
         run: pip install -e ".[live,web,tui,agui,mcp,otel]"
       - name: Install pytest (not a runtime dependency)
-        run: pip install pytest
+        run: pip install pytest pytest-cov
       - name: Run test suite
-        run: python -m pytest tests/ -q
+        run: python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
 
   mypy:
     name: mypy

@@ -12,6 +12,7 @@
 # Maestro CLI
 
 [![CI](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tiagojcperez/maestro-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/tiagojcperez/maestro-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -142,23 +143,31 @@ maestro audit examples/demo_plan.yaml --fix
 |----------|----------|
 | **Scheduling** | YAML DAG format, dependency validation, cycle detection (DFS), parallel execution with `max_parallel`, matrix expansion, batch task mode |
 | **Engines** | `codex exec`, `claude --print`, `gemini`, `copilot` (autopilot), `qwen`, `ollama` (local), `llama` (local via llama-cpp), raw shell commands; execution profiles (plan/safe/yolo) |
-| **Prompts** | Inline, file, or markdown extraction; inter-task context passing (9 modes: raw/selective/summarized/map_reduce/recursive/layered/structural/council/knowledge_graph); progressive compaction; privacy pipeline (`output_redact`, `context_allowlist`); `append_system_prompt` |
+| **Prompts & context** | Inline, file, or markdown extraction; inter-task context passing (9 modes: raw/selective/summarized/map_reduce/recursive/layered/structural/council/knowledge_graph); progressive compaction; privacy pipeline (`output_redact`, `context_allowlist`) |
 | **Reliability** | `verify_command`, workspace assertions (`assert:`), `max_retries` with feedback injection, retry strategies (constant/linear/exponential), `allow_failure`, auto-escalation, cross-engine fallback, circuit breakers, `checkpoint` protocol |
-| **Relational safety** | Typed `contract_type:` producers, `consumes_contracts:` consumers, `consistency_group:` membership, `reconcile_after:` group gates |
 | **Cost control** | Per-task cost/token tracking, budget limits (`max_cost_usd`), cross-run budget tracking (`budget_period`), per-engine pricing tables, budget warning thresholds |
-| **Quality gates** | LLM-as-Judge with typed assertions, Likert rubrics, G-Eval, adversarial debate judge (`method: debate`), comparative eval, named presets, `guard_command`, quorum voting, timeout auto-scaling |
+| **Quality gates** | LLM-as-Judge with typed assertions, Likert rubrics, G-Eval, adversarial debate judge, comparative eval, named presets, `guard_command`, quorum voting, timeout auto-scaling |
+| **Security** | `maestro audit` (SEC001-SEC023) + `--fix`; `allowed_tools:` per-task restriction; untrusted-context detection and taint propagation; control flow integrity; trajectory guardrails; semantic firewall for MCP metadata; phantom workspace; git worktree isolation per task |
+| **Caching** | Policy-versioned SHA-256 Merkle DAG keys, short-lived negative cache (`negative_cache_ttl_sec`), contamination-aware bypass, pre-hash normalization, eviction "why" fields, `--no-cache`, `maestro explain` / `maestro status` |
+| **Flow control** | Conditional execution (`when`), `fail_fast`, `--only`/`--skip` filtering, `--tags`/`--skip-tags`, approval gates |
+| **Secrets** | `secrets:` plan field (explicit list or `auto`), `--mask-secrets` CLI flag |
+
+<details>
+<summary><b>Advanced capabilities</b> — relational contracts, adaptive search, persistent memory, policies, watch loops, blame, event sourcing</summary>
+
+| Category | Features |
+|----------|----------|
+| **Relational safety** | Typed `contract_type:` producers, `consumes_contracts:` consumers, `consistency_group:` membership, `reconcile_after:` group gates |
 | **Adaptive** | Mid-task signals (`signals: true`) — progress, metrics, timeout extension, budget query, artifacts; dynamic task decomposition (`dynamic_group: true`); cross-run knowledge auto-injection with prompt-relevant retrieval + `{{ knowledge_index }}`; adaptive temporal routing with trend detection + cross-task affinity; population-based search (best-of-N models); MCTS workflow search (draft/debug/improve, UCB1, `tree.jsonl`); self-evolving `replan` (multi-variant, tournament, elitism, diversity, novelty/knowledge priors, stepping stones) |
 | **Knowledge + memory** | SQLite-backed per-plan memory store (`.maestro-cache/memory/<plan>.db`) with WAL, automatic JSONL migration, time-decayed confidence, bi-temporal records (`valid_from`/`valid_to` + `recorded_at`), provenance/trust labels, conflict resolution, relation confidence, poisoning quarantine, and score history (`ScoreRecord`, `plan_hash`, `quality_score`) |
 | **Plan intelligence** | `deliberation: true` — haiku pre-call skips engine if task is self-answerable; `maestro validate` prints DAG density report (S_complex, W17/W18/W19 warnings); `output_schema` for structured inter-task typed outputs |
-| **Flow control** | Conditional execution (`when`), `fail_fast`, `--only`/`--skip` filtering, `--tags`/`--skip-tags`, approval gates |
-| **Secrets** | `secrets:` plan field (explicit list or `auto`), `--mask-secrets` CLI flag |
 | **Imports** | `imports:` for reusable task templates with prefix namespacing, nested imports, cycle detection |
 | **Policies** | Declarative runtime policies (`block`/`warn`/`audit`) with safe AST evaluation |
-| **Caching** | Policy-versioned SHA-256 Merkle DAG keys, short-lived negative cache (`negative_cache_ttl_sec`), cache bypass for untrusted/tainted/partial/tool-failure results, pre-hash normalization (model alias resolution, sorted args), eviction "why" fields (`_cache_why`), `--no-cache`, `maestro explain` / `maestro status` |
 | **Event sourcing** | Hash-chained `events.jsonl` with tamper detection; `maestro verify` validates integrity |
-| **Security** | `maestro audit` scans plans (SEC001-SEC023), `--fix` auto-remediation, `--coverage` per-category breakdown; `allowed_tools:` per-task tool restriction; untrusted context detection and taint propagation; control flow integrity; trajectory guardrails (`trajectory_guard`); semantic firewall MCP metadata filtering with role and concurrency-safety hints; phantom workspace for destructive commands; git worktree isolation per task |
 | **Blame** | `maestro blame` traces failure causality, classifies root causes, suggests fixes |
 | **Watch** | Autonomous iteration loops (`maestro watch`): custom metric-driven mode and built-in plan improvement mode (`mode: improve`); git commit/rollback, consolidation agent with safety gates (trust labels, instructionality rejection, firewall), experiments.jsonl |
+
+</details>
 
 ### Output Modes
 
@@ -373,6 +382,38 @@ src/maestro_cli/
 ```
 
 **Design principles**: local-first persistence (run artifacts + SQLite memory), engine-agnostic (shells out to CLIs), minimal deps (only PyYAML in core; SQLite is stdlib), strong typing (dataclasses throughout).
+
+## Testing & Guarantees
+
+Maestro is tested offline-first. The full suite (12k+ tests) runs on every push
+across Python 3.11 / 3.12 / 3.13 plus a Windows lane, alongside strict `mypy`,
+a documentation lint, and CodeQL. Engine calls are **mocked** in CI; the
+real-engine end-to-end tests are opt-in (`MAESTRO_RUN_REAL_ENGINE_TESTS=1`, they
+need provider credentials and cost money) and run on a separate, manually-enabled
+lane.
+
+| Area | Unit | Integration | Real-engine |
+|------|:----:|:-----------:|:-----------:|
+| DAG scheduling / dependencies | ✅ | ✅ | n/a |
+| Shell tasks | ✅ | ✅ | n/a |
+| Engines (codex/claude/gemini/copilot/qwen/ollama/llama) | ✅ (mocked) | ✅ (command build) | opt-in |
+| Context passing (9 modes) | ✅ | ✅ | partial |
+| Budgets / cost / token tracking | ✅ | ✅ | partial |
+| Quality gates (judge / verify / guard / assert) | ✅ | ✅ | partial |
+| Retries / fallback / circuit breakers | ✅ | ✅ | n/a |
+| Secret masking | ✅ | ✅ | n/a |
+| Policy engine (safe AST) | ✅ (fuzzed) | ✅ | n/a |
+| Security audit (SEC001-SEC023) | ✅ | ✅ | n/a |
+| Cache / event sourcing / blame | ✅ | ✅ | n/a |
+
+**Maestro guarantees** DAG ordering and dependency semantics, retry/fallback
+behaviour, the documented `version: 1` plan schema and run-artifact shapes (the
+[v1 stability contract](docs/V1_API_FREEZE.md)), best-effort secret masking, and
+deterministic, replayable run logs.
+
+**Maestro does not guarantee** deterministic LLM output, provider/CLI availability,
+model-pricing accuracy (the pricing tables are best-effort and overridable), or the
+safety of arbitrary user-authored shell commands — you own the plans you run.
 
 ## Troubleshooting
 

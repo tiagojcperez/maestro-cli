@@ -1,0 +1,52 @@
+name: Real-engine smoke tests
+
+# Opt-in end-to-end tests that invoke REAL engine CLIs (tests/test_e2e_real_engines.py,
+# marked `real_engine`). These deliberately do NOT run in the normal offline CI: they
+# need the engine CLIs on PATH plus provider credentials, they cost money, and they
+# depend on external availability.
+#
+# This lane is a no-op until you opt in: set a repository *variable*
+# `RUN_REAL_ENGINE_TESTS` to `true` (Settings -> Secrets and variables -> Actions ->
+# Variables), add the provider secrets your engines need, and uncomment / adapt the
+# engine-install and env-mapping steps below.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-engine:
+    name: Real-engine tests (opt-in)
+    runs-on: ubuntu-latest
+    # Guard: skipped entirely unless you set the repo variable, so the weekly
+    # schedule never runs (or costs) until you deliberately enable it.
+    if: vars.RUN_REAL_ENGINE_TESTS == 'true'
+    env:
+      MAESTRO_RUN_REAL_ENGINE_TESTS: "1"
+      # Map the secrets your engine CLIs expect, e.g.:
+      # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install package + pytest
+        run: |
+          pip install -e ".[live,web,tui,agui,mcp,otel]"
+          pip install pytest
+
+      # TODO: install the engine CLIs you want to validate (codex / claude / gemini /
+      # qwen / ollama / llama). For a free, credential-less local smoke test you can
+      # install Ollama and `ollama pull` a small model here instead of a paid API.
+
+      - name: Run real-engine tests
+        run: python -m pytest tests/test_e2e_real_engines.py -v -m real_engine
