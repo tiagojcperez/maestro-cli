@@ -7,7 +7,7 @@
 # Run with: maestro audit <plan.yaml>
 #
 # Each rule checks a workspace-level condition. Failed rules appear as
-# audit findings alongside the built-in SEC001-SEC016 checks.
+# audit findings alongside the built-in SEC001-SEC023 checks.
 #
 # Supported assertion types:
 #   glob_exists, file_contains, file_contains_count, file_not_contains,

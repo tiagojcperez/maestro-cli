@@ -27,7 +27,7 @@ sonnet — test writing is structured work with clear inputs/outputs.
 5. Test CLI argument parsing and exit codes
 6. Ensure tests run on Windows (PowerShell) and Unix
 
-## Test Organization (120+ files, 12000+ tests)
+## Test Organization (120+ files, 11000+ tests)
 ```
 tests/                       # See tests/ for full inventory
 ├── conftest.py              # Shared fixtures (sample plans, tmp dirs)

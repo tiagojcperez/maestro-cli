@@ -140,21 +140,29 @@ follow this order:
    coverage on top of the existing `WatchIteration` excerpts and SQLite
    `session_snapshots`. Optional follow-up remains: LLM-polished
    consolidation and reuse of the same snapshot shape in chat hot-cache
-   bootstrap.2. ~~**Chat context bootstrap**~~ — MVP landed on main. `maestro chat`
+   bootstrap.
+
+2. ~~**Chat context bootstrap**~~ — MVP landed on main. `maestro chat`
    now auto-loads hierarchical `AGENTS.md` / `CLAUDE.md` files in
    root-to-leaf order at startup, reusing the existing
    `session.context_files` path, with `--no-auto-context` as an escape
    hatch. Deferred follow-up remains: reuse watch session snapshots for
-   chat hot-cache bootstrap rather than inventing a second memory path.3. ~~**Skill registry v2**~~ — MVP landed on main. `maestro skill`
+   chat hot-cache bootstrap rather than inventing a second memory path.
+
+3. ~~**Skill registry v2**~~ — MVP landed on main. `maestro skill`
    now goes beyond list/search into deterministic recommendations driven
    by explicit trigger metadata and small inspectable chain hints. It
    borrows the good part of `claude-code-on-steroids` (trigger/chain
-   UX) without adding opaque routing or provider-specific hooks.4. ~~**Web UI collaboration surfaces**~~ — MVP landed on main. The Web
+   UX) without adding opaque routing or provider-specific hooks.
+
+4. ~~**Web UI collaboration surfaces**~~ — MVP landed on main. The Web
    UI now exposes ownership, blockers, recent activity from
    `events.jsonl`, and task/runtime identity in run detail, plus compact
    collaboration summaries in the dashboard. This intentionally stays a
    local-first presentation layer over run manifests and event logs
-   rather than turning Maestro into a daemon or issue tracker.5. **Remote Execution Backends** — biggest upside and biggest refactor;
+   rather than turning Maestro into a daemon or issue tracker.
+
+5. **Remote Execution Backends** — biggest upside and biggest refactor;
    reconsider only after the local-first backlog above is complete, and
    then only as a deliberate branch/prototype with security review.
 6. **A2A + Meta-Agent generation** — keep deferred until remote
@@ -723,7 +731,7 @@ failure modes. Phase 2 is complete when all criteria are met.
 | **Write policies** | ~~instructionality scoring (5 regex patterns)~~ DONE; ~~auto-quarantine on high score~~ DONE; ~~quarantined excluded from normal load~~ DONE; ~~retrieval dominance tracking~~ DONE; ~~poisoning harness~~ DONE |
 | **Semantic cache** | ~~policy-versioned cache keys~~ DONE; ~~short-TTL negative cache (`negative_cache_ttl_sec`)~~ DONE; ~~untrusted / tainted / partial outputs excluded~~ DONE; ~~explicit tool-failure exclusion~~ DONE in v2.3.0; ~~pre-hash normalization~~ DONE in v2.3.0; ~~eviction `why` fields~~ DONE in v2.3.0; remaining: embedding-assisted semantic lookup |
 | **Consolidation** | ~~Rule extraction artifacts carry provenance tracebacks~~ DONE in v2.3.0 (`ConsolidatedLesson.source_trust_labels` + `avg_instructionality`); ~~consolidation outputs pass same firewall policies as tool outputs~~ DONE in v2.3.0 (pass-1 + pass-2 + instructionality check in `_run_consolidation()`) |
-| **Context pipeline v2** | ~~9-section structured template~~ DONE; ~~circuit breaker (3 failures → L1 fallback)~~ DONE; ~~post-compact restoration (top-5 by score)~~ DONE; ~~LLM tier in compaction pipeline~~ DONE in v2.3.0 (Stage 2.5 in `_apply_progressive_compaction()`); remaining: session memory extraction for watch loops (top post-v2.4.0 item; foundations now on main via `WatchIteration` excerpts + SQLite `session_snapshots`; extraction/injection still pending), then reuse the same snapshot shape for `maestro chat` hot-cache/bootstrap |
+| **Context pipeline v2** | ~~9-section structured template~~ DONE; ~~circuit breaker (3 failures → L1 fallback)~~ DONE; ~~post-compact restoration (top-5 by score)~~ DONE; ~~LLM tier in compaction pipeline~~ DONE in v2.3.0 (Stage 2.5 in `_apply_progressive_compaction()`); remaining: session memory extraction for watch loops (top post-v2.4.0 item; deterministic extraction/injection + resume now landed on main (unreleased) on top of `WatchIteration` excerpts + SQLite `session_snapshots`; remaining follow-up: LLM-polished consolidation), then reuse the same snapshot shape for `maestro chat` hot-cache/bootstrap |
 | **Codebase graph** | ~~AST visitor with Tier A/B/C resolution~~ DONE; ~~blast radius BFS + Tarjan SCC~~ DONE; ~~cache with version fields~~ DONE; ~~integration via workspace_root~~ DONE; ~~`__init__` re-export resolution~~ DONE in v2.3.0; ~~PageRank scoring~~ DONE in v2.3.0 |
 | **Semantic firewalls** | ~~wildcard tool patterns backward-compatible~~ DONE; ~~new categories (git-only, src-scoped)~~ DONE; ~~IPI regression tests~~ DONE in v2.3.0; ~~MCP tool description validation~~ DONE in v2.3.0; ~~role-based filtering~~ DONE in v2.3.0; ~~two-pass validation (`firewall_model`)~~ DONE in v2.3.0; ~~server-level MCP concurrency declarations (`is_concurrency_safe`)~~ DONE in v2.3.0; future refinement: per-tool concurrency metadata |
 | **Observability v2** | OTLP export stable; ~~GenAI semantic attributes on LLM spans~~ DONE in v2.3.0; ~~prompt/response capture configurable with masking~~ DONE in v2.3.0; ~~memory write spans emitted~~ DONE in v2.3.0 |

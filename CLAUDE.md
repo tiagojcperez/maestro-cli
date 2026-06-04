@@ -1251,8 +1251,8 @@ See [docs/PITFALLS.md](docs/PITFALLS.md) for a comprehensive list.  Key ones:
 ### Windows Shell Execution
 - `shell: true` uses `cmd.exe` on Windows -- use list-format commands with Git Bash instead
 - Use `C:\Program Files\Git\bin\bash.exe` (NOT `Git\usr\bin\bash.exe`)
-- Inside bash scripts, use forward slashes (`/c/xampp/...` not `C:\xampp\...`)
-- MySQL/MariaDB binaries need full paths (e.g., `/c/xampp/mysql/bin/mysql`)
+- Inside bash scripts, use forward slashes (`/c/projects/...` not `C:\projects\...`)
+- MySQL/MariaDB binaries need full paths (e.g., `/c/tools/mysql/bin/mysql`)
 - UNC paths (`\\server\share\...`) are not supported by CMD.EXE as working directory -- map to a drive letter or use list-format commands
 
 ### Workflow Libraries

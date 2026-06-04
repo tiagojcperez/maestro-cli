@@ -116,7 +116,7 @@ defaults:
     reasoning_effort: medium       # Balanced — escalate per-task when needed
   claude:
     model: sonnet                  # Best cost/quality for implementation
-    # reasoning_effort: omit for sonnet (only affects Opus 4.6)
+    # reasoning_effort: omit for sonnet (only affects Opus models, e.g. 4.6/4.7)
   gemini:
     model: flash                   # Fast, cheap default (use pro for complex tasks)
   copilot:

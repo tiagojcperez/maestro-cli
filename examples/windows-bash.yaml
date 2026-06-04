@@ -2,7 +2,7 @@
 # Example: Windows-specific patterns for Maestro CLI
 # Shows: Git Bash execution, MySQL paths, forward slashes, env isolation
 #
-# This example is designed for a XAMPP + Git Bash environment on Windows.
+# This example is designed for a Git Bash environment on Windows.
 # All shell tasks use the YAML list-format command to bypass cmd.exe entirely.
 # On macOS/Linux, the same tools can usually run with standard bash commands,
 # but on Windows keep the executable path and each argument in separate items.
@@ -30,7 +30,7 @@ tasks:
       - "-lc"
       - |-
         # Inside here, use forward slashes (Unix-style)
-        cd /c/xampp/htdocs/myproject
+        cd /c/projects/myproject
         echo "Current dir: $(pwd)"
         echo "Files: $(ls -la | wc -l)"
         echo "Git branch: $(git branch --show-current)"
@@ -44,8 +44,8 @@ tasks:
       - "C:\\Program Files\\Git\\bin\\bash.exe"
       - "-lc"
       - |-
-        # XAMPP MySQL is NOT on PATH -- use full path
-        /c/xampp/mysql/bin/mysql -u root -e "SHOW DATABASES"
+        # Bundled MySQL is NOT on PATH -- use full path
+        /c/tools/mysql/bin/mysql -u root -e "SHOW DATABASES"
 
   # ------------------------------------------------------------------
   # Pattern 3: Database backup with mysqldump
@@ -57,8 +57,8 @@ tasks:
       - "C:\\Program Files\\Git\\bin\\bash.exe"
       - "-lc"
       - |-
-        BACKUP_FILE="/c/xampp/htdocs/myproject/backup_$(date +%Y%m%d_%H%M%S).sql"
-        /c/xampp/mysql/bin/mysqldump -u root mydb > "$BACKUP_FILE"
+        BACKUP_FILE="/c/projects/myproject/backup_$(date +%Y%m%d_%H%M%S).sql"
+        /c/tools/mysql/bin/mysqldump -u root mydb > "$BACKUP_FILE"
         echo "Backup saved to: $BACKUP_FILE"
         ls -lh "$BACKUP_FILE"
 
@@ -71,7 +71,7 @@ tasks:
       - "C:\\Program Files\\Git\\bin\\bash.exe"
       - "-lc"
       - |-
-        cd /c/xampp/htdocs/myproject
+        cd /c/projects/myproject
         BRANCH="feature/my-feature"
         git checkout -b "$BRANCH" 2>/dev/null || git checkout "$BRANCH"
         echo "On branch: $(git branch --show-current)"
@@ -89,7 +89,7 @@ tasks:
       - |-
         set -e  # Exit on first error
 
-        cd /c/xampp/htdocs/myproject
+        cd /c/projects/myproject
 
         echo "=== Installing dependencies ==="
         npm install

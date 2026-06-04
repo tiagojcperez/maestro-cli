@@ -52,7 +52,7 @@ imports:                               # Reusable task templates
         DEPLOY_ENV: staging
 
 audit_packs:                           # Extra deterministic audit rules
-  - rules/php-backoffice.yaml
+  - rules/php-style.yaml
 
 policies:                              # Runtime policy enforcement
   - name: no-yolo-without-approval
@@ -1217,21 +1217,21 @@ Custom security rules that extend `maestro audit`'s built-in checks (SEC001-SEC0
 
 ```yaml
 audit_packs:
-  - rules/php-backoffice.yaml
+  - rules/php-style.yaml
   - rules/sql-safety.yaml
 ```
 
 Each pack is a YAML file with a `rules:` list. Paths are resolved relative to the plan file.
 
 ```yaml
-# rules/php-backoffice.yaml
+# rules/php-style.yaml
 rules:
   - rule: SQL001
     severity: error
     type: file_regex_absent
-    path: src/Repository/InvoiceRepository.php
+    path: src/Repository/PostRepository.php
     pattern: "SELECT \\*"
-    message: "Avoid SELECT * in backoffice repositories."
+    message: "Avoid SELECT * in data-access repositories."
 
   - rule: PHP001
     severity: warning

@@ -21,6 +21,10 @@ Each pending feature is scored on 4 dimensions:
 
 ## Risk Summary
 
+> **Note:** the ASCII box below is the 2026-03-22 capture. Several items have since
+> shipped — see the **Full Matrix** tables below for current status (Medium: 10 shipped /
+> 0 remaining; High: 2 shipped / 2 remaining; Critical: 2 shipped / 1 remaining).
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  LOW RISK (11 shipped, 0 remaining)        ALL DONE ✓    │

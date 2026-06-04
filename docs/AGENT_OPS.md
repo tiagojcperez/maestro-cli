@@ -534,7 +534,7 @@ policies:
 ```
 
 Available fields for rules:
-- **Task**: `id`, `engine`, `model`, `tags`, `timeout_sec`, `max_retries`, `allow_failure`, `requires_approval`, `cache`, `description`, `cost_usd`, `has_judge`, `execution_profile`, `context_trust`
+- **Task**: `id`, `engine`, `model`, `tags`, `timeout_sec`, `max_retries`, `allow_failure`, `requires_approval`, `cache`, `description`, `cost_usd`, `has_judge`, `execution_profile`, `context_trust`, `allowed_tools`, `has_allowed_tools`, `dynamic_group`, `contract_type`, `has_consistency_group` (non-exhaustive — see `policy.py` `_SAFE_TASK_FIELDS`)
 - **Plan**: `name`, `max_cost_usd`, `max_parallel`, `execution_profile`, `fail_fast`
 - **Operators**: `==`, `!=`, `<`, `>`, `<=`, `>=`, `and`, `or`, `not`, `in`, `not in`
 
@@ -624,7 +624,7 @@ Injects trap values (fake API keys, URLs) into the context. If the agent accesse
 
 ---
 
-## 10. Hard-Won Rules (key pitfalls, see PITFALLS.md for the full catalogue P1-P38)
+## 10. Hard-Won Rules (key pitfalls, see PITFALLS.md for the full catalogue P1-P39)
 
 These rules cost real money to learn. Violating any one can waste an entire run budget.
 

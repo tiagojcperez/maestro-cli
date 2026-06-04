@@ -8,13 +8,13 @@ Mutation score = percentage of mutants killed by the test suite.
 `loader.py` is the YAML parsing, validation, and plan construction core (~900 lines).
 Key functions:
 - `load_plan()` — top-level entry: reads YAML, resolves imports, expands matrix, validates
-- `validate_plan()` — runs all E001-E056 validation rules; raises `PlanValidationError` on violations
+- `validate_plan()` — runs all E001-E072 validation rules; raises `PlanValidationError` on violations
 - `_expand_matrix_tasks()` — Cartesian product expansion for `matrix:` tasks
 - `_to_judge_spec()` — parses and validates `judge:` blocks (method, criteria, thresholds)
 - `_resolve_imports()` — resolves `imports:` entries with prefix namespacing and cycle detection
-- `_dag_detect_cycle()` — DFS cycle detection on dependency graph
+- inner `dfs()` closure in `validate_plan()` — DFS cycle detection on dependency graph
 - `compute_plan_density()` — (v1.14.0+) computes S_complex = exp(S_node + 2·S_edge + S_depth)
-- Various `_to_*` coercion helpers: `_to_str_dict`, `_to_str_list`, `_to_float`, `_to_bool`, etc.
+- Various `_to_*` coercion helpers: `_to_str_dict`, `_to_str_list`, `_to_float`, etc.
 
 Test files:
 - `tests/test_loader.py` — main loader unit tests (add new tests here)
@@ -63,7 +63,6 @@ Common operators cosmic-ray uses on Python code:
 - Invalid prefix chars → E028
 
 ### 5. Coercion helper tests
-- `_to_bool`: "true"/"false"/1/0/None → correct booleans
 - `_to_float`: "1.5"/1/None → correct floats or None
 - `_to_str_list`: string → [string], list → list, None → []
 

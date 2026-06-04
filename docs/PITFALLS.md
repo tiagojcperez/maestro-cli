@@ -29,7 +29,7 @@ command:
   - "C:\\Program Files\\Git\\bin\\bash.exe"
   - "-lc"
   - |-
-    cd /c/xampp/htdocs/myproject &&
+    cd /c/projects/myproject &&
     echo "Running in Git Bash"
 ```
 
@@ -146,16 +146,16 @@ YAML interprets `\` as escape characters. Use forward slashes or double backslas
 
 ```yaml
 # CORRECT -- forward slashes everywhere (silences W4)
-prompt_md_file: "C:/xampp/htdocs/app/docs/prompts.md"
-workspace_root: C:/xampp/htdocs/app
-workdir: "C:/xampp/htdocs/app"
+prompt_md_file: "C:/projects/app/docs/prompts.md"
+workspace_root: C:/projects/app
+workdir: "C:/projects/app"
 
 # WORKS BUT TRIGGERS W4 -- escaped backslashes parse but the validator
 # still flags backslashes in path fields regardless of escaping
-workdir: "C:\\xampp\\htdocs\\app"
+workdir: "C:\\projects\\app"
 
 # WRONG -- unescaped backslashes (YAML rejects \x as a bad escape)
-prompt_md_file: "C:\xampp\htdocs\app\docs\prompts.md"
+prompt_md_file: "C:\projects\app\docs\prompts.md"
 ```
 
 Forward slashes are the simplest, cheapest answer for every path field.
@@ -169,19 +169,19 @@ command:
   - "C:\\Program Files\\Git\\bin\\bash.exe"
   - "-c"
   - |-
-    cd /c/xampp/htdocs/app       # forward slashes inside bash
-    /c/xampp/mysql/bin/mysql -u root  # full path for mysql
+    cd /c/projects/app       # forward slashes inside bash
+    /c/tools/mysql/bin/mysql -u root  # full path for mysql
 ```
 
 ---
 
-## P5. MySQL/MariaDB on XAMPP
+## P5. MySQL/MariaDB Bundled Binaries Not on PATH
 
 > **Maestro Prevention: 0%** — External tool configuration, impossible to prevent programmatically. Only documentation helps.
 
 ### Problem: `mysql` command not found
 
-XAMPP's MySQL binaries are NOT on the system PATH by default.
+Bundled local dev stacks install their MySQL/MariaDB binaries outside the system PATH by default.
 
 ### Solution: Use full path in bash scripts
 
@@ -190,8 +190,8 @@ command:
   - "C:\\Program Files\\Git\\bin\\bash.exe"
   - "-c"
   - |-
-    /c/xampp/mysql/bin/mysql -u root -e "SELECT 1"
-    /c/xampp/mysql/bin/mysqldump -u root mydb > backup.sql
+    /c/tools/mysql/bin/mysql -u root -e "SELECT 1"
+    /c/tools/mysql/bin/mysqldump -u root mydb > backup.sql
 ```
 
 ---
@@ -249,7 +249,7 @@ claude --version
 codex --version
 
 # Verify workdir exists
-ls C:\xampp\htdocs\app
+ls C:\projects\app
 ```
 
 ---
@@ -891,7 +891,7 @@ Maestro now resolves `prompt_file` and `prompt_md_file` relative to `workspace_r
 For explicit control, use absolute paths:
 
 ```yaml
-prompt_md_file: "S:/xampp/htdocs/app/docs/prompts.md"
+prompt_md_file: "S:/projects/app/docs/prompts.md"
 ```
 
 ## P22. Judge Timeout on Multi-Call Methods
@@ -1117,24 +1117,24 @@ dimensions:
 
 **Cause**: `file_contains` and `file_not_contains` are literal substring checks. They cannot understand:
 - **Delegation**: Controller calls `$repo->findFiltered()` which handles the filter internally — the filter keyword doesn't appear in the controller
-- **Context**: `storage_path` is used internally to read files from disk (safe) but `file_not_contains` rejects ANY occurrence, including safe internal use
-- **Mapping**: View receives pre-mapped data (`$msgType === 'note'`) instead of raw column names (`is_internal`)
+- **Context**: `file_path` is used internally to read files from disk (safe) but `file_not_contains` rejects ANY occurrence, including safe internal use
+- **Mapping**: View receives pre-mapped data (`$postType === 'draft'`) instead of raw column names (`is_hidden`)
 
 **Example** (3 real false positives, $3.25 wasted):
 ```yaml
-# BAD: Checks for literal "is_internal" in controller
+# BAD: Checks for literal "is_hidden" in controller
 # but controller delegates to repository
 assert:
   - type: file_contains
-    path: src/Controllers/TicketController.php
-    pattern: "is_internal"
+    path: src/Controllers/PostController.php
+    pattern: "is_hidden"
 
-# BAD: Rejects ANY "storage_path" usage
+# BAD: Rejects ANY "file_path" usage
 # but controller needs it internally for file streaming
 assert:
   - type: file_not_contains
-    path: src/Controllers/TicketApiController.php
-    pattern: "storage_path"
+    path: src/Controllers/PostApiController.php
+    pattern: "file_path"
 ```
 
 **Solution**:
@@ -1143,9 +1143,9 @@ assert:
    ```yaml
    verify_command: |
      php -r "
-       \$c = file_get_contents('src/Controllers/TicketApiController.php');
-       // Check storage_path not in JSON response methods
-       preg_match_all('/(?:jsonResponse|apiOk)\s*\([^)]*storage_path/s', \$c, \$m);
+       \$c = file_get_contents('src/Controllers/PostApiController.php');
+       // Check file_path not in JSON response methods
+       preg_match_all('/(?:jsonResponse|apiOk)\s*\([^)]*file_path/s', \$c, \$m);
        exit(count(\$m[0]) > 0 ? 1 : 0);
      "
    ```
@@ -1153,22 +1153,22 @@ assert:
    ```yaml
    assert:
      - type: file_contains
-       path: src/Repositories/MessageRepository.php
-       pattern: "is_internal"
+       path: src/Repositories/CommentRepository.php
+       pattern: "is_hidden"
    ```
 4. **Use `llm-rubric` for semantic validation** when substring checks are insufficient:
    ```yaml
    judge:
      criteria:
        - type: llm-rubric
-         value: "The controller must filter internal notes. Check if the code calls a method that handles this filtering, even if delegated to a repository."
+         value: "The controller must filter hidden records. Check if the code calls a method that handles this filtering, even if delegated to a repository."
    ```
 
 **Scenario 4 — Agent follows codebase pattern instead of prompt literal**:
 ```yaml
 assert:
   - type: file_contains
-    path: resources/views/backoffice/dashboard/index.php
+    path: resources/views/admin/dashboard/index.php
     pattern: "ob_start"
 ```
 The prompt said "use `ob_start()` / `ob_get_clean()` + require layout". The agent explored the codebase, found that existing views use `head.php`/`foot.php` includes (not `ob_start`), and followed the real pattern. The code is correct and consistent — but the assert fails because the literal `ob_start` is absent.
@@ -1401,12 +1401,12 @@ A plan author tried to negate a `file_contains` assertion:
 ```yaml
 assert:
   - type: file_contains
-    path: views/salespeople/index.php
-    pattern: "$brands"
+    path: views/posts/index.php
+    pattern: "$categories"
     negate: true    # ← NOT a valid field
 ```
 
-The `negate` field was silently ignored. The assertion became a positive check for `$brands`. Since the file correctly did NOT contain `$brands`, the positive `file_contains` assertion FAILED — the opposite of the intended behavior.
+The `negate` field was silently ignored. The assertion became a positive check for `$categories`. Since the file correctly did NOT contain `$categories`, the positive `file_contains` assertion FAILED — the opposite of the intended behavior.
 
 ### Solution
 
@@ -1416,13 +1416,13 @@ Use the correct negative assertion type instead of inventing fields:
 # WRONG — negate: true is silently ignored (pre-v1.31.1) or rejected (v1.31.1+)
 - type: file_contains
   path: file.php
-  pattern: "$brands"
+  pattern: "$categories"
   negate: true
 
 # CORRECT — use the dedicated negative type
 - type: file_not_contains
   path: file.php
-  pattern: "$brands"
+  pattern: "$categories"
 ```
 
 ### Valid assert fields
@@ -1441,7 +1441,7 @@ All assertion rules accept: `type` (required), type-specific fields (`path`, `pa
 ## P35. Alpine `:href` Without `x-data` Leaves PDF Links Dead
 
 **Severity**: MEDIUM — valid HTML/PHP, broken runtime behaviour
-**First seen**: report-pdf-generation post-mortem (2026-03-27)
+**First seen**: an internal post-mortem (2026-03-27)
 **Maestro Prevention**: 0% — static PHP checks and substring assertions do not understand Alpine scope semantics
 
 ### Problem: The generated link looks dynamic but never gets a real `href`
@@ -1449,7 +1449,7 @@ All assertion rules accept: `type` (required), type-specific fields (`path`, `pa
 An engine updates a Blade/PHP/HTML view and emits:
 
 ```html
-<a :href="`/reports/sales/pdf?date_from=${dateFrom}&date_to=${dateTo}`">
+<a :href="`/reports/pdf?date_from=${dateFrom}&date_to=${dateTo}`">
   Export PDF
 </a>
 ```
@@ -1480,14 +1480,14 @@ $pdfQuery = http_build_query([
     'date_to' => $dateTo,
 ]);
 ?>
-<a href="/reports/sales/pdf?<?= $pdfQuery ?>">Export PDF</a>
+<a href="/reports/pdf?<?= $pdfQuery ?>">Export PDF</a>
 ```
 
 2. If Alpine is required, make the scope explicit:
 
 ```html
 <div x-data="{ dateFrom: '2026-03-01', dateTo: '2026-03-31' }">
-  <a :href="`/reports/sales/pdf?date_from=${dateFrom}&date_to=${dateTo}`">
+  <a :href="`/reports/pdf?date_from=${dateFrom}&date_to=${dateTo}`">
     Export PDF
   </a>
 </div>

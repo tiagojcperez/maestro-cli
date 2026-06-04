@@ -23,6 +23,7 @@ the extra cost.
 
 ## Key Areas
 - `src/maestro_cli/runners.py`
+- `src/maestro_cli/audit.py`
 - `src/maestro_cli/doctor.py`
 - `src/maestro_cli/plugins.py`
 - `src/maestro_cli/ci.py`, `ci_github_actions.py`, `ci_gitlab_ci.py`

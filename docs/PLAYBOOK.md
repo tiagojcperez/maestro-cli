@@ -744,7 +744,7 @@ append_system_prompt: "You are a senior full-stack developer with 15 years of ex
 **Fix**: Instead of generic personas, provide **specific constraints and context**:
 architecture rules, file patterns, coding standards, review criteria. Research
 shows generic role prompts reduce accuracy by ~3.6pp on coding tasks because they
-activate instruction-following at the expense of factual recall (USC, 2026).
+activate instruction-following at the expense of factual recall (PRISM, 2026).
 Use `agent:` references that define concrete responsibilities, not identities.
 See [the study](https://arxiv.org/html/2603.18507v1) for details.
 
@@ -765,11 +765,11 @@ prompt: "Add constants to the service class"
 
 ### Don't: Use `file_contains` for Semantic Checks
 ```yaml
-# BAD: Checks for literal "is_internal" but controller delegates to repository
+# BAD: Checks for literal "is_hidden" but controller delegates to repository
 assert:
   - type: file_contains
-    path: src/Controllers/TicketController.php
-    pattern: "is_internal"
+    path: src/Controllers/PostController.php
+    pattern: "is_hidden"
 ```
 **Fix**: Use `file_contains` only for structural checks (class names, `extends`, `use`). For semantic validation, use `verify_command` with a script or `llm-rubric` judge criteria.
 
@@ -1070,7 +1070,7 @@ tasks:
 
   - id: verify-downstream
     <<: *impl
-    depends_on: [refactor]
+    depends_on: [refactor, analyse-impact]
     context_from: [analyse-impact, refactor]
     context_mode: summarized
     mcp_tools: [gitnexus]
@@ -1134,6 +1134,10 @@ Replace the brittle "ask the agent for JSON, parse stdout_tail with regex"
 pattern with a typed schema. Downstream tasks consume validated fields via
 `{{ task-id.output.field }}` template variables — no parsing, no
 hallucinated keys.
+
+> The plan below references `{{ failure_log }}`, a user-supplied variable — pass it at
+> run time with `--set failure_log="$(cat pytest-output.txt)"` (or swap it for an upstream
+> context variable / `prompt_file`).
 
 ```yaml
 version: 1

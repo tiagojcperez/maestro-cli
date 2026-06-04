@@ -10,7 +10,7 @@ Key functions:
 - `resolve_auto_model()` — entry point; picks engine + model based on complexity
 - `_score_task_complexity()` — scores a task 0.0–1.0 using tags, prompt length, deps, context mode, judge, DAG metadata
 - `_tier_from_score()` — maps score to low/medium/high tier
-- Routing tier tables per engine (claude, codex, gemini, copilot, qwen, ollama)
+- Routing tier tables per engine (claude, codex, gemini, copilot, qwen, ollama, llama)
 
 ## Mutation Operator Guide
 Common operators cosmic-ray uses on Python code:
