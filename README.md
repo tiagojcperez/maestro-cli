@@ -39,6 +39,10 @@ maestro run plan.yaml      # runs the DAG; one engine call, deterministic logs i
 
 > That example needs the `claude` CLI on PATH. To try Maestro with **zero setup and no API keys**, run the engine-free [`examples/demo_plan.yaml`](examples/demo_plan.yaml) from the [Quickstart](#quickstart) below.
 
+<!-- Demo GIF — generate with `vhs demo.tape`, commit demo.gif, then uncomment this line:
+![Maestro CLI demo](demo.gif)
+-->
+
 ### Supported Engines
 
 <p>
