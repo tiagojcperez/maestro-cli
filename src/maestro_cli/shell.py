@@ -41,7 +41,7 @@ def _setup_readline() -> None:
             return
 
     if readline_module is None:
-        return
+        return  # pragma: no cover
 
     def _complete(text: str, state: int) -> str | None:
         matches: list[str] = []

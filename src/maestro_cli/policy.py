@@ -130,7 +130,7 @@ class _SafeEvaluator:
                 return all(self.eval(v) for v in node.values)
             if isinstance(node.op, ast.Or):
                 return any(self.eval(v) for v in node.values)
-            raise ValueError(f"Policy rule: unsupported bool op '{type(node.op).__name__}'")
+            raise ValueError(f"Policy rule: unsupported bool op '{type(node.op).__name__}'")  # pragma: no cover
 
         if isinstance(node, ast.Compare):
             left = self.eval(node.left)

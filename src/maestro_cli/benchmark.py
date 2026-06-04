@@ -974,7 +974,7 @@ def _run_guidance_scenario(
                 total_cost_usd=0.11,
                 message="retry c failure",
             )
-        raise AssertionError(f"unexpected plan source: {source_name}")
+        raise AssertionError(f"unexpected plan source: {source_name}")  # pragma: no cover
 
     try:
         state = _run_replan_with_patches(

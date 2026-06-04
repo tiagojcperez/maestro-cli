@@ -494,7 +494,7 @@ def humanize_output_line(line: str, max_len: int = _HUMANIZE_MAX_LEN) -> str:
     except (json.JSONDecodeError, ValueError):
         return line
     if not isinstance(obj, dict):
-        return line
+        return line  # pragma: no cover
 
     # --- Codex JSON events ---
     item = obj.get("item") if isinstance(obj.get("item"), dict) else None

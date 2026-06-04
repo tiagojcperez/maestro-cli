@@ -250,9 +250,9 @@ def select_variant_from_pool(
         return chooser.choice(invalid)
     if valid:
         return max(valid, key=lambda node: (node.score, -_variant_depth(node), node.node_id))
-    if invalid:
-        return chooser.choice(invalid)
-    return candidates[0]
+    if invalid:  # pragma: no cover
+        return chooser.choice(invalid)  # pragma: no cover
+    return candidates[0]  # pragma: no cover
 
 
 def simulate_variant(

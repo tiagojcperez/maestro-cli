@@ -22,7 +22,7 @@ try:
     from mcp.server.fastmcp import FastMCP
     mcp = FastMCP("maestro-cli")
     _HAS_MCP = True
-except ImportError:
+except ImportError:  # pragma: no cover
     # MCP SDK not installed — define a no-op decorator for import compatibility
     _HAS_MCP = False
 

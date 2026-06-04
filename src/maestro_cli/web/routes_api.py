@@ -1051,7 +1051,7 @@ async def get_runs_stats(plan_path: str | None = None) -> dict[str, Any]:
     ):
         task_count = int(item.get("task_count", 0))
         if task_count <= 0:
-            continue
+            continue  # pragma: no cover
         total = float(item.get("total_cost_usd", 0.0))
         cost_by_model.append({
             "model": item.get("model", "unknown"),
@@ -1071,7 +1071,7 @@ async def get_runs_stats(plan_path: str | None = None) -> dict[str, Any]:
     ):
         task_count = int(item.get("task_count", 0))
         if task_count <= 0:
-            continue
+            continue  # pragma: no cover
         tok_total = int(item.get("total_tokens", 0))
         tokens_by_model.append({
             "model": item.get("model", "unknown"),

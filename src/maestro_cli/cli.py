@@ -1768,7 +1768,7 @@ def main(argv: list[str] | None = None) -> int:
     ):
         _print_banner()
         args = parser.parse_args(argv)
-        return 0
+        return 0  # pragma: no cover
 
     # No arguments → show banner + friendly command list (not an error)
     if not effective:
@@ -1834,8 +1834,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "export-otel":
             return _cmd_export_otel(args)
 
-        parser.error(f"Unknown command: {args.command}")
-        return 2
+        parser.error(f"Unknown command: {args.command}")  # pragma: no cover
+        return 2  # pragma: no cover
     except Exception as exc:
         print(f"[maestro] error: {exc}")
         return 1

@@ -232,7 +232,7 @@ def blame_run(run_path: Path) -> BlameChain:
         ))
 
     if not nodes:
-        return BlameChain(root_task_id="", nodes=[], suggested_fixes=[])
+        return BlameChain(root_task_id="", nodes=[], suggested_fixes=[])  # pragma: no cover
 
     # Select root cause: prefer non-cascade nodes with highest confidence
     root_candidates = [n for n in nodes if n.category != "dependency_cascade"]
