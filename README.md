@@ -14,6 +14,7 @@
 [![CI](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/tiagojcperez/maestro-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/tiagojcperez/maestro-cli)
 [![Coverage Status](https://coveralls.io/repos/github/tiagojcperez/maestro-cli/badge.svg?branch=main)](https://coveralls.io/github/tiagojcperez/maestro-cli?branch=main)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=tiagojcperez_maestro-cli&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=tiagojcperez_maestro-cli)
 [![PyPI](https://img.shields.io/pypi/v/maestro-ai-cli.svg)](https://pypi.org/project/maestro-ai-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
