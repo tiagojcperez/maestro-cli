@@ -874,7 +874,6 @@ class TestConstants:
         assert COPILOT_MODEL_ALIASES["haiku"] == "claude-haiku-4.5"
         assert COPILOT_MODEL_ALIASES["sonnet"] == "claude-sonnet-4.6"
         assert COPILOT_MODEL_ALIASES["opus"] == "claude-opus-4.6"
-        assert COPILOT_MODEL_ALIASES["grok"] == "grok-code-fast-1"
         assert COPILOT_MODEL_ALIASES["gemini-pro"] == "gemini-2.5-pro"
         assert COPILOT_MODEL_ALIASES["gemini-3-pro"] == "gemini-3-pro-preview"
 
@@ -1092,7 +1091,6 @@ class TestClaudeModelAndEffortConstants:
         assert "sonnet" in COPILOT_MODELS
         assert "opus" in COPILOT_MODELS
         assert "haiku" in COPILOT_MODELS
-        assert "grok" in COPILOT_MODELS
         assert "gemini-3-pro" in COPILOT_MODELS
 
 
@@ -2985,7 +2983,7 @@ class TestEdgeL3ConstantsCompleteness:
             assert full.startswith("gpt-")
 
     def test_copilot_model_aliases_size(self) -> None:
-        # At least Claude + GPT + Gemini + Grok
+        # At least Claude + GPT + Gemini
         assert len(COPILOT_MODEL_ALIASES) >= 15
 
     def test_judge_presets_ai_slop_detection(self) -> None:

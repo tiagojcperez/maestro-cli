@@ -404,23 +404,24 @@ maestro shell [--plan <path>]
 |-------------|-----------|----------|------|
 | `haiku` | Haiku 4.5 | Simple tasks, quick checks, linting | $ |
 | `sonnet` | Sonnet 4.6 | Daily coding, implementation, reviews | $$ |
-| `opus` | Opus 4.7 | Complex reasoning, architecture, agentic coding (latest, since 2026-04) | $$$ |
+| `opus` | Opus 4.8 | Complex reasoning, architecture, agentic coding (latest, since 2026-06) | $$$ |
 | `opusplan` | Opus→Sonnet | Plan with Opus, execute with Sonnet | $$-$$$ |
 
 The `opus` alias resolves to the latest Opus shipped via the Claude CLI (currently
-Opus 4.7). Pin `claude-opus-4-6` explicitly if you need the previous generation.
+Opus 4.8, requires Claude Code v2.1.154+). Pin `claude-opus-4-7` (or `claude-opus-4-6`)
+explicitly if you need a previous generation. Opus pricing is unchanged from 4.7.
 
-**Reasoning effort** (Opus 4.6 / Opus 4.7 / Sonnet 4.6 — ignored on Haiku):
+**Reasoning effort** (Opus 4.6 / 4.7 / 4.8 / Sonnet 4.6 — ignored on Haiku):
 
 | Level | Behaviour | Use When |
 |-------|-----------|----------|
 | `low` | Most efficient, scoped tasks | Subagents, simple lookups, latency-sensitive work |
 | `medium` | Balanced cost/quality | Standard agentic workflows, the average task |
-| `high` | Deep reasoning (default) | Complex coding, nuanced analysis, tool-heavy work |
-| `xhigh` | Extended capability for long-horizon work (Opus 4.7 only) | Agentic coding > 30 min, repeated tool calling, exploratory search. **Recommended starting point for Opus 4.7 coding/agentic** |
-| `max` | Absolute maximum capability (Opus 4.5 / 4.6 / 4.7 / Sonnet 4.6 / Mythos) | Genuinely frontier problems where evals show measurable headroom over `xhigh` |
+| `high` | Deep reasoning (default for Opus 4.8 / 4.6 + Sonnet 4.6) | Complex coding, nuanced analysis, tool-heavy work |
+| `xhigh` | Extended capability for long-horizon work (Opus 4.7 / 4.8) | Agentic coding > 30 min, repeated tool calling, exploratory search. **Default for Opus 4.7; recommended for hard Opus 4.8 coding/agentic** |
+| `max` | Absolute maximum capability (Opus 4.6 / 4.7 / 4.8 / Sonnet 4.6) | Genuinely frontier problems where evals show measurable headroom over `xhigh` |
 
-**Opus 4.7 specifics**: adaptive thinking is the only thinking-on mode (extended
+**Opus 4.7 / 4.8 specifics**: adaptive thinking is the only thinking-on mode (extended
 thinking removed). Sampling parameters (`temperature`, `top_p`, `top_k`) are
 rejected — return 400 if non-default. New tokenizer uses ~1.0–1.35× more tokens
 for the same text (varies by content); update `max_tokens` to leave headroom.
@@ -467,7 +468,7 @@ for the same text (varies by content); update `max_tokens` to leave headroom.
 | `flash` | gemini-2.5-flash | Fast tasks, budget-friendly | $ |
 | `pro` | gemini-2.5-pro | Complex reasoning | $$ |
 | `flash-3` | gemini-3-flash-preview | Next-gen fast | $$ |
-| `pro-3` | gemini-3-pro-preview | Next-gen capable | $$$ |
+| `pro-3` | gemini-3.1-pro-preview | Next-gen capable (3-pro-preview retired, redirects to 3.1) | $$$ |
 | `pro-3.1` | gemini-3.1-pro-preview | Latest preview | $$$ |
 | `flash-lite` | gemini-2.5-flash-lite | Cheapest, simple tasks | $ |
 | `auto` | (system routes) | Auto-selection | varies |
@@ -478,7 +479,7 @@ Gemini CLI does not expose reasoning effort control. Model routing (Pro vs Flash
 
 #### Engine: `copilot` (GitHub Copilot CLI)
 
-Multi-model access via GitHub Copilot subscription (premium requests). Supports Claude, GPT, Gemini, and Grok models.
+Multi-model access via GitHub Copilot subscription (premium requests). Supports Claude, GPT, and Gemini models.
 
 | Model Alias | Full Name | Provider | Best For |
 |-------------|-----------|----------|----------|
@@ -490,7 +491,6 @@ Multi-model access via GitHub Copilot subscription (premium requests). Supports 
 | `gpt-5.3-codex` | GPT-5.3-Codex | OpenAI | Frontier coding |
 | `gpt-5.1-codex` | GPT-5.1-Codex | OpenAI | Stable coding |
 | `gemini-pro` | Gemini 2.5 Pro | Google | Complex reasoning |
-| `grok` | Grok Code Fast 1 | xAI | Fast coding |
 
 Copilot CLI does not expose reasoning effort control. Model routing serves a similar purpose.
 
@@ -529,6 +529,9 @@ Qwen CLI does not expose reasoning effort control. Model routing serves a simila
 | `phi3` | phi3 | Lightweight tasks | Free |
 | `qwen2` | qwen2 | Multilingual | Free |
 | `deepseek-coder` | deepseek-coder | Code generation | Free |
+| `llama4` | llama4 | General purpose (latest gen) | Free |
+| `qwen3-coder` | qwen3-coder | Code generation | Free |
+| `deepseek-r1` | deepseek-r1 | Reasoning | Free |
 
 All models run locally — zero API cost. Unknown model names are passed through as-is (supports any model available via `ollama pull`).
 
@@ -549,6 +552,8 @@ All models run locally — zero API cost. Unknown model names are passed through
 | `phi3` | phi-3-mini | Lightweight tasks | Free |
 | `mistral` | mistral-7b | Fast general tasks | Free |
 | `qwen2.5-coder` | qwen2.5-coder-7b | Code generation | Free |
+| `llama4-scout` | llama-4-scout-17b-16e | Latest gen (needs quantization) | Free |
+| `llama4-maverick` | llama-4-maverick-17b-128e | Latest gen, larger | Free |
 
 All models run locally via llama.cpp — zero API cost. Unknown model names are passed through as-is. If `LLAMA_MODEL_DIR` is set, relative model paths are resolved against it.
 
@@ -852,7 +857,7 @@ Short aliases for Gemini model names (defined in `runners.py`):
 | `flash-lite` | `gemini-2.5-flash-lite` |
 | `pro` | `gemini-2.5-pro` |
 | `flash-3` | `gemini-3-flash-preview` |
-| `pro-3` | `gemini-3-pro-preview` |
+| `pro-3` | `gemini-3.1-pro-preview` |
 | `pro-3.1` | `gemini-3.1-pro-preview` |
 
 Use in YAML: `model: flash` instead of `model: "gemini-2.5-flash"`.
@@ -894,9 +899,8 @@ Short aliases for Copilot model names (defined in `runners.py`). Copilot provide
 |-------|----------------|
 | `gemini-pro` | `gemini-2.5-pro` |
 | `gemini-3-pro` | `gemini-3-pro-preview` |
-| `grok` | `grok-code-fast-1` |
 
-Use in YAML: `model: sonnet` instead of `model: "claude-sonnet-4.6"`. Unknown models are passed through as-is.
+Use in YAML: `model: sonnet` instead of `model: "claude-sonnet-4.6"`. Unknown models are passed through as-is. (Grok was removed: `grok-code-fast-1` was retired from Copilot on 2026-05-15.)
 
 ## Qwen Model Aliases
 
@@ -930,6 +934,14 @@ Short aliases for Ollama model names (defined in `runners.py`):
 | `deepseek-coder` | `deepseek-coder` |
 | `deepseek-coder-v2` | `deepseek-coder-v2` |
 | `starcoder2` | `starcoder2` |
+| `llama4` | `llama4` |
+| `qwen3` | `qwen3` |
+| `qwen3-coder` | `qwen3-coder` |
+| `deepseek-r1` | `deepseek-r1` |
+| `deepseek-v3` | `deepseek-v3` |
+| `gemma3` | `gemma3` |
+| `phi4` | `phi4` |
+| `gpt-oss` | `gpt-oss` |
 
 Use in YAML: `model: llama3`. Unknown models are passed through as-is (Ollama supports any model available via `ollama pull`).
 
@@ -948,6 +960,8 @@ Short aliases for Llama model names (defined in `models.py`):
 | `phi3` | `phi-3-mini` |
 | `mistral` | `mistral-7b` |
 | `qwen2.5-coder` | `qwen2.5-coder-7b` |
+| `llama4-scout` | `llama-4-scout-17b-16e` |
+| `llama4-maverick` | `llama-4-maverick-17b-128e` |
 
 Use in YAML: `model: llama3`. Unknown models are passed through as-is. Set `LLAMA_MODEL_DIR` to the directory containing model files; relative model names are resolved against it.
 

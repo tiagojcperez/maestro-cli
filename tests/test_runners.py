@@ -7138,7 +7138,7 @@ class TestGeminiModelAliasesInBuildCommand:
         ("flash", "gemini-2.5-flash"),
         ("pro", "gemini-2.5-pro"),
         ("flash-lite", "gemini-2.5-flash-lite"),
-        ("pro-3", "gemini-3-pro-preview"),
+        ("pro-3", "gemini-3.1-pro-preview"),
     ])
     def test_gemini_alias_resolved_in_command(
         self, alias: str, expected: str, monkeypatch: pytest.MonkeyPatch,
@@ -8355,7 +8355,7 @@ class TestEdgeL3ModelAliases:
         assert _resolve_gemini_model("flash-3") == "gemini-3-flash-preview"
 
     def test_gemini_alias_pro_3(self) -> None:
-        assert _resolve_gemini_model("pro-3") == "gemini-3-pro-preview"
+        assert _resolve_gemini_model("pro-3") == "gemini-3.1-pro-preview"
 
     def test_gemini_alias_none(self) -> None:
         assert _resolve_gemini_model(None) is None
@@ -8368,9 +8368,6 @@ class TestEdgeL3ModelAliases:
 
     def test_copilot_alias_haiku(self) -> None:
         assert _resolve_copilot_model("haiku") == "claude-haiku-4.5"
-
-    def test_copilot_alias_grok(self) -> None:
-        assert _resolve_copilot_model("grok") == "grok-code-fast-1"
 
     def test_copilot_alias_none(self) -> None:
         assert _resolve_copilot_model(None) is None

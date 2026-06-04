@@ -81,9 +81,10 @@ SuggestionCategory = Literal[
 
 # Valid reasoning_effort values per engine
 CODEX_REASONING_EFFORTS: set[str] = {"none", "minimal", "low", "medium", "high", "xhigh"}
-# Claude effort levels expanded 2026-04-27 for Opus 4.7 (xhigh) and Opus 4.6/4.7
-# / Sonnet 4.6 (max). Opus 4.7 docs recommend `xhigh` as the starting point for
-# coding/agentic work. `max` is reserved for genuinely frontier problems.
+# Claude effort levels expanded 2026-04-27: `xhigh` for Opus 4.7/4.8, `max` for
+# Opus 4.6/4.7/4.8 + Sonnet 4.6. Per-model defaults: Opus 4.8 = high, Opus 4.7 =
+# xhigh, Sonnet 4.6 = high; Haiku ignores effort. `max` is reserved for genuinely
+# frontier problems.
 CLAUDE_REASONING_EFFORTS: set[str] = {"low", "medium", "high", "xhigh", "max"}
 CLAUDE_MODELS: set[str] = {"haiku", "sonnet", "opus", "opusplan"}
 GEMINI_MODELS: set[str] = {
@@ -109,7 +110,7 @@ GEMINI_MODEL_ALIASES: dict[str, str] = {
     "flash-lite": "gemini-2.5-flash-lite",
     "pro": "gemini-2.5-pro",
     "flash-3": "gemini-3-flash-preview",
-    "pro-3": "gemini-3-pro-preview",
+    "pro-3": "gemini-3.1-pro-preview",
     "pro-3.1": "gemini-3.1-pro-preview",
 }
 COPILOT_MODEL_ALIASES: dict[str, str] = {
@@ -135,8 +136,6 @@ COPILOT_MODEL_ALIASES: dict[str, str] = {
     # Gemini
     "gemini-pro": "gemini-2.5-pro",
     "gemini-3-pro": "gemini-3-pro-preview",
-    # Other
-    "grok": "grok-code-fast-1",
 }
 QWEN_MODEL_ALIASES: dict[str, str] = {
     "coder": "qwen-coder-plus",
@@ -158,6 +157,15 @@ OLLAMA_MODEL_ALIASES: dict[str, str] = {
     "deepseek-coder": "deepseek-coder",
     "deepseek-coder-v2": "deepseek-coder-v2",
     "starcoder2": "starcoder2",
+    # 2026 refresh (all available via `ollama pull`)
+    "llama4": "llama4",
+    "qwen3": "qwen3",
+    "qwen3-coder": "qwen3-coder",
+    "deepseek-r1": "deepseek-r1",
+    "deepseek-v3": "deepseek-v3",
+    "gemma3": "gemma3",
+    "phi4": "phi4",
+    "gpt-oss": "gpt-oss",
 }
 LLAMA_MODEL_ALIASES: dict[str, str] = {
     "llama3": "llama-3-8b",
@@ -167,6 +175,9 @@ LLAMA_MODEL_ALIASES: dict[str, str] = {
     "phi3": "phi-3-mini",
     "mistral": "mistral-7b",
     "qwen2.5-coder": "qwen2.5-coder-7b",
+    # Llama 4 (MoE) -- needs aggressive quantization to run locally
+    "llama4-scout": "llama-4-scout-17b-16e",
+    "llama4-maverick": "llama-4-maverick-17b-128e",
 }
 COPILOT_MODELS: set[str] = set(COPILOT_MODEL_ALIASES)
 QWEN_MODELS: dict[str, str] = dict(QWEN_MODEL_ALIASES)

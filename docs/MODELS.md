@@ -12,7 +12,7 @@ Complete model alias tables for all supported engines.
 |-------|----------|------|
 | `haiku` | Simple tasks, quick checks (Haiku 4.5) | $ |
 | `sonnet` | Daily coding, implementation (Sonnet 4.6) | $$ |
-| `opus` | Complex reasoning, architecture, long-horizon agentic (resolves to Opus 4.7 since 2026-04) | $$$ |
+| `opus` | Complex reasoning, architecture, long-horizon agentic (resolves to Opus 4.8 since 2026-06) | $$$ |
 | `opusplan` | Plan with Opus, execute with Sonnet | $$-$$$ |
 
 **Pricing per million tokens** (Anthropic API, Apr 2026):
@@ -21,13 +21,14 @@ Complete model alias tables for all supported engines.
 |-------|-------|--------|
 | Haiku 4.5 | $1.00 | $5.00 |
 | Sonnet 4.6 | $3.00 | $15.00 |
-| Opus 4.7 (and 4.6) | $5.00 | $25.00 |
+| Opus 4.8 (and 4.7 / 4.6) | $5.00 | $25.00 |
 
-**Reasoning effort** (Opus 4.6 / 4.7 / Sonnet 4.6; ignored on Haiku):
-`low`, `medium`, `high` (default), `xhigh` *(Opus 4.7 only)*, `max` *(Opus 4.5 / 4.6 / 4.7 / Sonnet 4.6)*.
+**Reasoning effort** (Opus 4.6 / 4.7 / 4.8 / Sonnet 4.6; ignored on Haiku):
+`low`, `medium`, `high` (default), `xhigh` *(Opus 4.7 / 4.8)*, `max` *(Opus 4.6 / 4.7 / 4.8 / Sonnet 4.6)*.
 
-For Opus 4.7, Anthropic recommends `xhigh` as the starting point for coding /
-agentic work, with `max` reserved for genuinely frontier problems. Adaptive
+Per-model defaults: Opus 4.8 = `high`, Opus 4.7 = `xhigh`, Sonnet 4.6 = `high`; Haiku
+ignores effort. For Opus 4.8, `xhigh` is recommended for hard coding / agentic work,
+with `max` reserved for genuinely frontier problems. Adaptive
 thinking is the only thinking-on mode; extended thinking with explicit
 `budget_tokens` is rejected. Sampling parameters (`temperature`, `top_p`,
 `top_k`) at non-default values return 400.
@@ -83,7 +84,7 @@ Mechanism: `-c model_reasoning_effort=<level>` config flag (injected automatical
 | `flash-lite` | gemini-2.5-flash-lite | $ |
 | `pro` | gemini-2.5-pro | $$ |
 | `flash-3` | gemini-3-flash-preview | $$ |
-| `pro-3` | gemini-3-pro-preview | $$$ |
+| `pro-3` | gemini-3.1-pro-preview *(3-pro-preview retired)* | $$$ |
 | `pro-3.1` | gemini-3.1-pro-preview | $$$ |
 | `auto` | (system routes) | varies |
 
@@ -130,7 +131,8 @@ Access multiple model families via a single GitHub Copilot subscription (premium
 |-------|-----------|
 | `gemini-pro` | Gemini 2.5 Pro |
 | `gemini-3-pro` | Gemini 3 Pro Preview |
-| `grok` | Grok Code Fast 1 |
+
+(`grok`/`grok-code-fast-1` was removed — retired from Copilot on 2026-05-15.)
 
 Copilot does not expose reasoning effort control. Use model routing for capability tiers. Cost is subscription-based (premium requests), not per-token.
 
@@ -174,6 +176,14 @@ Environment variable: `DASHSCOPE_API_KEY` (auth).
 | `deepseek-coder` | deepseek-coder | Free |
 | `deepseek-coder-v2` | deepseek-coder-v2 | Free |
 | `starcoder2` | starcoder2 | Free |
+| `llama4` | llama4 | Free |
+| `qwen3` | qwen3 | Free |
+| `qwen3-coder` | qwen3-coder | Free |
+| `deepseek-r1` | deepseek-r1 | Free |
+| `deepseek-v3` | deepseek-v3 | Free |
+| `gemma3` | gemma3 | Free |
+| `phi4` | phi4 | Free |
+| `gpt-oss` | gpt-oss | Free |
 
 All Ollama models run locally -- zero API cost. Unknown model names are passed through as-is (supports any model available via `ollama pull`).
 
@@ -192,6 +202,8 @@ Requires `ollama` CLI on PATH with models pulled. Set `OLLAMA_HOST` to override 
 | `phi3` | phi-3-mini | Free |
 | `mistral` | mistral-7b | Free |
 | `qwen2.5-coder` | qwen2.5-coder-7b | Free |
+| `llama4-scout` | llama-4-scout-17b-16e | Free |
+| `llama4-maverick` | llama-4-maverick-17b-128e | Free |
 
 All Llama models run locally via llama.cpp -- zero API cost. Unknown model names are passed through as-is.
 
@@ -220,7 +232,7 @@ Complexity signals:
 
 | Engine | Low | Medium | High |
 |--------|-----|--------|------|
-| Claude | haiku | sonnet | opus *(Opus 4.7 since 2026-04)* |
+| Claude | haiku | sonnet | opus *(Opus 4.8 since 2026-06)* |
 | Codex | 5-mini | 5.4 | 5.5 *(bumped from 5.4 on 2026-04-27)* |
 | Gemini | flash-lite | flash | pro |
 | Copilot | haiku | sonnet | opus |

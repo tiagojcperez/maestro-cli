@@ -34,8 +34,8 @@ _MEDIUM_BOOST_TAGS: frozenset[str] = frozenset({
 
 # Model tier tables per engine
 _MODEL_TIERS: dict[str, dict[TierName, str]] = {
-    # Refreshed 2026-04-27 for GPT-5.5 (April 2026) and Claude Opus 4.7
-    # (Anthropic). Claude `opus` alias auto-resolves to claude-opus-4-7.
+    # Refreshed 2026-06 for GPT-5.5 and Claude Opus 4.8 (Anthropic). Claude
+    # `opus` alias auto-resolves to claude-opus-4-8.
     # Codex high tier moved from 5.4 to 5.5; medium kept at 5.4 since 5.5
     # is materially more expensive ($30/M output vs $15) and the medium
     # tier is meant to be a sensible price/quality midpoint.

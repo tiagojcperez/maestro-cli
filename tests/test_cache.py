@@ -936,7 +936,6 @@ class TestModelAliasResolution:
         ("haiku", "claude-haiku-4.5"),
         ("gpt-5.4-codex", "gpt-5.4-codex"),
         ("gemini-pro", "gemini-2.5-pro"),
-        ("grok", "grok-code-fast-1"),
         ("novel-model-xyz", "novel-model-xyz"),
     ])
     def test_resolve_copilot_model(self, alias: str, expected: str) -> None:
@@ -2506,7 +2505,7 @@ class TestResolveGeminiModelMissingAliases:
         assert _resolve_gemini_model("flash-3") == "gemini-3-flash-preview"
 
     def test_pro_3_resolves(self) -> None:
-        assert _resolve_gemini_model("pro-3") == "gemini-3-pro-preview"
+        assert _resolve_gemini_model("pro-3") == "gemini-3.1-pro-preview"
 
 
 # ---------------------------------------------------------------------------
@@ -2932,13 +2931,6 @@ class TestEffectiveEngineConfigCopilotAliases:
         plan = _build_plan(task, tmp_path, defaults=defaults)
         config = _effective_engine_config(task, plan)
         assert config["model"] == "claude-opus-4.6"
-
-    def test_copilot_grok_alias_resolved(self, tmp_path: Path) -> None:
-        """'grok' as copilot model resolves to 'grok-code-fast-1'."""
-        task = TaskSpec(id="t", engine="copilot", model="grok", prompt="x")
-        plan = _build_plan(task, tmp_path)
-        config = _effective_engine_config(task, plan)
-        assert config["model"] == "grok-code-fast-1"
 
 
 # ---------------------------------------------------------------------------

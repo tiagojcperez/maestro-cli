@@ -287,10 +287,10 @@ Complete guide with examples: [docs/PLAN_GUIDE.md](docs/PLAN_GUIDE.md)
 | **Claude** | `haiku`, `sonnet`, `opus` | `low`/`medium`/`high` (Opus only) | Per-token |
 | **Codex** | `5.4-mini`, `5.4`, `5.5` | `minimal` to `xhigh` | Per-token |
 | **Gemini** | `flash`, `pro`, `pro-3.1` | N/A (use model selection) | Per-token |
-| **Copilot** | `sonnet`, `gpt-5.4-codex`, `grok` | N/A | Subscription |
+| **Copilot** | `sonnet`, `gpt-5.4-codex`, `gemini-pro` | N/A | Subscription |
 | **Qwen** | `coder`, `max`, `qwq` | N/A | Per-token |
-| **Ollama** | `llama3`, `codellama`, `mixtral` | N/A | Free (local) |
-| **Llama** | `llama3`, `codellama`, `mistral` | N/A | Free (local, llama-cpp) |
+| **Ollama** | `llama4`, `qwen3-coder`, `deepseek-r1` | N/A | Free (local) |
+| **Llama** | `llama3`, `llama4-scout`, `codellama` | N/A | Free (local, llama-cpp) |
 
 Set `model: auto` for automatic routing based on task complexity. Control bias with `routing_strategy: cost_optimized | quality_first | balanced`.
 
