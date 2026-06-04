@@ -7,6 +7,7 @@ from typing import Any, cast
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal
+from textual.css.query import NoMatches
 from textual.message import Message
 from textual.widgets import Footer
 
@@ -235,9 +236,15 @@ class MaestroApp(App[None]):
 
     def _dispatch_event(self, event_name: str, payload: dict[str, object]) -> None:
         """Now on main thread — safe to update widgets."""
-        header = self.query_one(PlanHeader)
-        dag = self.query_one(DAGPanel)
-        feed = self.query_one(EventFeed)
+        try:
+            header = self.query_one(PlanHeader)
+            dag = self.query_one(DAGPanel)
+            feed = self.query_one(EventFeed)
+        except NoMatches:
+            # Event arrived while the app was still mounting or already tearing
+            # down — the panels aren't in the DOM. Skip rendering it instead of
+            # crashing the worker callback (fixes a flaky TUI race).
+            return
 
         match event_name:
             case "run_start":
