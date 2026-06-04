@@ -142,6 +142,12 @@ maestro doctor --json
 maestro audit examples/demo_plan.yaml --fix
 ```
 
+**`maestro audit` catches dangerous plans before they run** — a structurally *valid* plan can still be *unsafe* (unbounded spend, `rm -rf`, yolo bypass flags):
+
+<!-- demo-audit slot — activated by the "Generate demo GIFs" workflow once demo-audit.gif exists
+![Maestro audit](demo-audit.gif)
+-->
+
 **Next steps:** write your own plan with the [Plan Guide](docs/PLAN_GUIDE.md) -> copy a ready-made recipe from the [Playbook](docs/PLAYBOOK.md) -> look up any flag in the [CLI Reference](docs/CLI_REFERENCE.md).
 
 ## Features
@@ -425,6 +431,10 @@ deterministic, replayable run logs.
 **Maestro does not guarantee** deterministic LLM output, provider/CLI availability,
 model-pricing accuracy (the pricing tables are best-effort and overridable), or the
 safety of arbitrary user-authored shell commands — you own the plans you run.
+
+For the full per-engine breakdown (which engines have real end-to-end tests, what
+runs in default CI, and the outstanding gaps stated honestly), see
+[docs/TESTED_GUARANTEES.md](docs/TESTED_GUARANTEES.md).
 
 ## Troubleshooting
 

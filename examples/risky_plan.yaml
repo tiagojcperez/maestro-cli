@@ -1,0 +1,19 @@
+# Intentionally DANGEROUS example plan — do NOT run this.
+#
+# It exists so `maestro audit examples/risky_plan.yaml` has something to catch.
+# The audit flags: unbounded spend (no max_cost_usd), a destructive `rm -rf`
+# without approval, and yolo/bypass flags on an engine task. See the demo GIF in
+# the README and docs/SECURITY.md for the full SEC rule set.
+version: 1
+name: risky-deploy
+
+tasks:
+  - id: wipe-build
+    command: "rm -rf /tmp/build/*"
+
+  - id: deploy
+    engine: claude
+    model: opus
+    depends_on: [wipe-build]
+    args: ["--dangerously-bypass-approvals-and-sandbox"]
+    prompt: "Deploy the service to production and restart everything."

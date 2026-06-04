@@ -59,21 +59,23 @@ jobs:
       - name: Record the TUI demo (demo-tui.gif)
         run: vhs demo-tui.tape
 
-      - name: Activate the README demo slot
+      - name: Record the security-audit demo (demo-audit.gif)
+        run: vhs demo-audit.tape
+
+      - name: Activate the README demo slots
         run: |
           python - <<'PY'
           import pathlib, re
           p = pathlib.Path("README.md")
           s = p.read_text(encoding="utf-8")
-          # Unwrap the commented demo slot: <!-- ... ![Maestro CLI demo](demo.gif) ... -->
-          s = re.sub(
-              r"<!--[^>]*?(!\[Maestro CLI demo\]\(demo\.gif\)).*?-->",
-              r"\1",
-              s,
-              flags=re.DOTALL,
-          )
+          # Unwrap each commented demo slot, keeping only the image markdown.
+          for img in (
+              r"!\[Maestro CLI demo\]\(demo\.gif\)",
+              r"!\[Maestro audit\]\(demo-audit\.gif\)",
+          ):
+              s = re.sub(r"<!--[^>]*?(" + img + r").*?-->", r"\1", s, flags=re.DOTALL)
           p.write_text(s, encoding="utf-8")
-          print("README demo slot activated.")
+          print("README demo slots activated.")
           PY
 
       - name: Open a PR with the generated GIFs
@@ -87,10 +89,12 @@ jobs:
 
             - `demo.gif` — CLI run of the engine-free demo plan
             - `demo-tui.gif` — Textual TUI
-            - README demo slot uncommented to show `demo.gif`
+            - `demo-audit.gif` — `maestro audit` flagging a dangerous plan
+            - README demo slots uncommented to show `demo.gif` and `demo-audit.gif`
 
             Review the GIFs, then merge.
           add-paths: |
             demo.gif
             demo-tui.gif
+            demo-audit.gif
             README.md
