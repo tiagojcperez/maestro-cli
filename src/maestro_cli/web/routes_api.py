@@ -89,9 +89,17 @@ def _is_safe_path_component(value: str) -> bool:
     ``run_id`` / ``task_id`` arrive from the URL and are joined onto a run root
     to locate (and, for DELETE, remove) directories. A value containing ``..``,
     a path separator, or a drive/anchor could escape the run root, so reject
-    anything that is not a plain single segment.
+    anything that is not a plain single segment. Both ``/`` and ``\\`` are
+    rejected on every platform (Maestro's own ids never contain a separator),
+    so the guard does not depend on ``\\`` being a separator only on Windows.
     """
-    return bool(value) and value not in {".", ".."} and value == Path(value).name
+    return (
+        bool(value)
+        and value not in {".", ".."}
+        and "/" not in value
+        and "\\" not in value
+        and value == Path(value).name
+    )
 
 
 def _discover_run_roots() -> list[Path]:
