@@ -39,7 +39,7 @@ maestro run plan.yaml      # runs the DAG; one engine call, deterministic logs i
 
 > That example needs the `claude` CLI on PATH. To try Maestro with **zero setup and no API keys**, run the engine-free [`examples/demo_plan.yaml`](examples/demo_plan.yaml) from the [Quickstart](#quickstart) below.
 
-![Maestro CLI demo](demo.gif)
+![Maestro CLI demo](docs/assets/demo.gif)
 
 ### Supported Engines
 
@@ -144,7 +144,7 @@ maestro audit examples/demo_plan.yaml --fix
 
 **`maestro audit` catches dangerous plans before they run** — a structurally *valid* plan can still be *unsafe* (unbounded spend, `rm -rf`, yolo bypass flags):
 
-![Maestro audit](demo-audit.gif)
+![Maestro audit](docs/assets/demo-audit.gif)
 
 **Next steps:** write your own plan with the [Plan Guide](docs/PLAN_GUIDE.md) -> copy a ready-made recipe from the [Playbook](docs/PLAYBOOK.md) -> look up any flag in the [CLI Reference](docs/CLI_REFERENCE.md).
 
@@ -191,7 +191,7 @@ maestro audit examples/demo_plan.yaml --fix
 | **Live** | `--output live` | Real-time Rich table with task progress, cost, duration. `pip install maestro-ai-cli[live]` |
 | **TUI** | `--output tui` | Interactive Textual app with DAG panel, detail panel, event feed, keyboard nav. `pip install maestro-ai-cli[tui]` |
 
-![Maestro TUI](demo-tui.gif)
+![Maestro TUI](docs/assets/demo-tui.gif)
 
 ### Observability
 

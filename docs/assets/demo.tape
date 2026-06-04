@@ -1,12 +1,12 @@
 # Maestro CLI — README demo recording (CLI run).
 #
 # Generates demo.gif with VHS (https://github.com/charmbracelet/vhs):
-#     vhs demo.tape
+#     vhs docs/assets/demo.tape
 #
 # Uses the engine-free examples/demo_plan.yaml (shell tasks only) — NO API keys,
-# runs anywhere. Reference it in README.md with:  ![Maestro CLI demo](demo.gif)
+# runs anywhere. Reference it in README.md with:  ![Maestro CLI demo](docs/assets/demo.gif)
 
-Output demo.gif
+Output docs/assets/demo.gif
 
 Set Shell bash
 Set FontSize 18

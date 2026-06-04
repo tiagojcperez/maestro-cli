@@ -1,13 +1,13 @@
 # Maestro CLI — TUI demo recording (Textual interface).
 #
 # Generates demo-tui.gif with VHS (https://github.com/charmbracelet/vhs):
-#     vhs demo-tui.tape
+#     vhs docs/assets/demo-tui.tape
 #
 # Needs the [tui] extra:  pip install "maestro-ai-cli[tui]"
 # Uses the engine-free examples/demo_plan.yaml (no API keys). Reference it in the
-# README's Output Modes / TUI section with:  ![Maestro TUI](demo-tui.gif)
+# README's Output Modes / TUI section with:  ![Maestro TUI](docs/assets/demo-tui.gif)
 
-Output demo-tui.gif
+Output docs/assets/demo-tui.gif
 
 Set Shell bash
 Set FontSize 16

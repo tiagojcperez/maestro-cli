@@ -1,13 +1,13 @@
 # Maestro CLI — README demo recording (security audit).
 #
 # Generates demo-audit.gif with VHS (https://github.com/charmbracelet/vhs):
-#     vhs demo-audit.tape
+#     vhs docs/assets/demo-audit.tape
 #
 # Audits examples/risky_plan.yaml (an intentionally dangerous plan) to show that
 # a structurally VALID plan can still be UNSAFE — and that `maestro audit` catches
-# it. Reference it in README.md with:  ![Maestro audit](demo-audit.gif)
+# it. Reference it in README.md with:  ![Maestro audit](docs/assets/demo-audit.gif)
 
-Output demo-audit.gif
+Output docs/assets/demo-audit.gif
 
 Set Shell bash
 Set FontSize 18
