@@ -445,6 +445,14 @@ def _create_test_app() -> Any:
 class TestAguiRunEndpoint:
     """Test the POST /api/agui/runs endpoint."""
 
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so a planPath under it passes the new containment guard.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
+
     def test_missing_plan_path_and_yaml_returns_400(self) -> None:
         from starlette.testclient import TestClient
         app = _create_test_app()
@@ -913,6 +921,14 @@ class TestApproveTaskEndpoint:
 
 class TestEventCallbackBridge:
     """Test the _event_callback closure that bridges sync->async."""
+
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Path-containment hardening: confine the project root to this test's
+        # tmp_path so a planPath under it passes the new containment guard.
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
 
     @patch("maestro_cli.web.routes_agui.run_plan")
     @patch("maestro_cli.web.routes_agui.load_plan")

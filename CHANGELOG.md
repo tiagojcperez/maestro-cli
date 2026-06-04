@@ -15,6 +15,10 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ## [Unreleased]
 
+---
+
+## [2.5.0] — 2026-06-04
+
 ### Added
 - **Session memory extraction** — `maestro watch` now extracts durable session snapshots into the plan SQLite memory store, injects `watch.session_memory` plus recent verbatim outputs into improve prompts, reuses the latest snapshot on resume, and prunes stale snapshots so long watch runs retain continuity without unbounded prompt growth.
 - **Chat context bootstrap** — `maestro chat` now auto-discovers hierarchical `AGENTS.md` / `CLAUDE.md` files from repo root to cwd, loads them into the existing context-file pipeline at startup, announces the resolved files, and supports opt-out via `--no-auto-context`.
@@ -25,6 +29,17 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ### Changed
 - **Roadmap baseline** — the full post-`v2.4.0` local-first follow-on tranche is now completed on main: session memory extraction -> chat context bootstrap -> skill registry v2 -> Web UI collaboration surfaces. The next major item remains Remote Execution Backends as a deliberate prototype branch, not a baseline runtime rewrite.
+
+### Security
+- **Web UI / API path-injection hardening** — the dashboard now confines every user-supplied path to the configured project root(s). Plan-executing / destructive endpoints (`POST /runs`, `POST /cleanup`, AG-UI `POST /agui/runs`) reject an out-of-root `plan_path` with HTTP 400; read-only listing endpoints (`GET /runs`, `GET /runs/stats`) skip out-of-root paths gracefully; and the run-scoped endpoints (`GET /runs/{run_id}`, `…/tasks/{task_id}/log`, `DELETE /runs/{run_id}`) reject `run_id` / `task_id` containing path traversal. This closes arbitrary local-file read and out-of-root `shutil.rmtree` via crafted requests. New shared helpers `_contained_plan_path` / `_require_contained_path` / `_is_safe_path_component` in `web/routes_api.py`, each with negative regression tests. The library entry point (`load_plan`) is intentionally unchanged — confinement is enforced at the HTTP boundary, not in the CLI/SDK path.
+- **CORS default lockdown** — the Web UI CORS middleware no longer ships `allow_origins=["*"]`. The default now confines cross-origin access to same-machine origins (`localhost` / `127.0.0.1` / `[::1]`, any port) via `allow_origin_regex`, so a malicious website you happen to visit cannot drive the local API through your browser. Set `MAESTRO_UI_ALLOW_ORIGINS` (comma-separated origins, or `*`) to opt back into broader access when intentionally self-hosting behind a trusted proxy. Credentials were never enabled, so no `*`-with-credentials antipattern was present.
+
+### Fixed
+- **`RetrievalDominanceAlert.to_dict()` was unreachable** — the serializer had been mis-indented after a `return` inside `_merge_trust_label`, leaving the memory-poisoning alert dataclass with no `to_dict()` (a copy/paste defect). Moved it into the dataclass, restoring parity with sibling alert/record types, with a dedicated serialization test.
+- **Static-analysis correctness cleanups** — replaced two float-equality success-rate checks in `routing.py` with exact integer comparisons (`successes == runs`), removed a redundant alternative from the failure-classification timeout regex and from the C-language symbol extractor, and collapsed a no-op conditional in MCP server-config building. All behaviour-preserving.
+
+### Tests
+- Added regression coverage for: out-of-root rejection on plan-executing and run-scoped Web endpoints, the CORS localhost-default plus `MAESTRO_UI_ALLOW_ORIGINS` override, the restored memory-alert serializer, and `run_id` / `task_id` traversal rejection. Touched modules stay at 100% line coverage; full suite at **13,253 tests** (2 skipped).
 
 ---
 

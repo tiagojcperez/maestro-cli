@@ -40,6 +40,60 @@ _TERMINAL_STATUSES = {"success", "failed", "soft_failed", "skipped", "dry_run"}
 _ACTIVITY_LIMIT = 8
 
 
+def _contained_plan_path(raw_path: str) -> Path | None:
+    """Resolve a user-supplied plan path and confine it to a project root.
+
+    The dashboard is a local-first UI, not a general file reader. A plan path
+    arriving over HTTP (request body / query string) must resolve to a location
+    inside one of the configured project roots. ``resolve()`` collapses ``..``
+    segments and follows symlinks before the containment test, so absolute
+    paths and traversal that escape the root are rejected. Returns the resolved
+    path when contained, otherwise ``None``. The bundled file browser only ever
+    offers in-root plans, so this does not restrict normal dashboard use.
+    """
+    candidate = Path(raw_path).resolve()
+    seen: set[Path] = set()
+    # get_project_root() is roots[0], so it repeats in the union below — the
+    # `seen` set keeps the containment check to one comparison per distinct root.
+    for root in (get_project_root(), *get_project_roots()):
+        resolved_root = root.resolve()
+        if resolved_root in seen:
+            continue
+        seen.add(resolved_root)
+        try:
+            candidate.relative_to(resolved_root)
+            return candidate
+        except ValueError:
+            continue
+    return None
+
+
+def _require_contained_path(raw_path: str) -> Path:
+    """Confine a user-supplied plan path to a project root, or raise HTTP 400.
+
+    Used by state-changing / plan-executing endpoints where an out-of-root path
+    must be a hard error rather than a silent skip.
+    """
+    contained = _contained_plan_path(raw_path)
+    if contained is None:
+        raise HTTPException(
+            status_code=400,
+            detail="plan_path must be inside the project root",
+        )
+    return contained
+
+
+def _is_safe_path_component(value: str) -> bool:
+    """True if ``value`` is a single path segment with no traversal/separators.
+
+    ``run_id`` / ``task_id`` arrive from the URL and are joined onto a run root
+    to locate (and, for DELETE, remove) directories. A value containing ``..``,
+    a path separator, or a drive/anchor could escape the run root, so reject
+    anything that is not a plain single segment.
+    """
+    return bool(value) and value not in {".", ".."} and value == Path(value).name
+
+
 def _discover_run_roots() -> list[Path]:
     """Find all discoverable .maestro-runs directories across project roots."""
     roots: list[Path] = []
@@ -597,16 +651,9 @@ async def list_example_plans() -> list[dict[str, str]]:
 @router.post("/plans/validate")
 async def validate_plan(req: ValidateRequest) -> dict[str, Any]:
     if req.path:
-        plan_path = Path(req.path)
         # Containment: this is a local-first dashboard, not a general file reader.
         # Only allow validating plans that live inside the project root.
-        root = get_project_root().resolve()
-        try:
-            plan_path.resolve().relative_to(root)
-        except ValueError:
-            raise HTTPException(
-                status_code=400, detail="path must be inside the project root"
-            )
+        plan_path = _require_contained_path(req.path)
     elif req.yaml_content:
         import tempfile
         tmp = tempfile.NamedTemporaryFile(
@@ -696,7 +743,7 @@ async def start_run(req: RunRequest) -> dict[str, Any]:
         tmp.close()
         plan_path: str | Path = Path(tmp.name)
     elif req.plan_path:
-        plan_path = req.plan_path
+        plan_path = _require_contained_path(req.plan_path)
     else:
         raise HTTPException(
             status_code=400, detail="Provide 'plan_path' or 'yaml_content'",
@@ -811,13 +858,14 @@ async def list_runs(plan_path: str | None = None) -> list[dict[str, Any]]:
 
     # Historical runs from filesystem
     run_roots: list[Path | None] = []
-    if plan_path:
+    contained_plan_path = _contained_plan_path(plan_path) if plan_path else None
+    if contained_plan_path is not None:
         try:
-            plan = load_plan(plan_path)
+            plan = load_plan(contained_plan_path)
             run_roots = [resolve_path(plan.source_dir, plan.run_dir)]
         except Exception:
             pass
-    else:
+    elif not plan_path:
         run_roots.extend(_discover_run_roots())
 
     active_ids = {rs.run_id for rs in list_active_runs()}
@@ -887,13 +935,14 @@ async def get_runs_stats(plan_path: str | None = None) -> dict[str, Any]:
     from datetime import datetime
 
     run_roots: list[Path | None] = []
-    if plan_path:
+    contained_plan_path = _contained_plan_path(plan_path) if plan_path else None
+    if contained_plan_path is not None:
         try:
-            plan = load_plan(plan_path)
+            plan = load_plan(contained_plan_path)
             run_roots = [resolve_path(plan.source_dir, plan.run_dir)]
         except Exception:
             pass
-    else:
+    elif not plan_path:
         run_roots.extend(_discover_run_roots())
 
     # Collect all run dirs across all roots, sorted by mtime desc
@@ -1135,7 +1184,9 @@ async def get_run_detail(run_id: str) -> dict[str, Any]:
             task_graph=cast(dict[str, dict[str, Any]], rs.task_graph),
         )
 
-    # Check filesystem for completed run
+    # Check filesystem for completed run (reject traversal in the run id first)
+    if not _is_safe_path_component(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found")
     for base in _discover_run_roots():
         run_dir = base / run_id
         if run_dir.exists():
@@ -1151,6 +1202,12 @@ async def get_run_detail(run_id: str) -> dict[str, Any]:
 
 @router.get("/runs/{run_id}/tasks/{task_id}/log")
 async def get_task_log(run_id: str, task_id: str) -> dict[str, str]:
+    # Reject traversal in either URL segment before joining them onto a run root.
+    if not (_is_safe_path_component(run_id) and _is_safe_path_component(task_id)):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Log for task '{task_id}' in run '{run_id}' not found",
+        )
     # Find the log file
     rs = get_run(run_id)
     if rs:
@@ -1186,7 +1243,9 @@ async def delete_run(run_id: str) -> dict[str, bool]:
             shutil.rmtree(rs.run_path)
         return {"deleted": True}
 
-    # Try filesystem
+    # Try filesystem (reject traversal in the run id before any rmtree)
+    if not _is_safe_path_component(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found")
     for base in _discover_run_roots():
         run_dir = base / run_id
         if run_dir.exists():
@@ -1198,8 +1257,9 @@ async def delete_run(run_id: str) -> dict[str, bool]:
 
 @router.post("/cleanup")
 async def cleanup(req: CleanupRequest) -> dict[str, Any]:
+    contained = _require_contained_path(req.plan_path)
     try:
-        plan = load_plan(req.plan_path)
+        plan = load_plan(contained)
     except PlanValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

@@ -22,7 +22,7 @@ green build proves Maestro's orchestration logic, not provider availability.
 
 Runs on Python **3.11 / 3.12 / 3.13** plus a **Windows** lane:
 
-- Full test suite (**12k+ tests**, engine calls mocked)
+- Full test suite (**13k+ tests**, engine calls mocked)
 - Strict `mypy` over the whole `src/maestro_cli/` package
 - Documentation lint (release-hygiene checks)
 - CodeQL (`security-extended`)
@@ -78,6 +78,7 @@ MAESTRO_RUN_REAL_ENGINE_TESTS=1 MAESTRO_E2E_OLLAMA_MODEL=llama3.2:1b \
 | Security audit (SEC rules) | ✅ | ✅ | n/a |
 | Cache / event sourcing / blame | ✅ | ✅ | n/a |
 | Python SDK surface (`__all__`, `py.typed`) | ✅ | ✅ | n/a |
+| Web UI / API path confinement + CORS default | ✅ | ✅ | n/a |
 
 The policy engine is additionally **fuzzed** (`tests/test_policy_fuzz.py`) to
 confirm the safe AST evaluator rejects `eval`/`exec`/`open`/`__import__`, dunder
@@ -94,6 +95,11 @@ access, comprehensions, lambdas, and arithmetic/bitwise abuse — it never calls
   `*.result.json`) — frozen by the [v1 contract](V1_API_FREEZE.md).
 - Best-effort secret masking in logs and manifests.
 - Deterministic, replayable, hash-chained run logs (`maestro verify`).
+- Web UI/API path confinement — plan paths and `run_id`/`task_id` arriving over
+  HTTP are confined to the configured project root(s); out-of-root access is
+  rejected (or skipped, for read-only listing), and the default CORS policy
+  limits cross-origin access to same-machine origins. These are regression-tested
+  with negative cases, not just happy paths.
 
 ## What Maestro does not guarantee
 

@@ -656,6 +656,36 @@ class TestProvenance:
 
 
 class TestRetrievalDominance:
+    def test_alert_to_dict_serializes_and_rounds(self) -> None:
+        from maestro_cli.memory import RetrievalDominanceAlert
+
+        alert = RetrievalDominanceAlert(
+            record_id=7,
+            task_id="target",
+            kind="failure",
+            insight="Build timeout on pytest collection",
+            insight_key="build-timeout",
+            query_cluster="pytest-timeout",
+            retrieval_count=5,
+            cluster_mean=1.23456,
+            cluster_stddev=0.98765,
+            z_score=3.14159,
+        )
+        assert alert.to_dict() == {
+            "record_id": 7,
+            "task_id": "target",
+            "kind": "failure",
+            "insight": "Build timeout on pytest collection",
+            "insight_key": "build-timeout",
+            "query_cluster": "pytest-timeout",
+            "retrieval_count": 5,
+            "cluster_mean": 1.235,
+            "cluster_stddev": 0.988,
+            "z_score": 3.142,
+            "action": "quarantine",
+            "signal": "retrieval_dominance",
+        }
+
     def test_repeated_retrievals_quarantine_suspicious_record(self, tmp_path: Path) -> None:
         records = [
             _make_record(task_id=f"t{i}", insight=f"Background fact {i}")

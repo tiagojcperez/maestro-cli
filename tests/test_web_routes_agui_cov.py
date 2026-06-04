@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from maestro_cli.models import PlanSpec, TaskSpec
 from maestro_cli.web.routes_agui import router
 
@@ -87,6 +89,12 @@ class _RaisingLoop:
 
 class TestEventCallbackEnqueueFailure:
     """Drive the ``except (RuntimeError, asyncio.QueueFull)`` bridge branch."""
+
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
 
     def _run_with_raising_loop(
         self, exc: BaseException, tmp_path: Path
@@ -159,6 +167,12 @@ class TestEventCallbackEnqueueFailure:
 
 class TestRunFinallySentinelFailure:
     """Isolate the finally-block ``except RuntimeError`` for the sentinel put."""
+
+    @pytest.fixture(autouse=True)
+    def _confine_root(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            "maestro_cli.web.routes_api.get_project_root", lambda: tmp_path,
+        )
 
     def test_finally_runtime_error_swallowed_when_run_plan_raises(
         self, tmp_path: Path

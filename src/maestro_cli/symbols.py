@@ -123,7 +123,7 @@ _LANG_PATTERNS: dict[str, list[tuple[re.Pattern[str], SymbolKind, int]]] = {
 
 # Aliases
 _LANG_PATTERNS["c"] = [
-    (re.compile(r"^\s*(?:static\s+)?(?:void|int|char|bool|auto|unsigned|long|short|float|double|[\w*]+)\s+(\w+)\s*\("), "function", 1),
+    (re.compile(r"^\s*(?:static\s+)?[\w*]+\s+(\w+)\s*\("), "function", 1),
     (re.compile(r"^\s*struct\s+(\w+)"), "type", 1),
     (re.compile(r"^\s*typedef\s+.*\s+(\w+)\s*;"), "type", 1),
     (re.compile(r"^\s*#include\s+"), "import", 0),

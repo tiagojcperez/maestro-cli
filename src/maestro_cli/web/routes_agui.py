@@ -30,6 +30,7 @@ from ..ag_ui import (
 from ..loader import load_plan
 from ..errors import PlanValidationError
 from ..scheduler import run_plan
+from .routes_api import _require_contained_path
 
 router = APIRouter()
 
@@ -131,7 +132,7 @@ async def agui_run(req: AgUiRunRequest) -> StreamingResponse:
         plan_path = Path(tmp.name)
         _tmp_file = plan_path
     else:
-        plan_path = Path(str(plan_path_str))
+        plan_path = _require_contained_path(str(plan_path_str))
 
     try:
         plan = load_plan(plan_path)
