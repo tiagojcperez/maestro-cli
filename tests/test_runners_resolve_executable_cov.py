@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,18 @@ class TestResolveExecutableNativeExe:
 
 
 class TestResolveExecutableCmdParsedToNode:
+    @pytest.mark.skipif(
+        os.name != "nt",
+        reason=(
+            "Happy-path .cmd wrapper parsing depends on native Windows path "
+            "semantics (cmd_dir / backslash-script_rel). On POSIX, pathlib "
+            "treats the backslash path as one component and the parse falls "
+            "through to the cmd /c fallback. The branch is Windows-only "
+            "(guarded by `if os.name != 'nt': return [executable]`), so it is "
+            "covered on the Windows CI job; the fallback tests below cover the "
+            "POSIX-reachable paths."
+        ),
+    )
     def test_cmd_wrapper_parsed_to_node_script(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
