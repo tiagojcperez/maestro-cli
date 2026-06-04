@@ -144,9 +144,7 @@ maestro audit examples/demo_plan.yaml --fix
 
 **`maestro audit` catches dangerous plans before they run** — a structurally *valid* plan can still be *unsafe* (unbounded spend, `rm -rf`, yolo bypass flags):
 
-<!-- demo-audit slot — activated by the "Generate demo GIFs" workflow once demo-audit.gif exists
 ![Maestro audit](demo-audit.gif)
--->
 
 **Next steps:** write your own plan with the [Plan Guide](docs/PLAN_GUIDE.md) -> copy a ready-made recipe from the [Playbook](docs/PLAYBOOK.md) -> look up any flag in the [CLI Reference](docs/CLI_REFERENCE.md).
 
