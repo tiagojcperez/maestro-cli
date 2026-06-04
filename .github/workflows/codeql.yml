@@ -30,7 +30,9 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: python
-          queries: security-and-quality
+          # security-extended keeps the full security query set without the noisy
+          # maintainability/quality queries (unused imports, empty except, etc.).
+          queries: security-extended
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3

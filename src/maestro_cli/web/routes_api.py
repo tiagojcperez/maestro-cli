@@ -598,6 +598,15 @@ async def list_example_plans() -> list[dict[str, str]]:
 async def validate_plan(req: ValidateRequest) -> dict[str, Any]:
     if req.path:
         plan_path = Path(req.path)
+        # Containment: this is a local-first dashboard, not a general file reader.
+        # Only allow validating plans that live inside the project root.
+        root = get_project_root().resolve()
+        try:
+            plan_path.resolve().relative_to(root)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="path must be inside the project root"
+            )
     elif req.yaml_content:
         import tempfile
         tmp = tempfile.NamedTemporaryFile(

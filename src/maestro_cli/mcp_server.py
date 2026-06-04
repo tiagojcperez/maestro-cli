@@ -328,14 +328,18 @@ def scaffold_plan(brief_path: str, validate: bool = True) -> str:
         brief = load_brief(brief_path)
         yaml_text = _scaffold(brief)
         if validate:
+            import tempfile
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".yaml", encoding="utf-8", delete=False,
+            ) as tf:
+                tf.write(yaml_text)
+                tmp = Path(tf.name)
             try:
-                import tempfile
-                tmp = Path(tempfile.mktemp(suffix=".yaml"))
-                tmp.write_text(yaml_text, encoding="utf-8")
                 load_plan(tmp)
-                tmp.unlink(missing_ok=True)
             except PlanValidationError as exc:
                 return f"# Generated plan has validation errors: {exc}\n\n{yaml_text}"
+            finally:
+                tmp.unlink(missing_ok=True)
         return yaml_text
     except Exception as exc:
         return f"Error: {exc}"

@@ -239,6 +239,7 @@ class TestValidate:
         plan_file = tmp_path / "plan.yaml"
         plan_file.write_text(_VALID_PLAN_YAML, encoding="utf-8")
         plan = _make_plan_spec()
+        monkeypatch.setattr("maestro_cli.web.routes_api.get_project_root", lambda: tmp_path)
         monkeypatch.setattr(
             "maestro_cli.web.routes_api.load_plan",
             lambda _path: plan,
@@ -246,6 +247,15 @@ class TestValidate:
         resp = client.post("/api/plans/validate", json={"path": str(plan_file)})
         assert resp.status_code == 200
         assert resp.json()["valid"] is True
+
+    def test_path_outside_project_root_rejected(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """A path outside the project root is rejected (no arbitrary file reads)."""
+        monkeypatch.setattr("maestro_cli.web.routes_api.get_project_root", lambda: tmp_path)
+        resp = client.post("/api/plans/validate", json={"path": "/etc/passwd"})
+        assert resp.status_code == 400
+        assert "project root" in resp.json()["detail"].lower()
 
     def test_invalid_yaml_content(
         self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
@@ -270,13 +280,16 @@ class TestValidate:
         assert resp.status_code == 400
 
     def test_path_that_does_not_exist(
-        self, client: TestClient, monkeypatch: pytest.MonkeyPatch,
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        def _raise(_path: Any) -> None:
-            raise PlanValidationError("Plan file not found: /nonexistent/plan.yaml")
+        missing = tmp_path / "nonexistent.yaml"
 
+        def _raise(_path: Any) -> None:
+            raise PlanValidationError(f"Plan file not found: {missing}")
+
+        monkeypatch.setattr("maestro_cli.web.routes_api.get_project_root", lambda: tmp_path)
         monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _raise)
-        resp = client.post("/api/plans/validate", json={"path": "/nonexistent/plan.yaml"})
+        resp = client.post("/api/plans/validate", json={"path": str(missing)})
         assert resp.status_code == 200
         data = resp.json()
         assert data["valid"] is False
@@ -312,6 +325,7 @@ class TestValidate:
             captured_path.append(str(path))
             return _make_plan_spec()
 
+        monkeypatch.setattr("maestro_cli.web.routes_api.get_project_root", lambda: tmp_path)
         monkeypatch.setattr("maestro_cli.web.routes_api.load_plan", _capture)
         resp = client.post("/api/plans/validate", json={
             "path": str(plan_file),
