@@ -3,7 +3,7 @@
 Converts Maestro run data (manifest + events) into OpenTelemetry spans
 for export to Jaeger, Grafana Tempo, or any OTLP-compatible backend.
 
-Install: ``pip install maestro-cli[otel]``
+Install: ``pip install maestro-ai-cli[otel]``
 Usage:   ``maestro export-otel <run-path> [--endpoint URL]``
 
 Each plan run becomes a root span.  Each task becomes a child span with

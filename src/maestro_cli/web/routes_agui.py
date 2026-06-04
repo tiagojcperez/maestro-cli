@@ -4,7 +4,7 @@ Implements the AG-UI wire protocol: HTTP POST with SSE response.
 The client sends a JSON body with run parameters; the server streams
 AG-UI events as ``data: {json}\\n\\n`` lines.
 
-Requires the ``[agui]`` optional extra (``pip install maestro-cli[web,agui]``).
+Requires the ``[agui]`` optional extra (``pip install maestro-ai-cli[web,agui]``).
 """
 from __future__ import annotations
 

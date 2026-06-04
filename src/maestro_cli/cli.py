@@ -999,7 +999,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             from .live import create_live_callback
         except ImportError:
             print("[maestro] error: live output dependencies not installed.\n"
-                  "  Install them with: pip install maestro-cli[live]")
+                  "  Install them with: pip install maestro-ai-cli[live]")
             return 1
         live_ctx, event_callback = create_live_callback(plan)
         with live_ctx:
@@ -1026,7 +1026,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         try:
             from .tui import MaestroApp
         except ImportError:
-            print("[maestro] error: TUI dependencies not installed. Run: pip install maestro-cli[tui]")
+            print("[maestro] error: TUI dependencies not installed. Run: pip install maestro-ai-cli[tui]")
             return 1
         app = MaestroApp(
             plan,
@@ -1149,7 +1149,7 @@ def _cmd_mcp_server(args: argparse.Namespace) -> int:
     except ImportError:
         print(
             "[maestro] error: MCP dependencies not installed.\n"
-            "  Install them with: pip install maestro-cli[mcp]"
+            "  Install them with: pip install maestro-ai-cli[mcp]"
         )
         return 1
     mcp_main()
@@ -1162,7 +1162,7 @@ def _cmd_ui(args: argparse.Namespace) -> int:
     except ImportError:
         print(
             "[maestro] error: web dependencies not installed.\n"
-            "  Install them with: pip install maestro-cli[web]"
+            "  Install them with: pip install maestro-ai-cli[web]"
         )
         return 1
 
@@ -1421,7 +1421,7 @@ def _cmd_replan(args: argparse.Namespace) -> int:
             from .live import create_live_callback
         except ImportError:
             print("[maestro] error: live output dependencies not installed.\n"
-                  "  Install them with: pip install maestro-cli[live]")
+                  "  Install them with: pip install maestro-ai-cli[live]")
             return 1
         plan = load_plan(args.plan)
         live_ctx, event_callback = create_live_callback(plan)
@@ -1486,7 +1486,7 @@ def _cmd_watch(args: argparse.Namespace) -> int:
             from .live import create_live_callback
         except ImportError:
             print("[maestro] error: live output dependencies not installed.\n"
-                  "  Install them with: pip install maestro-cli[live]")
+                  "  Install them with: pip install maestro-ai-cli[live]")
             return 1
         plan = load_plan(args.plan)
         live_ctx, event_callback = create_live_callback(plan)

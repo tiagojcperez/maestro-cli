@@ -140,7 +140,7 @@ Example JSON detail:
 
 Launch the MCP (Model Context Protocol) server for IDE integration.
 
-Requires the `[mcp]` optional extra: `pip install maestro-cli[mcp]`.
+Requires the `[mcp]` optional extra: `pip install maestro-ai-cli[mcp]`.
 
 Exposes Maestro's subcommands as MCP tools, run artefacts as resources,
 and plan templates as prompts. Any MCP-compatible client (Claude Code,
@@ -158,7 +158,7 @@ with engine, model, cost, tokens, status attributes, and `gen_ai.*`
 semantic-convention fields when available. Exported task events include
 signals such as `knowledge_poison_alert` and `memory_write`.
 
-Requires the `[otel]` optional extra: `pip install maestro-cli[otel]`.
+Requires the `[otel]` optional extra: `pip install maestro-ai-cli[otel]`.
 Without the SDK, falls back to JSON output.
 
 | Flag | Description |
@@ -306,7 +306,7 @@ Generator behaviour:
 
 ### `maestro ui [options]`
 
-Launch the Web UI dashboard (requires `pip install maestro-cli[web]`).
+Launch the Web UI dashboard (requires `pip install maestro-ai-cli[web]`).
 
 | Flag | Description |
 |------|-------------|

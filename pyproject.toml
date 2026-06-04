@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "maestro-cli"
+name = "maestro-ai-cli"
 version = "2.4.0"
 description = "CLI orchestrator for multi-step AI execution plans (Codex, Claude, Gemini, Copilot, Qwen, Ollama, Llama)"
 readme = "README.md"
@@ -79,6 +79,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 maestro_cli = ["py.typed"]
+"maestro_cli.tui" = ["*.tcss"]
+"maestro_cli.web" = ["static/*"]
 
 [tool.pytest.ini_options]
 markers = [

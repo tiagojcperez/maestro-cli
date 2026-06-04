@@ -5,7 +5,7 @@
 **Maestro CLI** (`maestro`) is a Python CLI orchestrator for multi-step AI execution plans.
 It schedules tasks as a DAG (Directed Acyclic Graph), running them via `codex`, `claude`, `gemini`, `copilot`, `qwen`, `ollama`, `llama`, or raw shell commands — with parallel execution, dependency resolution, and deterministic logging.
 
-- **Package name**: `maestro-cli` (importable as `maestro_cli`)
+- **Package name**: `maestro-ai-cli` (importable as `maestro_cli`)
 - **CLI entry point**: `maestro` (or `py -m maestro_cli`)
 - **Version**: 2.4.0
 - **Python**: >=3.11 (uses PEP 604 `X | Y` unions, `from __future__ import annotations`)
@@ -226,7 +226,7 @@ See `AGENTS.md` for the full agent role catalog with expertise and collaboration
 - `--resume-last`: automatically finds and resumes the most recent prior run
 - `webhook_url`: plan-level URL for POST notification on run completion; also `--webhook URL` CLI flag
 - `--output jsonl`: emit structured JSON Lines events to stdout; suppresses all `[maestro]` text output
-- `--output tui`: interactive Textual TUI with DAG panel, detail panel, event feed, keyboard navigation, approval modal; install with `pip install maestro-cli[tui]`; requires `textual>=1.0.0,<9.0.0`; does not support multi-plan execution yet
+- `--output tui`: interactive Textual TUI with DAG panel, detail panel, event feed, keyboard navigation, approval modal; install with `pip install maestro-ai-cli[tui]`; requires `textual>=1.0.0,<9.0.0`; does not support multi-plan execution yet
 - `escalation`: task-level list of model names for auto-escalation on failure (e.g., `[haiku, sonnet, opus]`); each retry uses the next tier; inheritable via `defaults.<engine>.escalation`
 - `fallback_engine`: task-level alternative engine for infrastructure failures (CLI not found, API down, rate limit); only triggers on engine-level failures detected by `_is_engine_failure()`
 - `fallback_model`: model to use with `fallback_engine`; inheritable via `defaults.<engine>.fallback_model`
@@ -1023,7 +1023,7 @@ All other variables must be explicitly set via `defaults.env` or `task.env`.
 - `webhook_url` must start with `http://` or `https://` (validated in loader); uses `urllib.request` (zero deps)
 - Webhook failure never affects the run result (logged as warning)
 - `--output jsonl` suppresses all `[maestro]` output, validation warnings, and dry-run checklist
-- `--output live` renders a real-time Rich table with task status, duration, cost, and last output line; handles `task_output`, `task_escalation`, `engine_fallback` events; install via `pip install maestro-cli[live]`
+- `--output live` renders a real-time Rich table with task status, duration, cost, and last output line; handles `task_output`, `task_escalation`, `engine_fallback` events; install via `pip install maestro-ai-cli[live]`
 - `events.jsonl` is flushed after each write for real-time observability
 - `maestro report` generates self-contained HTML (no external deps, works with `file://` protocol)
 - Error codes: E001-E072 (validation), E100-E110 (runtime); displayed as `[E001] message`

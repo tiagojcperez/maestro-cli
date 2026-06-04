@@ -166,8 +166,8 @@ maestro audit examples/demo_plan.yaml --fix
 |------|------|-------------|
 | **Text** | `--output text` | Default. Human-readable `[maestro]` console output |
 | **JSONL** | `--output jsonl` | Structured JSON Lines events to stdout; suppresses text |
-| **Live** | `--output live` | Real-time Rich table with task progress, cost, duration. `pip install maestro-cli[live]` |
-| **TUI** | `--output tui` | Interactive Textual app with DAG panel, detail panel, event feed, keyboard nav. `pip install maestro-cli[tui]` |
+| **Live** | `--output live` | Real-time Rich table with task progress, cost, duration. `pip install maestro-ai-cli[live]` |
+| **TUI** | `--output tui` | Interactive Textual app with DAG panel, detail panel, event feed, keyboard nav. `pip install maestro-ai-cli[tui]` |
 
 ### Observability
 

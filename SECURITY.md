@@ -1,7 +1,7 @@
 # Security Policy
 
 This document is the coordinated vulnerability disclosure policy for Maestro
-CLI (`maestro-cli`). For the architectural threat model and the mitigations
+CLI (`maestro-ai-cli`). For the architectural threat model and the mitigations
 Maestro ships, see [docs/SECURITY.md](docs/SECURITY.md). For the operational
 hardening checklist, see [docs/SECURITY_BASELINE.md](docs/SECURITY_BASELINE.md).
 

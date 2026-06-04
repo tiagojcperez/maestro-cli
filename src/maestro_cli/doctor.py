@@ -105,7 +105,7 @@ def _check_web_deps() -> CheckResult:
         return _result("web_deps", "fastapi + uvicorn installed", "ok")
     return _result(
         "web_deps",
-        f"optional web deps not installed: {', '.join(missing)} — run: pip install maestro-cli[web]",
+        f"optional web deps not installed: {', '.join(missing)} — run: pip install maestro-ai-cli[web]",
         "warn",
     )
 
@@ -182,7 +182,7 @@ def _engine_check_results() -> list[CheckResult]:
     except ImportError:
         results.append(_result(
             "tui_dependency",
-            "textual not installed (pip install maestro-cli[tui])",
+            "textual not installed (pip install maestro-ai-cli[tui])",
             "info",
         ))
 
@@ -194,7 +194,7 @@ def _engine_check_results() -> list[CheckResult]:
     except ImportError:
         results.append(_result(
             "live_dependency",
-            "rich not installed (pip install maestro-cli[live])",
+            "rich not installed (pip install maestro-ai-cli[live])",
             "info",
         ))
 
@@ -205,7 +205,7 @@ def _engine_check_results() -> list[CheckResult]:
     except ImportError:
         results.append(_result(
             "agui_protocol",
-            "ag-ui-protocol not installed (pip install maestro-cli[agui])",
+            "ag-ui-protocol not installed (pip install maestro-ai-cli[agui])",
             "info",
         ))
 
@@ -217,7 +217,7 @@ def _engine_check_results() -> list[CheckResult]:
     except ImportError:
         results.append(_result(
             "mcp_protocol",
-            "mcp not installed (pip install maestro-cli[mcp])",
+            "mcp not installed (pip install maestro-ai-cli[mcp])",
             "info",
         ))
 
@@ -229,7 +229,7 @@ def _engine_check_results() -> list[CheckResult]:
     except ImportError:
         results.append(_result(
             "otel_protocol",
-            "opentelemetry not installed (pip install maestro-cli[otel])",
+            "opentelemetry not installed (pip install maestro-ai-cli[otel])",
             "info",
         ))
 

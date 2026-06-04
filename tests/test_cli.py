@@ -2995,7 +2995,7 @@ class TestUiMissingWebDependencies:
         assert rc == 1
         out = capsys.readouterr().out
         assert "web dependencies not installed" in out
-        assert "pip install maestro-cli[web]" in out
+        assert "pip install maestro-ai-cli[web]" in out
 
 
 class TestBackfillCostsValidPricingFile:

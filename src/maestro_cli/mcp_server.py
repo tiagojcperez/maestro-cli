@@ -4,7 +4,7 @@ Exposes Maestro's 12 CLI subcommands as MCP tools, run artefacts as
 resources, and plan templates as prompts.  Any MCP-compatible client
 (Claude Code, VS Code, Cursor, Zed) can consume these.
 
-Install: ``pip install maestro-cli[mcp]``
+Install: ``pip install maestro-ai-cli[mcp]``
 Run:     ``maestro mcp-server`` or ``python -m maestro_cli.mcp_server``
 
 See https://modelcontextprotocol.io and ``docs/PROTOCOL-ROADMAP.md``.
@@ -615,7 +615,7 @@ def main() -> None:
     """Run the MCP server (stdio transport by default)."""
     if not _HAS_MCP:
         print("[maestro] error: MCP SDK not installed.")
-        print("  Install with: pip install maestro-cli[mcp]")
+        print("  Install with: pip install maestro-ai-cli[mcp]")
         raise SystemExit(1)
     mcp.run(transport="stdio")
 

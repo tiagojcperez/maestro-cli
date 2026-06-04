@@ -4,7 +4,7 @@ Project instructions for OpenAI Codex CLI tasks.
 
 ## Project
 
-- **Package**: `maestro-cli` (import: `maestro_cli`)
+- **Package**: `maestro-ai-cli` (import: `maestro_cli`)
 - **Path**: `src/maestro_cli/`
 - **Version**: 2.4.0
 - **Python**: >=3.11

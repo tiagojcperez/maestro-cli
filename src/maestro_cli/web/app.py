@@ -46,7 +46,7 @@ def create_app(
     app.include_router(api_router, prefix="/api")
     app.include_router(sse_router, prefix="/api")
 
-    # AG-UI protocol (optional — requires pip install maestro-cli[agui])
+    # AG-UI protocol (optional — requires pip install maestro-ai-cli[agui])
     try:
         from .routes_agui import router as agui_router
         app.include_router(agui_router, prefix="/api")

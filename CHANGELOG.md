@@ -528,7 +528,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
   attributes; task events (retry, escalation, judge) attached as span events
 - **`maestro export-otel`** subcommand — exports runs to OTLP endpoints (gRPC
   or HTTP) or JSON stdout; falls back to JSON when SDK not installed
-- **Optional `[otel]` extra** — `pip install maestro-cli[otel]` adds
+- **Optional `[otel]` extra** — `pip install maestro-ai-cli[otel]` adds
   `opentelemetry-api`, `opentelemetry-sdk`, `opentelemetry-exporter-otlp`
 - **Watch Step Counter** — `watch.max_total_steps` field provides a hard cap on
   total task executions across all iterations; prevents runaway loops beyond
@@ -568,7 +568,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
   `maestro://plans`, `maestro://plans/{name}`
 - **3 MCP prompts** — debug_run, review_plan, create_plan
 - **`maestro mcp-server`** subcommand — launches MCP server via stdio transport
-- **Optional `[mcp]` extra** — `pip install maestro-cli[mcp]` adds `mcp>=1.26.0`
+- **Optional `[mcp]` extra** — `pip install maestro-ai-cli[mcp]` adds `mcp>=1.26.0`
 - **Doctor check** — `maestro doctor` reports MCP SDK availability
 - **Graceful degradation** — mcp_server.py works without SDK (no-op decorators)
   so tests run without the optional dependency
@@ -588,7 +588,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
   human-in-the-loop approval flow
 - **State management** — `AgUiRunState` tracks progress, costs, tokens;
   emits `STATE_SNAPSHOT` (initial) + `STATE_DELTA` (RFC 6902 JSON Patch)
-- **Optional `[agui]` extra** — `pip install maestro-cli[web,agui]` adds
+- **Optional `[agui]` extra** — `pip install maestro-ai-cli[web,agui]` adds
   `ag-ui-protocol>=0.1.14`; endpoint auto-mounts when available
 - **Doctor check** — `maestro doctor` reports AG-UI protocol availability
 - 43 new tests covering event translation, state management, SSE format,
@@ -1432,7 +1432,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ### New Features
 - **`--output tui`**: Interactive Textual TUI with DAG panel, header, event feed, and
-  keyboard navigation. Install with `pip install maestro-cli[tui]`. Requires
+  keyboard navigation. Install with `pip install maestro-ai-cli[tui]`. Requires
   `textual>=1.0.0,<9.0.0`.
 - **`PlanHeader` widget**: Real-time progress bar, completed/total count, cost accumulation,
   budget warning display.
@@ -1513,7 +1513,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ### New Features
 - **`--output live`**: Real-time Rich table display during plan execution showing task
-  progress, cost, duration, and status. Install with `pip install maestro-cli[live]`.
+  progress, cost, duration, and status. Install with `pip install maestro-ai-cli[live]`.
 - **`goal:` plan field**: Optional string injected as context into all engine task prompts.
   Also available as `{{ goal }}` template variable.
 - **Event callback**: `run_plan()` accepts `event_callback` parameter for programmatic
