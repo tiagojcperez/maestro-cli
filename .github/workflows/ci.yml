@@ -53,12 +53,18 @@ jobs:
       - name: Install pytest (not a runtime dependency)
         run: pip install pytest pytest-cov
       - name: Run test suite
-        run: python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
+        run: python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
+          fail_ci_if_error: false
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
+        uses: codecov/test-results-action@v1
+        with:
+          files: ./junit.xml
           fail_ci_if_error: false
 
   mypy:

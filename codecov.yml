@@ -1,0 +1,52 @@
+# Codecov configuration — https://docs.codecov.com/docs/codecov-yaml
+codecov:
+  require_ci_to_pass: true # don't post coverage until CI passes
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto # never drop below the base coverage...
+        threshold: 1% # ...by more than 1%
+    patch:
+      default:
+        target: 80% # new code in a PR should be reasonably covered
+        threshold: 5% # tolerance for small / utility PRs
+  # Files excluded from coverage measurement.
+  ignore:
+    - "src/maestro_cli/__main__.py" # `python -m maestro_cli` entry-point stub
+    - "tests/**"
+
+comment:
+  layout: "reach, diff, flags, components, files"
+  behavior: default
+  require_changes: false # comment even when coverage is unchanged
+  require_base: false # comment on the first PR even without a base report
+
+# Path-based grouping (free, no Pro plan needed) — surfaces per-subsystem coverage.
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+  individual_components:
+    - component_id: tui
+      name: TUI
+      paths:
+        - src/maestro_cli/tui/**
+    - component_id: web
+      name: Web UI
+      paths:
+        - src/maestro_cli/web/**
+    - component_id: ci
+      name: CI generators
+      paths:
+        - src/maestro_cli/ci*.py
+    - component_id: core
+      name: Core engine
+      paths:
+        - src/maestro_cli/**
+        - "!src/maestro_cli/tui/**"
+        - "!src/maestro_cli/web/**"
+        - "!src/maestro_cli/ci*.py"
