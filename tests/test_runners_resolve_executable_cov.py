@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -180,6 +181,17 @@ class TestResolveWindowsBashNonWindows:
         assert _resolve_windows_bash() is None
 
 
+@pytest.mark.skipif(
+    os.name != "nt" and sys.version_info < (3, 12),
+    reason=(
+        "These tests flip maestro_cli.runners.os.name to 'nt', which mutates "
+        "the shared os.name and makes bare Path() build a WindowsPath. Python "
+        "< 3.12 raises NotImplementedError when instantiating WindowsPath on "
+        "POSIX (the restriction was lifted in 3.12). _resolve_windows_bash is "
+        "Windows-only anyway (guarded by `if os.name != 'nt': return None`); "
+        "it is covered on the Windows CI job and on POSIX py>=3.12."
+    ),
+)
 class TestResolveWindowsBashGitBash:
     def test_which_returns_non_system32_bash(
         self, monkeypatch: pytest.MonkeyPatch
