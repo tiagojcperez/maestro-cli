@@ -13,6 +13,7 @@
 
 [![CI](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/tiagojcperez/maestro-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/tiagojcperez/maestro-cli)
+[![PyPI](https://img.shields.io/pypi/v/maestro-ai-cli.svg)](https://pypi.org/project/maestro-ai-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -73,16 +74,22 @@ result = run_plan(plan)
 ## Install
 
 ```bash
-git clone https://github.com/tiagojcperez/maestro-cli.git
-cd maestro-cli
+pip install maestro-ai-cli                          # core CLI
+pip install "maestro-ai-cli[live]"                  # + Rich live table (--output live)
+pip install "maestro-ai-cli[tui]"                   # + Textual TUI (--output tui)
+pip install "maestro-ai-cli[web]"                   # + Web UI (FastAPI + uvicorn)
+pip install "maestro-ai-cli[agui]"                  # + AG-UI protocol endpoint
+pip install "maestro-ai-cli[mcp]"                   # + MCP server for IDE integration
+pip install "maestro-ai-cli[otel]"                  # + OpenTelemetry OTLP exporter
+pip install "maestro-ai-cli[live,web,tui,agui,mcp,otel]"   # everything
+```
 
-pip install -e .            # CLI only
-pip install -e ".[live]"    # CLI + Rich live table (--output live)
-pip install -e ".[tui]"     # CLI + Textual TUI (--output tui)
-pip install -e ".[web]"     # CLI + Web UI (FastAPI + uvicorn)
-pip install -e ".[agui]"    # CLI + AG-UI protocol endpoint
-pip install -e ".[mcp]"     # CLI + MCP server for IDE integration
-pip install -e ".[otel]"    # CLI + OpenTelemetry OTLP exporter
+The package installs as `maestro-ai-cli`; the command is `maestro` and the Python
+import is `maestro_cli`. For development, install from source instead:
+
+```bash
+git clone https://github.com/tiagojcperez/maestro-cli.git
+cd maestro-cli && pip install -e ".[live,web,tui,agui,mcp,otel]"
 ```
 
 Requires Python >= 3.11 and at least one engine CLI on PATH (`codex`, `claude`, `gemini`, `copilot`, `qwen`, `ollama`, `llama`).
