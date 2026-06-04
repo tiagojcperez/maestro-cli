@@ -6,6 +6,7 @@ run_dir: .maestro-runs
 
 defaults:
   env: {}
+  timeout_sec: 60
   codex:
     model: null
     reasoning_effort: null    # minimal|low|medium|high|xhigh

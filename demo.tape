@@ -34,7 +34,7 @@ Type "maestro run examples/demo_plan.yaml --max-parallel 3"
 Enter
 Sleep 4500ms
 
-# Deterministic artifacts on disk
-Type "ls .maestro-runs/"
+# Deterministic artifacts on disk (the demo plan writes to examples/.maestro-runs/)
+Type "ls examples/.maestro-runs/"
 Enter
 Sleep 3s
