@@ -53,6 +53,7 @@ mutations/*-survivors.txt
 # Coverage / trace artifacts (never commit)
 .coverage
 coverage.xml
+cov*.json
 junit.xml
 htmlcov/
 .trace/
