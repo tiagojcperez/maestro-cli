@@ -13,6 +13,7 @@
 
 [![CI](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagojcperez/maestro-cli/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/tiagojcperez/maestro-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/tiagojcperez/maestro-cli)
+[![Coverage Status](https://coveralls.io/repos/github/tiagojcperez/maestro-cli/badge.svg?branch=main)](https://coveralls.io/github/tiagojcperez/maestro-cli?branch=main)
 [![PyPI](https://img.shields.io/pypi/v/maestro-ai-cli.svg)](https://pypi.org/project/maestro-ai-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -400,12 +401,14 @@ src/maestro_cli/
 
 ## Testing & Guarantees
 
-Maestro is tested offline-first. The full suite (12k+ tests) runs on every push
+Maestro is tested offline-first. The full suite (13k+ tests) runs on every push
 across Python 3.11 / 3.12 / 3.13 plus a Windows lane, alongside strict `mypy`,
 a documentation lint, and CodeQL. Engine calls are **mocked** in CI; the
 real-engine end-to-end tests are opt-in (`MAESTRO_RUN_REAL_ENGINE_TESTS=1`, they
 need provider credentials and cost money) and run on a separate, manually-enabled
-lane.
+lane. Coverage is uploaded to Codecov and Coveralls (with optional SonarCloud,
+Codacy, and Code Climate backends — see
+[docs/COVERAGE_PLATFORMS.md](docs/COVERAGE_PLATFORMS.md)).
 
 | Area | Unit | Integration | Real-engine |
 |------|:----:|:-----------:|:-----------:|

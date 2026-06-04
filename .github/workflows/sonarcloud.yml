@@ -1,0 +1,48 @@
+name: SonarCloud
+
+# Quality + coverage analysis on SonarQube Cloud. This is a separate workflow
+# (it needs full git history for accurate new-code detection) and is NOT a
+# required check, so it never blocks merges. Every meaningful step is gated on
+# the SONAR_TOKEN secret, so the job is a fast no-op until you enable SonarCloud.
+# See sonar-project.properties for the one-time setup steps.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sonarcloud:
+    name: SonarCloud scan
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install + generate coverage.xml
+        if: ${{ env.SONAR_TOKEN != '' }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[live,web,tui,agui,mcp,otel]"
+          pip install pytest pytest-cov
+          python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
+      - name: SonarQube Cloud scan
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
