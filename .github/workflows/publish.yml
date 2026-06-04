@@ -58,3 +58,8 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Re-running this workflow on an already-published version (PyPI
+          # versions are immutable) is a clean no-op instead of a 400 "file
+          # already exists" failure. New versions still upload normally.
+          skip-existing: true
