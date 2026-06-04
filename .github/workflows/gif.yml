@@ -32,15 +32,32 @@ jobs:
       - name: Install maestro (with the TUI extra) for the demos
         run: pip install -e ".[tui]"
 
+      - name: Install vhs and its dependencies
+        run: |
+          set -euxo pipefail
+          # ffmpeg (the GIF encoder) — usually pre-installed, but make sure.
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          # ttyd — the headless terminal vhs drives.
+          sudo curl -fsSL -o /usr/local/bin/ttyd \
+            https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64
+          sudo chmod +x /usr/local/bin/ttyd
+          ttyd --version
+          # vhs — from the official Charm apt repository.
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://repo.charm.sh/apt/gpg.key \
+            | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" \
+            | sudo tee /etc/apt/sources.list.d/charm.list
+          sudo apt-get update
+          sudo apt-get install -y vhs
+          vhs --version
+
       - name: Record the CLI demo (demo.gif)
-        uses: charmbracelet/vhs-action@v2
-        with:
-          path: demo.tape
+        run: vhs demo.tape
 
       - name: Record the TUI demo (demo-tui.gif)
-        uses: charmbracelet/vhs-action@v2
-        with:
-          path: demo-tui.tape
+        run: vhs demo-tui.tape
 
       - name: Activate the README demo slot
         run: |
