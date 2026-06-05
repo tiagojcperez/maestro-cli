@@ -80,8 +80,11 @@ class TestRecordAndSpend:
 
     def test_get_period_spend_sums_current_period(self, tmp_path: Path) -> None:
         ledger = tmp_path / "ledger.jsonl"
-        now = datetime.now()
-        # Write two entries: one today, one yesterday
+        # Fixed reference time at midday so the two entries (now and now-1h) stay
+        # in the same day even when the suite runs just after midnight — using a
+        # live datetime.now() here makes the test flaky across the day boundary.
+        now = datetime(2026, 6, 4, 12, 0, 0)
+        # Two entries one hour apart, both within the current ("daily") period
         entries = [
             {"plan_name": "p", "run_id": "r1", "cost_usd": 3.0,
              "timestamp": now.isoformat()},
