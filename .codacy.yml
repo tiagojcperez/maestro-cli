@@ -1,0 +1,17 @@
+---
+# Codacy configuration.
+#
+# Scope analysis to shipped source. The test suite (`tests/`) is intentionally
+# excluded: `assert` is idiomatic in pytest, and Codacy's default profile
+# flagged 6,200+ legitimate test asserts as "issues" (≈91% of all findings),
+# burying real signal. The tests are already analyzed by SonarCloud, strict
+# mypy, and pytest itself, so excluding them here keeps Codacy focused on the
+# code that actually ships.
+exclude_paths:
+  - 'tests/**'
+  - 'docs/**'
+  - 'examples/**'
+  - 'mutations/**'
+  - 'programs/**'
+  - 'scripts/**'
+  - '**/*.md'
