@@ -1275,7 +1275,7 @@ class TestJudgeResultEvalSteps:
         assert jr2.eval_steps == []
 
 
-class TestTokenUsage:
+class TestTokenUsage2:
     def test_total_tokens_property(self) -> None:
         tu = TokenUsage(input_tokens=100, cached_tokens=50, output_tokens=200)
         assert tu.total_tokens == 350
@@ -1301,7 +1301,7 @@ class TestTokenUsage:
         assert d["cache_creation_tokens"] == 0
 
 
-class TestFailureRecord:
+class TestFailureRecord2:
     def test_to_dict_with_exit_code(self) -> None:
         fr = FailureRecord(attempt=1, category="timeout", exit_code=124, message="timed out")
         d = fr.to_dict()
@@ -1348,7 +1348,7 @@ class TestFailureRecord:
         assert d["duration_sec"] == 140.5
 
 
-class TestCriterionScore:
+class TestCriterionScore2:
     def test_to_dict(self) -> None:
         cs = CriterionScore(criterion="Correctness", passed=True, score=0.9, reasoning="Looks good")
         d = cs.to_dict()
@@ -1364,7 +1364,7 @@ class TestCriterionScore:
         assert d["score"] == 0.3
 
 
-class TestHandoffReport:
+class TestHandoffReport2:
     def test_defaults(self) -> None:
         hr = HandoffReport()
         assert hr.failure_category == "runtime_error"
@@ -1578,7 +1578,7 @@ class TestTaskResultFailureHistoryAndStructuredContext:
         assert d["structured_context"]["status"] == "success"
 
 
-class TestWatchIteration:
+class TestWatchIteration2:
     """WatchIteration.to_dict() — all fields including optional git_commit/error."""
 
     def test_to_dict_minimal(self) -> None:
@@ -1641,7 +1641,7 @@ class TestWatchIteration:
         assert wi2.action == ""
 
 
-class TestWatchState:
+class TestWatchState2:
     """WatchState.to_dict() — nested iterations list and all fields."""
 
     def test_defaults(self) -> None:
@@ -1717,7 +1717,7 @@ class TestSessionSnapshot:
         assert d["metadata"]["metric_name"] == "score"
 
 
-class TestWorktreeMergeResult:
+class TestWorktreeMergeResult2:
     """WorktreeMergeResult.to_dict() — status, files_changed, conflict_files."""
 
     def test_to_dict_merged(self) -> None:
@@ -1759,7 +1759,7 @@ class TestWorktreeMergeResult:
         assert r2.files_changed == []
 
 
-class TestRubricLevelAndCriterion:
+class TestRubricLevelAndCriterion2:
     """RubricLevel and RubricCriterion to_dict() serialization."""
 
     def test_rubric_level_to_dict(self) -> None:

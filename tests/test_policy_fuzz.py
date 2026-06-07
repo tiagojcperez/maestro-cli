@@ -2222,7 +2222,7 @@ def test_empty_string_is_always_substring_of_engine(plan: PlanSpec) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_task_execution_profile_defaults_to_plan(plan: PlanSpec) -> None:
+def test_task_execution_profile_defaults_to_plan2(plan: PlanSpec) -> None:
     """execution_profile computed field defaults to 'plan' when not set."""
     task = _task(id="t1", engine="claude")
     spec = _policy('task.execution_profile == "plan"')
@@ -2820,7 +2820,7 @@ def test_none_not_in_none_rhs(plan: PlanSpec) -> None:
     assert ev(task, plan) is False
 
 
-def test_in_with_none_rhs_returns_false(plan: PlanSpec) -> None:
+def test_in_with_none_rhs_returns_false2(plan: PlanSpec) -> None:
     """When RHS is None, `in` returns False (null-safe)."""
     task = _task(id="t1", engine="claude")
     spec = _policy('"x" in task.model')

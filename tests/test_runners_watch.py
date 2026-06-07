@@ -2499,7 +2499,7 @@ class TestComputeJudgeTimeout1:
         assert t_q1 == t_no_quorum
 
 
-class TestParseClaudeStreamEvent2:
+class TestParseClaudeStreamEvent22:
     """Additional tests for _parse_claude_stream_event."""
 
     def test_valid_result_event(self) -> None:
@@ -2542,7 +2542,7 @@ class TestParseClaudeStreamEvent2:
 # ===========================================================================
 
 
-class TestParseSignalLine2:
+class TestParseSignalLine22:
     """Additional tests for _parse_signal_line."""
 
     def test_non_signal_line_returns_none(self) -> None:
@@ -2582,7 +2582,7 @@ class TestParseSignalLine2:
 # ===========================================================================
 
 
-class TestExtractStreamJsonResultText2:
+class TestExtractStreamJsonResultText22:
     """Additional tests for _extract_stream_json_result_text."""
 
     def test_extracts_result_from_last_result_event(self) -> None:

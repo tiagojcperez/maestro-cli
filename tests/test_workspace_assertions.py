@@ -1691,7 +1691,7 @@ class TestEvaluateNpmCustomPathMissing:
 # ---------------------------------------------------------------------------
 
 
-class TestEvaluateUnsupportedType:
+class TestEvaluateUnsupportedType2:
     def test_evaluate_empty_type_returns_unsupported(self, tmp_path: Path) -> None:
         """An assertion dict with an empty or unrecognized type string should
         return (False, 'Unsupported...') from evaluate_workspace_assertion."""

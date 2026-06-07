@@ -1585,7 +1585,7 @@ class TestFormatSuggestionsJsonNullSavings:
         assert data["runs_analyzed"] == 3
 
 
-class TestAnalyzeTaskZeroMedianDuration:
+class TestAnalyzeTaskZeroMedianDuration2:
     def test_zero_median_no_checkpoint_suggestion(self) -> None:
         """When all durations are 0 (missing), median_duration==0, no add_checkpoint."""
         task_spec_map = {"t1": TaskSpec(id="t1", model="sonnet")}
@@ -2242,7 +2242,7 @@ class TestAnalyzeTaskFailurePatternRemediation:
         assert fp.severity == "medium"  # 0.3 < 0.5 → medium
 
 
-class TestAnalyzeTaskNonDictTaskResults:
+class TestAnalyzeTaskNonDictTaskResults2:
     def test_run_with_task_results_as_list_is_skipped(self) -> None:
         """Run where task_results is a list (not dict) → skipped via isinstance guard."""
         task_spec_map = {"t1": TaskSpec(id="t1", model="sonnet")}
@@ -2477,7 +2477,7 @@ class TestAnalyzeTaskCombinedSuggestions:
         assert "add_review_task" in categories
 
 
-class TestAnalyzeTaskJudgeIntegerScore:
+class TestAnalyzeTaskJudgeIntegerScore2:
     def test_judge_score_integer_value_accepted(self) -> None:
         """overall_score as int (not float) → isinstance(1, (int, float)) is True → counted."""
         task_spec_map = {"t1": TaskSpec(id="t1", model="sonnet")}
@@ -2831,7 +2831,7 @@ class TestFormatSuggestionsOutputStripped:
         assert not output.endswith(" ")
 
 
-class TestAnalyzeTaskRetryRateBoundary:
+class TestAnalyzeTaskRetryRateBoundary2:
     def test_retry_rate_exactly_50_pct_no_upgrade(self) -> None:
         """retry_rate=0.5 is NOT > 0.5 → no upgrade_model or add_retry suggestion."""
         task_spec_map = {"t1": TaskSpec(id="t1", model="haiku")}
@@ -2865,7 +2865,7 @@ class TestAnalyzeTaskRetryRateBoundary:
         assert not any(s.category == "add_retry" for s in suggestions)
 
 
-class TestAnalyzeTaskCostRatioBoundary:
+class TestAnalyzeTaskCostRatioBoundary2:
     def test_cost_ratio_exactly_40_pct_no_cost_suggestion(self) -> None:
         """task_avg_cost / plan_avg_cost == 0.4 exactly → NOT > 0.4 → no cost-path suggestion."""
         task_spec_map = {"t1": TaskSpec(id="t1", model="opus")}

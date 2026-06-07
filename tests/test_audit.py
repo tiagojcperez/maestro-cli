@@ -2662,7 +2662,7 @@ class TestSEC016LayeredMode:
 # ===========================================================================
 
 
-class TestSEC012FlagVariants:
+class TestSEC012FlagVariants2:
     @pytest.mark.parametrize("flag", ["--yolo", "--allow-all"])
     def test_sec012_yolo_variants_trigger(self, flag: str) -> None:
         """--yolo and --allow-all are also yolo flags — trigger SEC012 when fallback_engine set."""
@@ -2686,7 +2686,7 @@ class TestSEC012FlagVariants:
 # ===========================================================================
 
 
-class TestFixPlanDryRunNoBackup:
+class TestFixPlanDryRunNoBackup2:
     def test_fix_dry_run_does_not_create_backup(self, tmp_path: Path) -> None:
         """fix_plan with dry_run=True must NOT create the .yaml.bak backup file."""
         plan_file = tmp_path / "plan.yaml"
@@ -3060,7 +3060,7 @@ class TestSEC008RequiresApprovalSuppresses:
 # ===========================================================================
 
 
-class TestSEC014SecretsAutoSuppresses:
+class TestSEC014SecretsAutoSuppresses2:
     def test_sec014_secrets_auto_true_suppresses_cloud_cred_check(self) -> None:
         """plan.secrets_auto=True skips the SEC014 check entirely.
 
@@ -3158,7 +3158,7 @@ class TestSEC006EngineTaskVerifyCommandProd:
 # ===========================================================================
 
 
-class TestAuditPlanEmptyTasks:
+class TestAuditPlanEmptyTasks2:
     def test_audit_plan_empty_tasks_only_plan_level_findings(self) -> None:
         """Plan with empty tasks list fires plan-level rules (SEC001) but no task-level ones."""
         plan = PlanSpec(name="empty-plan", max_cost_usd=None, tasks=[])
@@ -3580,7 +3580,7 @@ class TestSEC016NonExistentUpstream:
 # ===========================================================================
 
 
-class TestFormatAuditUnknownSeverity:
+class TestFormatAuditUnknownSeverity2:
     def test_format_audit_unknown_severity_uses_question_mark_prefix(self) -> None:
         """format_audit uses '[?]   ' fallback prefix for unrecognised severity strings.
 
@@ -4677,7 +4677,7 @@ class TestSEC009NoWorkspaceRootSkipsCheck:
 # ===========================================================================
 
 
-class TestSEC010WildcardContextFrom:
+class TestSEC010WildcardContextFrom2:
     def test_sec010_wildcard_context_from_star_depth_one_no_trigger(self) -> None:
         """Task with ``context_from: ["*"]`` has depth 1 in ``_chain_depth``.
 

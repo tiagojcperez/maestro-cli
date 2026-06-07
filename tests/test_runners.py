@@ -10109,7 +10109,7 @@ class TestStripAnalysisBlock:
         assert "Output here." in result
 
 
-class TestCompressContextForRetry:
+class TestCompressContextForRetry2:
     def test_no_compression_at_level_0(self) -> None:
         from maestro_cli.runners import _compress_context_for_retry
         text = "x" * 1000
@@ -10135,7 +10135,7 @@ class TestCompressContextForRetry:
         assert len(r2) <= len(r1)
 
 
-class TestCompactContext:
+class TestCompactContext2:
     def test_empty_string(self) -> None:
         from maestro_cli.runners import _compact_context
         assert _compact_context("") == ""
@@ -10477,7 +10477,7 @@ class TestGenerateHandoffReportExtended:
 # ---------------------------------------------------------------------------
 
 
-class TestBuildSmartRetryFeedbackExtended:
+class TestBuildSmartRetryFeedbackExtended2:
     def test_basic_feedback(self) -> None:
         from maestro_cli.runners import _build_smart_retry_feedback
         feedback = _build_smart_retry_feedback(
@@ -11445,7 +11445,7 @@ class TestFindGitBash:
 # ---------------------------------------------------------------------------
 
 
-class TestResolveRetryDelay:
+class TestResolveRetryDelay2:
     def test_task_float(self) -> None:
         from maestro_cli.runners import _resolve_retry_delay
         delay = _resolve_retry_delay(5.0, None, 0)
@@ -11583,7 +11583,7 @@ class TestBuildKnowledgeGraphContext:
 # ---------------------------------------------------------------------------
 
 
-class TestExtractCacheCreationTokens:
+class TestExtractCacheCreationTokens2:
     def test_finds_cache_creation_tokens(self) -> None:
         from maestro_cli.runners import _extract_cache_creation_tokens
         lines = ['{"usage": {"cache_creation_input_tokens": 500}}']
@@ -12297,7 +12297,7 @@ class TestStripInjectionPatterns:
 # ---------------------------------------------------------------------------
 
 
-class TestSandboxObservationExtended:
+class TestSandboxObservationExtended2:
     def test_wraps_in_xml(self) -> None:
         result = _sandbox_observation("task-a", "raw output")
         assert "<observation" in result
@@ -12700,7 +12700,7 @@ class TestExecuteTaskEngineWithSubprocess:
 # ---------------------------------------------------------------------------
 
 
-class TestEstimateCostFromTokens:
+class TestEstimateCostFromTokens2:
     def test_basic_estimation(self) -> None:
         from maestro_cli.runners import _estimate_cost_from_tokens
         pricing = {"model-a": (3.0, 1.5, 15.0)}  # input, cached, output per million
@@ -12936,7 +12936,7 @@ class TestExecuteTaskWithVerify:
         assert "pre_command" in result.message.lower()
 
 
-class TestExecuteTaskTimeout:
+class TestExecuteTaskTimeout2:
     def test_timeout_returns_124(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that a timed-out task returns exit code 124."""
         import io
@@ -12972,7 +12972,7 @@ class TestExecuteTaskTimeout:
         assert result.status == "failed"
 
 
-class TestExecuteTaskAllowFailure:
+class TestExecuteTaskAllowFailure2:
     def test_allow_failure_gives_soft_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that allow_failure produces soft_failed status."""
         import io
@@ -13614,7 +13614,7 @@ class TestExtractCostAndTokensFromLog:
 # ---------------------------------------------------------------------------
 
 
-class TestBuildSafeEnv:
+class TestBuildSafeEnv2:
     def test_basic_env(self) -> None:
         from maestro_cli.runners import _build_safe_env
         env = _build_safe_env({"MY_VAR": "value"}, {"TASK_VAR": "task_value"})

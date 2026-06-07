@@ -5971,7 +5971,7 @@ class TestSteppingStonesCompaction:
         assert len(lines) == _STEPPING_STONES_MAX
 
 
-class TestLoadBestSteppingStone:
+class TestLoadBestSteppingStone2:
     """Cover _load_best_stepping_stone branches."""
 
     def test_no_file_returns_none(self, tmp_path: Path) -> None:
@@ -6151,7 +6151,7 @@ class TestBuildExperimentsSummaryEdgeCases:
 # ---------------------------------------------------------------------------
 
 
-class TestSaveSteppingStone:
+class TestSaveSteppingStone2:
     """Cover _save_stepping_stone including lesson loading and compaction trigger."""
 
     def test_saves_stone_with_lessons(self, tmp_path: Path) -> None:
@@ -6294,7 +6294,7 @@ class TestRunConsolidationEdgeCases:
 # ---------------------------------------------------------------------------
 
 
-class TestCountExecutedTasks:
+class TestCountExecutedTasks2:
     """Cover _count_executed_tasks with mixed statuses."""
 
     def test_counts_non_skipped(self, tmp_path: Path) -> None:

@@ -11453,7 +11453,7 @@ class TestContextCompactionPaths:
         assert compaction_events[0][1]["mode"] == "progressive"
 
 
-class TestCancelEvent:
+class TestCancelEvent2:
     """Cover cancel_event path that skips remaining tasks."""
 
     def test_cancel_event_skips_pending_tasks(

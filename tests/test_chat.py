@@ -771,7 +771,7 @@ class TestCLIIntegration:
 # ===========================================================================
 
 
-class TestFormatEngineLine:
+class TestFormatEngineLine2:
     """Tests for _format_engine_line() — Codex JSON parsing + metadata suppression."""
 
     def test_non_codex_engine_returns_line_unchanged(self) -> None:
@@ -892,7 +892,7 @@ class TestFormatEngineLine:
 # ===========================================================================
 
 
-class TestCmdHelpChat:
+class TestCmdHelpChat2:
     """Tests for _cmd_help_chat() — all slash commands must appear in output."""
 
     def test_all_slash_commands_present(self, capsys: pytest.CaptureFixture[str]) -> None:
@@ -978,7 +978,7 @@ class TestBuildHistoryPromptEdgeCases:
 # ===========================================================================
 
 
-class TestSetupChatReadline:
+class TestSetupChatReadline2:
     """Tests for _setup_chat_readline() — graceful no-readline fallback."""
 
     def test_no_readline_no_crash(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1603,7 +1603,7 @@ class TestRunChatTurnEdgeCases:
 # ===========================================================================
 
 
-class TestSetupChatReadline:
+class TestSetupChatReadline3:
     def test_no_readline_no_crash(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """When neither readline nor pyreadline3 is importable, _setup_chat_readline is a no-op."""
         import builtins
