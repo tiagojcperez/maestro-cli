@@ -8,7 +8,6 @@ import re
 import shutil
 import sys
 import threading
-import urllib.error
 import urllib.request
 import uuid
 from collections import deque
@@ -299,7 +298,7 @@ def _show_fail_tail(log_path: Path) -> None:
                 in_body = True
             continue
         # Stop at footer
-        if line.startswith("status=") or line.startswith("message="):
+        if line.startswith(("status=", "message=")):
             continue
         body.append(line)
 
@@ -493,8 +492,7 @@ def _load_prior_results(resume_path: Path) -> dict[str, str]:
         # re-evaluated on resume, since the blocker task may now succeed.
         if status == "skipped":
             msg = result.get("message", "")
-            if msg.startswith("Skipped because dependency failed:") or \
-               msg.startswith("fail_fast triggered by task"):
+            if msg.startswith(("Skipped because dependency failed:", "fail_fast triggered by task")):
                 continue
         succeeded[task_id] = status
 
@@ -3406,7 +3404,7 @@ def run_plan(
             _vmeta(
                 f"webhook delivered status={status_code} url={effective_webhook_url}"
             )
-        except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        except (OSError, ValueError) as exc:
             _emit(
                 "webhook",
                 status="failed",

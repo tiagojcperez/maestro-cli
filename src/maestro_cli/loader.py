@@ -329,12 +329,12 @@ def _to_judge_spec(value: Any, field_name: str) -> JudgeSpec | None:
                 has_schema_file = "schema_file" in item
                 if has_schema and has_schema_file:
                     raise PlanValidationError(
-                        f"[E020] Judge criterion 'json-schema' must have 'schema' or 'schema_file', not both",
+                        "[E020] Judge criterion 'json-schema' must have 'schema' or 'schema_file', not both",
                         code=E020,
                     )
                 if not has_schema and not has_schema_file:
                     raise PlanValidationError(
-                        f"[E020] Judge criterion 'json-schema' requires 'schema' (dict) or 'schema_file' (str)",
+                        "[E020] Judge criterion 'json-schema' requires 'schema' (dict) or 'schema_file' (str)",
                         code=E020,
                     )
                 if has_schema and not isinstance(item["schema"], dict):
@@ -2384,16 +2384,17 @@ def validate_plan(plan: PlanSpec) -> None:
                     f"Known models: {sorted(CLAUDE_MODELS)}"
                 )
 
-        if task.engine == "gemini" and task.model:
-            if (
-                not task.model.startswith("gemini-")
-                and task.model not in GEMINI_MODELS
-                and task.model not in _GEMINI_MODEL_ALIASES
-            ):
-                plan.validation_warnings.append(
-                    f"Task '{task.id}': Gemini model '{task.model}' may not be valid. "
-                    f"Known models: {sorted(GEMINI_MODELS)}"
-                )
+        if (
+            task.engine == "gemini"
+            and task.model
+            and not task.model.startswith("gemini-")
+            and task.model not in GEMINI_MODELS
+            and task.model not in _GEMINI_MODEL_ALIASES
+        ):
+            plan.validation_warnings.append(
+                f"Task '{task.id}': Gemini model '{task.model}' may not be valid. "
+                f"Known models: {sorted(GEMINI_MODELS)}"
+            )
 
         if task.engine == "copilot" and task.model:
             if task.model not in COPILOT_MODELS and task.model not in _COPILOT_MODEL_ALIASES:
@@ -3074,13 +3075,13 @@ def _collect_warnings(plan: PlanSpec) -> None:
     # -- Pitfall 4 & W4: Backslashes in path fields --
     if plan.workspace_root and "\\" in plan.workspace_root:
         ws.append(
-            f"Plan workspace_root contains backslashes. "
-            f"Use forward slashes instead (e.g., 'C:/path/to/dir')."
+            "Plan workspace_root contains backslashes. "
+            "Use forward slashes instead (e.g., 'C:/path/to/dir')."
         )
     if plan.run_dir and "\\" in plan.run_dir:
         ws.append(
-            f"Plan run_dir contains backslashes. "
-            f"Use forward slashes instead."
+            "Plan run_dir contains backslashes. "
+            "Use forward slashes instead."
         )
     for task in plan.tasks:
         for field_name, field_val in [
@@ -3346,18 +3347,17 @@ def _collect_warnings(plan: PlanSpec) -> None:
 
     # -- W-judge-contains-engine: judge 'contains' assertion on engine task --
     for task in plan.tasks:
-        if task.engine is not None:
-            if task.judge is not None:
-                for criterion in task.judge.criteria:
-                    if isinstance(criterion, dict):
-                        ctype = criterion.get("type")
-                        if ctype in {"contains", "regex"}:
-                            ws.append(
-                                f"Task '{task.id}': judge '{ctype}' assertion on engine task. "
-                                f"Judge checks engine stdout (JSON), not file contents. "
-                                f"Use verify_command exit code or guard_command instead."
-                            )
-                            break
+        if task.engine is not None and task.judge is not None:
+            for criterion in task.judge.criteria:
+                if isinstance(criterion, dict):
+                    ctype = criterion.get("type")
+                    if ctype in {"contains", "regex"}:
+                        ws.append(
+                            f"Task '{task.id}': judge '{ctype}' assertion on engine task. "
+                            f"Judge checks engine stdout (JSON), not file contents. "
+                            f"Use verify_command exit code or guard_command instead."
+                        )
+                        break
 
     for task in plan.tasks:
         if task.fallback_engine is not None and task.fallback_engine == task.engine:
@@ -3524,12 +3524,11 @@ def _output_scope_patterns_overlap(left: str, right: str) -> bool:
 
     left_prefix = _scope_literal_prefix(left_norm)
     right_prefix = _scope_literal_prefix(right_norm)
-    if left_prefix and right_prefix:
-        if not (
-            left_prefix.startswith(right_prefix)
-            or right_prefix.startswith(left_prefix)
-        ):
-            return False
+    if left_prefix and right_prefix and not (
+        left_prefix.startswith(right_prefix)
+        or right_prefix.startswith(left_prefix)
+    ):
+        return False
 
     left_suffix = _scope_extension_hint(left_norm)
     right_suffix = _scope_extension_hint(right_norm)

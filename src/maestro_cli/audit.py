@@ -555,9 +555,9 @@ def _check_sec018(plan: PlanSpec, findings: list[AuditFinding]) -> None:
                 severity="warning",
                 rule="SEC018",
                 message=(
-                    f"Task inherits tainted context from upstream but has no "
-                    f"guard_command or verify_command to sanitize — add "
-                    f"validation or set context_trust explicitly"
+                    "Task inherits tainted context from upstream but has no "
+                    "guard_command or verify_command to sanitize — add "
+                    "validation or set context_trust explicitly"
                 ),
                 task_id=task.id,
             ))
@@ -643,8 +643,8 @@ def _check_sec021(plan: Any, findings: list[AuditFinding]) -> None:
             severity="warning",
             rule="SEC021",
             message=(
-                f"Task uses destructive command patterns but has neither "
-                f"phantom_workspace: true nor requires_approval: true"
+                "Task uses destructive command patterns but has neither "
+                "phantom_workspace: true nor requires_approval: true"
             ),
             task_id=task.id,
         ))

@@ -403,8 +403,8 @@ def _compute_task_similarity(
         score += 3.0
 
     # Tag overlap (weight: 2)
-    tags_a = set(t.lower() for t in task_a.tags)
-    tags_b = set(t.lower() for t in task_b.tags)
+    tags_a = {t.lower() for t in task_a.tags}
+    tags_b = {t.lower() for t in task_b.tags}
     weights_total += 2.0
     if tags_a and tags_b:
         overlap = len(tags_a & tags_b)

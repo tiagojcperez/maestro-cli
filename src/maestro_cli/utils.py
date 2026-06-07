@@ -83,7 +83,7 @@ def extract_prompt_from_markdown(md_text: str, heading: str) -> str:
     section_end = len(lines)
     for idx in range(start_idx + 1, len(lines)):
         stripped = lines[idx].strip()
-        if stripped.startswith("## ") or stripped.startswith("# "):
+        if stripped.startswith(("## ", "# ")):
             section_end = idx
             break
 
@@ -215,7 +215,7 @@ def extract_structured_context(
                 obj = json.loads(stripped)
                 if isinstance(obj, dict) and obj.get("type") == "result":
                     result_text = str(obj.get("result", ""))[:_RESULT_TEXT_CAP]
-            except (json.JSONDecodeError, ValueError):
+            except ValueError:
                 pass
 
         # Git status files
@@ -491,7 +491,7 @@ def humanize_output_line(line: str, max_len: int = _HUMANIZE_MAX_LEN) -> str:
         return line
     try:
         obj = json.loads(stripped)
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         return line
     if not isinstance(obj, dict):
         return line  # pragma: no cover

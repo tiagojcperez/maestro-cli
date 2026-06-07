@@ -134,7 +134,7 @@ def _call_participant(
     )
 
     try:
-        command, shell = build_command(plan, task, workdir, execution_profile="safe")
+        command, _ = build_command(plan, task, workdir, execution_profile="safe")
     except Exception as exc:
         return f"[council] error building command for {participant.role}: {exc}", None
 
@@ -237,7 +237,7 @@ def _build_round_prompt(
                 truncated = resp[:4000] if len(resp) > 4000 else resp
                 discussion.append(f"**{role}** (round {pr.round_num}): {truncated}")
         parts.append(
-            f"<prior_discussion>\n"
+            "<prior_discussion>\n"
             + "\n\n".join(discussion)
             + "\n</prior_discussion>\n"
         )
@@ -354,7 +354,7 @@ def _build_graph_round_prompt(
                 discussion.append(f"**{role}** (round {pr.round_num}): {truncated}")
         if discussion:
             parts.append(
-                f"<prior_discussion>\n"
+                "<prior_discussion>\n"
                 + "\n\n".join(discussion)
                 + "\n</prior_discussion>\n"
             )

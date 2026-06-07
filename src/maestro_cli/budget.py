@@ -90,7 +90,7 @@ def get_period_spend(
                 ts = datetime.fromisoformat(ts_str)
                 if ts >= start:
                     total += float(data.get("cost_usd", 0))
-            except (json.JSONDecodeError, ValueError, TypeError):
+            except (ValueError, TypeError):
                 continue
     except OSError:
         return 0.0

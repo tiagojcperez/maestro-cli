@@ -55,8 +55,6 @@ def _find_run_root(base: Path | None = None) -> Path:
     """Locate the .maestro-runs directory from a base path."""
     root = base or Path.cwd()
     run_root = root / _DEFAULT_RUN_ROOT
-    if run_root.is_dir():
-        return run_root
     return run_root
 
 
@@ -532,7 +530,7 @@ def debug_run(run_path: str) -> str:
         return f"Run '{run_path}' not found. Use maestro://runs to list available runs."
 
     parts: list[str] = [
-        f"Analyze this failed Maestro run and suggest fixes.\n",
+        "Analyze this failed Maestro run and suggest fixes.\n",
         f"Run: {rp.name}\n",
     ]
 
@@ -544,7 +542,7 @@ def debug_run(run_path: str) -> str:
             parts.append(f"Plan: {data.get('plan_name')}")
             parts.append(f"Success: {data.get('success')}")
             parts.append(f"Profile: {data.get('execution_profile')}")
-            parts.append(f"\nTask results:")
+            parts.append("\nTask results:")
             for tid, tr in data.get("task_results", {}).items():
                 status = tr.get("status", "unknown")
                 msg = tr.get("message", "")

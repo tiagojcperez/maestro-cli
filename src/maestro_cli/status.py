@@ -246,7 +246,7 @@ def plan_status(
 
     try:
         manifest = load_run_manifest(latest_run_path)
-    except (FileNotFoundError, OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError):
         return PlanPipelineStatus(
             plan_name=plan.name,
             last_run_id=None,

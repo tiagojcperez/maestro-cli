@@ -787,7 +787,7 @@ def _watch_improve(
             improve_log_text: str = ""
             if iteration_number == 1 and not state.iterations:
                 # First iteration: just run target plan for baseline
-                print(f"[maestro] watch improve: iteration 1 — baseline run")
+                print("[maestro] watch improve: iteration 1 — baseline run")
             else:
                 # Run the improve agent
                 # Improve agent MUST use yolo profile to write plan files
@@ -1688,7 +1688,7 @@ def _build_experiments_summary(
     # Plateau pressure — escalating urgency
     if plateau_count >= 2:
         remaining = max(0, plateau_threshold - plateau_count)
-        lines.append(f"\n### ⚠ Plateau Alert")
+        lines.append("\n### ⚠ Plateau Alert")
         lines.append(f"- Stuck for {plateau_count} iterations without improvement.")
         if remaining <= 1:
             lines.append(
@@ -2067,7 +2067,7 @@ def _extract_log_section(log_path: Path, section_name: str) -> str | None:
         stripped = line.strip()
         if stripped in _LOG_SECTION_HEADERS and stripped != section_name:
             break
-        if stripped.startswith("status=") or stripped.startswith("message="):
+        if stripped.startswith(("status=", "message=")):
             break
         buffer.append(line)
     return "\n".join(buffer).strip() or None

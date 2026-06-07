@@ -237,7 +237,7 @@ def _format_engine_line(line: str, engine: str) -> str | None:
 
     try:
         data = json.loads(stripped)
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         return line
 
     msg_type = data.get("type", "")
@@ -419,7 +419,7 @@ def _run_chat_turn(
 
     # Build command via runners infrastructure
     try:
-        command, shell = build_command(
+        command, _ = build_command(
             plan,
             task,
             Path.cwd(),

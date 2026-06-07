@@ -819,7 +819,7 @@ def _compact_context(text: str) -> str:
     # 3. Compress stack traces (keep first + last frame)
     def _compress_traceback(m: re.Match[str]) -> str:
         tb_text: str = m.group(0)
-        frames: list[str] = re.findall(r'  File "[^"]+", line \d+[^\n]*\n[^\n]*\n', tb_text)
+        frames: list[str] = re.findall(r' {2}File "[^"]+", line \d+[^\n]*\n[^\n]*\n', tb_text)
         if len(frames) <= 2:
             return tb_text
         header = "Traceback (most recent call last):\n"
@@ -831,7 +831,7 @@ def _compact_context(text: str) -> str:
         )
 
     text = re.sub(
-        r"Traceback \(most recent call last\):\n(?:  File [^\n]+\n[^\n]*\n)+",
+        r"Traceback \(most recent call last\):\n(?: {2}File [^\n]+\n[^\n]*\n)+",
         _compress_traceback,
         text,
     )
@@ -844,7 +844,7 @@ def _compact_context(text: str) -> str:
         for ln in lines_list:
             if any(kw in ln for kw in ("FAILED", "ERROR", "PASSED", "failed", "passed", "error")):
                 kept.append(ln)
-            elif re.match(r"^[=]+\s", ln) or re.match(r"^\d+ passed", ln):
+            elif re.match(r"^=+\s", ln) or re.match(r"^\d+ passed", ln):
                 kept.append(ln)
         return "\n".join(kept) + "\n" if kept else block
 
@@ -860,7 +860,7 @@ def _compact_context(text: str) -> str:
         try:
             obj = json.loads(m.group(0))
             return json.dumps(obj, separators=(",", ":"))
-        except (json.JSONDecodeError, ValueError):
+        except ValueError:
             return m.group(0)
 
     text = re.sub(
@@ -1648,7 +1648,7 @@ def _claude_json_is_success(output: str) -> bool:
             continue
         try:
             data = json.loads(line)
-        except (json.JSONDecodeError, ValueError):
+        except ValueError:
             continue
         # Explicit is_error: true means genuine failure
         if data.get("is_error") is True:
@@ -1671,7 +1671,7 @@ def _parse_claude_stream_event(line: str) -> dict[str, Any] | None:
         return None
     try:
         data = json.loads(stripped)
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         return None
     if not isinstance(data, dict) or "type" not in data:
         return None
@@ -1789,7 +1789,7 @@ def _parse_signal_line(line: str) -> dict[str, Any] | None:
     json_str = line[len(_SIGNAL_PREFIX):]
     try:
         data = json.loads(json_str)
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         return None
     if not isinstance(data, dict):
         return None
@@ -3536,7 +3536,7 @@ def _resolve_windows_bash() -> str | None:
     if resolved:
         resolved_lower = resolved.lower()
         # `C:\\Windows\\System32\\bash.exe` is a WSL launcher and may fail if no distro.
-        if not (resolved_lower.endswith("\\system32\\bash.exe") or resolved_lower.endswith("/system32/bash.exe")):
+        if not resolved_lower.endswith(("\\system32\\bash.exe", "/system32/bash.exe")):
             return resolved
 
     candidates = [
@@ -5200,10 +5200,9 @@ def _validate_json_schema(
             return False, f"{loc}: expected {schema_type}, got {type(data).__name__}"
 
     enum_values = schema.get("enum")
-    if enum_values is not None:
-        if data not in enum_values:
-            loc = path or "root"
-            return False, f"{loc}: value {data!r} not in enum {enum_values!r}"
+    if enum_values is not None and data not in enum_values:
+        loc = path or "root"
+        return False, f"{loc}: value {data!r} not in enum {enum_values!r}"
 
     if isinstance(data, str):
         min_len = schema.get("minLength")
@@ -5503,7 +5502,7 @@ def _evaluate_typed_assertion(
         stripped = stdout_tail.strip()
         try:
             parsed_data = json.loads(stripped)
-        except (json.JSONDecodeError, ValueError):
+        except ValueError:
             return CriterionScore(
                 criterion=criterion_text,
                 passed=False,
@@ -6443,7 +6442,7 @@ def _run_workspace_extraction(
                 if isinstance(files_raw, list):
                     relevant_files = [str(f) for f in files_raw if str(f).strip()]
                 reasoning = str(payload.get("reasoning", ""))
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         reasoning = "[extraction: could not parse LLM response]"
 
     # Build snippets from the index (first_lines of matched files)

@@ -217,7 +217,7 @@ _DECISION_RE = re.compile(
 
 # Error patterns
 _ERROR_RE = re.compile(
-    r"(?:error|Error|ERROR|failed|FAILED|exception|Exception)[:]\s*(.{10,120})",
+    r"(?:error|Error|ERROR|failed|FAILED|exception|Exception):\s*(.{10,120})",
 )
 
 # Dependency/import patterns

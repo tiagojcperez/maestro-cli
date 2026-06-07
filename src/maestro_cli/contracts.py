@@ -137,7 +137,7 @@ def _extract_primary_output(log_path: Path, stdout_tail: str) -> str:
             continue
         if line in _SECTION_HEADERS or line.startswith("[stderr] "):
             break
-        if line.startswith("status=") or line.startswith("message="):
+        if line.startswith(("status=", "message=")):
             break
         body.append(line)
 
