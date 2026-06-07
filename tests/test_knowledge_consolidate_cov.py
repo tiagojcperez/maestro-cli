@@ -38,9 +38,14 @@ def _record(
     confidence: float = 0.8,
     occurrences: int = 2,
     first_seen: str = "2026-01-01T00:00:00+00:00",
-    last_seen: str = "2026-05-01T00:00:00+00:00",
+    last_seen: str = _now_iso_for_test(),
 ) -> KnowledgeRecord:
-    """Build a KnowledgeRecord with sane defaults; override per test."""
+    """Build a KnowledgeRecord with sane defaults; override per test.
+
+    ``last_seen`` defaults to a fresh (import-time) timestamp so time-decayed
+    confidence stays above the consolidation gate regardless of the calendar
+    date — a hardcoded past date made these tests flaky as the date advanced.
+    """
     return KnowledgeRecord(
         task_id=task_id,
         kind=kind,
