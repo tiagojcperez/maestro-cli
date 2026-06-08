@@ -885,7 +885,7 @@ class TestConstants:
 
     def test_validation_constants(self) -> None:
         assert EDIT_POLICIES == {"default", "efficient", "strict"}
-        assert CONTEXT_MODES == {"raw", "summarized", "map_reduce", "recursive", "layered", "selective", "structural", "council", "knowledge_graph"}
+        assert CONTEXT_MODES == {"raw", "summarized", "map_reduce", "recursive", "layered", "selective", "structural", "council", "knowledge_graph", "codebase_map"}
         assert MAX_RETRIES_LIMIT == 3
 
 

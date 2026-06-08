@@ -32,6 +32,7 @@ from .runners import (
     _build_selective_context,
     _build_structural_context,
     _build_knowledge_graph_context,
+    _build_codebase_map_context,
     _compact_context,
     _filter_context_fields,
     _mask_secrets,
@@ -2626,6 +2627,22 @@ def run_plan(
                             }
                             context_synthesis = _build_knowledge_graph_context(
                                 _kg_texts,
+                                effective_budget,
+                            )
+
+                        elif task.context_mode == "codebase_map":
+                            # Workspace-derived (not from upstream): read the
+                            # pre-built Understand-Anything graph and score it
+                            # against this task's prompt. Zero LLM cost; ""
+                            # when no graph exists (task runs without it).
+                            effective_budget = (
+                                task.context_budget_tokens
+                                or plan.defaults.context_budget_tokens
+                                or 6000
+                            )
+                            context_synthesis = _build_codebase_map_context(
+                                plan.workspace_root,
+                                task.prompt or "",
                                 effective_budget,
                             )
 

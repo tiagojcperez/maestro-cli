@@ -990,6 +990,22 @@ def _build_knowledge_graph_context(
     return build_knowledge_graph(upstream_texts, budget_tokens)
 
 
+def _build_codebase_map_context(
+    workspace_root: str | None,
+    query: str,
+    budget_tokens: int,
+) -> str:
+    """Build context from a pre-built Understand-Anything knowledge graph.
+
+    Delegates to ``codebase_map.build_codebase_map_context`` — zero LLM cost,
+    reads ``<workspace_root>/.understand-anything/knowledge-graph.json``.
+    Returns ``""`` when no graph exists (graceful degradation).
+    """
+    from .codebase_map import build_codebase_map_context
+
+    return build_codebase_map_context(workspace_root, query, budget_tokens)
+
+
 def _score_chunk_bm25(chunk: str, keywords: set[str]) -> float:
     """Score a text chunk against intent keywords using BM25-style matching."""
     if not keywords:

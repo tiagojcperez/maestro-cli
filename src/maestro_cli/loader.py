@@ -2666,12 +2666,12 @@ def validate_plan(plan: PlanSpec) -> None:
                 f"non-empty context_from",
                 code=E001,
             )
-        if task.context_mode == "recursive":
+        if task.context_mode in {"recursive", "codebase_map"}:
             workspace_root = resolve_path(plan.source_dir, plan.workspace_root)
             if workspace_root is None or not workspace_root.exists() or not workspace_root.is_dir():
                 raise PlanValidationError(
-                    f"Task '{task.id}': context_mode 'recursive' requires plan.workspace_root "
-                    f"to resolve to an existing directory",
+                    f"Task '{task.id}': context_mode '{task.context_mode}' requires "
+                    f"plan.workspace_root to resolve to an existing directory",
                     code=E021,
                 )
 

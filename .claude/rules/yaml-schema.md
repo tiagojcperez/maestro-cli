@@ -69,7 +69,8 @@ Plan YAML files plus `src/maestro_cli/loader.py` and the dataclasses in
 ## Context Rules
 - `context_from` must reference dependencies, except wildcard `"*"`
 - `context_mode` is one of `raw`, `summarized`, `map_reduce`, `recursive`,
-  `layered`, `selective`, `structural`, `council`, `knowledge_graph`
+  `layered`, `selective`, `structural`, `council`, `knowledge_graph`,
+  `codebase_map`
 - `context_budget_tokens` is null or integer `>= 100`
 - `context_compact` is boolean
 - `workspace_index_exclude` is a list of globs
