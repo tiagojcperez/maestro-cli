@@ -69,7 +69,7 @@ MAESTRO_RUN_REAL_ENGINE_TESTS=1 MAESTRO_E2E_OLLAMA_MODEL=llama3.2:1b \
 |------|:----:|:-----------:|:-----------:|
 | DAG scheduling / dependency resolution | ✅ | ✅ | n/a |
 | Shell (`command`) tasks | ✅ | ✅ | n/a |
-| Context passing (9 modes) | ✅ | ✅ | partial |
+| Context passing (10 modes) | ✅ | ✅ | partial |
 | Budgets / cost / token tracking | ✅ | ✅ | partial |
 | Quality gates (judge / verify / guard / assert) | ✅ | ✅ | partial |
 | Retries / fallback / circuit breakers | ✅ | ✅ | n/a |

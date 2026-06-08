@@ -1068,7 +1068,7 @@ cache reuse, deterministic search benchmarks, demonstrable
 knowledge-bridge guidance, and red-team coverage for poisoned replan
 guidance.
 
-### Context Pipeline (9 modes + v2 upgrades)
+### Context Pipeline (10 modes + v2 upgrades)
 - `raw` (default), `summarized`, `map_reduce`, `recursive`, `layered`,
   `selective`, `structural`, `council`, `knowledge_graph`
 - BM25 intent filtering, graph-distance decay, progressive compaction,

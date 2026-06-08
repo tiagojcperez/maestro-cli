@@ -20,7 +20,7 @@ class TestSdkImport:
         assert maestro_cli is not None
 
     def test_version_is_current(self) -> None:
-        assert maestro_cli.__version__ == "2.5.0"
+        assert maestro_cli.__version__ == "2.5.1"
 
     def test_version_is_string(self) -> None:
         assert isinstance(maestro_cli.__version__, str)

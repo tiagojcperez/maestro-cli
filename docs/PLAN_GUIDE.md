@@ -124,7 +124,7 @@ tasks:
   - id: review
     depends_on: [implement]
     context_from: [implement]           # Inject upstream output
-    context_mode: summarized            # raw | summarized | map_reduce | recursive | layered | selective | structural | council | knowledge_graph
+    context_mode: summarized            # raw | summarized | map_reduce | recursive | layered | selective | structural | council | knowledge_graph | codebase_map
     context_budget_tokens: 8000         # Override default budget
     engine: claude
     cache: false                        # Always re-evaluate
@@ -447,6 +447,7 @@ Run once before `maestro run`. The records land in `.maestro-cache/knowledge/<pl
 | `selective` | Free (BM25 scoring) | Precise chunk-level filtering by keyword relevance |
 | `structural` | Free (regex symbols + graph scoring) | Code review — blast radius filtering by symbol references, package re-exports, and central hubs |
 | `knowledge_graph` | Free (regex entities) | Understanding *what changed* and *how things connect* |
+| `codebase_map` | Free (reads an Understand-Anything graph) | Inject a pre-built codebase map (files/functions/classes + relations) from `<workspace_root>/.understand-anything/knowledge-graph.json`, scored to the task prompt; opt-in, degrades to empty when absent |
 | `layered` | Free (heuristic L0/L1) | Many upstreams with tight token budget |
 | `summarized` | 1 haiku call per upstream | Large outputs, key facts only |
 | `map_reduce` | N haiku + 1 synthesis | 3+ upstreams, need unified summary |

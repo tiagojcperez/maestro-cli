@@ -17,6 +17,26 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ---
 
+## [2.5.1] — 2026-06-08
+
+### Added
+- **`context_mode: codebase_map`** — consume a pre-built Understand-Anything knowledge graph (`<workspace_root>/.understand-anything/knowledge-graph.json`), score its nodes by keyword relevance to the task prompt, and inject a budget-bounded codebase map as `{{ upstream_synthesis }}` (the same slot the other synthesis modes use). Zero LLM cost; opt-in; degrades to empty when no graph exists. Format-interop only — Maestro reads the documented `{nodes, edges}` shape and does **not** bundle, vendor, or depend on Understand-Anything. New `codebase_map.py` module; Maestro now ships **10 context modes**.
+
+### Fixed
+- **117 silently-dead tests un-shadowed** — the suite had duplicate top-level test class/function names across 10 files (a coverage-push collision). Python rebinds the name, so pytest only collected the *last* definition — 117 earlier test methods never ran. Renamed the duplicates so every test is collected; all 117 pass against current code (no hidden defects). Surfaced by Codacy's "Avoid Function Redefinition" check, which SonarCloud and the green suite missed.
+- **Date-flaky tests made deterministic** — `test_budget` (two ledger entries straddled the midnight day boundary) and `test_knowledge_consolidate` (a hardcoded stale `last_seen` decayed below the consolidation gate over time) now pin fixed reference timestamps.
+
+### Changed
+- **SonarCloud lint cleanup** — 43 behaviour-preserving edits (redundant exception subclasses subsumed by a caught superclass, inert `f` prefixes, chained `startswith` → tuple, collapsible `if`s, regex no-ops, one vestigial dead branch). Reliability findings (all false-positive/won't-fix) dismissed → quality gate green, **all-A** ratings (reliability/security/maintainability).
+
+### CI
+- **SonarCloud scan-action v4 → v6** — closes two high-severity Dependabot advisories (command + argument injection in `sonarqube-scan-action`). Added `setup-java` + `SONAR_SCANNER_SKIP_JRE_PROVISIONING` to work around the scanner-7 JRE-download 403; JDK pinned (Java 17 scanner support ends 2026-07; the warning is action-side).
+- **Codacy scoped to shipped source** — new `.codacy.yml` excludes `tests/` and non-source dirs so idiomatic pytest `assert`s (≈91% of Codacy's findings) stop burying real signal.
+
+Full suite green (**13,406 tests**), strict mypy clean.
+
+---
+
 ## [2.5.0] — 2026-06-04
 
 ### Added

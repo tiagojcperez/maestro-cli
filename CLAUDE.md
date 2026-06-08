@@ -7,7 +7,7 @@ It schedules tasks as a DAG (Directed Acyclic Graph), running them via `codex`, 
 
 - **Package name**: `maestro-ai-cli` (importable as `maestro_cli`)
 - **CLI entry point**: `maestro` (or `py -m maestro_cli`)
-- **Version**: 2.5.0
+- **Version**: 2.5.1
 - **Python**: >=3.11 (uses PEP 604 `X | Y` unions, `from __future__ import annotations`)
 - **Dependencies**: PyYAML core only; optional `[live]` (rich), `[tui]` (textual), `[web]` (fastapi+uvicorn), `[agui]` (ag-ui-protocol), `[mcp]` (mcp SDK), `[otel]` (OpenTelemetry OTLP exporter)
 
