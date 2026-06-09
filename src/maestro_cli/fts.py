@@ -99,7 +99,7 @@ def fts5_available() -> bool:
         try:
             conn.execute("CREATE VIRTUAL TABLE _probe USING fts5(x)")
             _fts5_available = True
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError:  # pragma: no cover - sqlite build without FTS5
             _fts5_available = False
         finally:
             conn.close()
@@ -192,7 +192,7 @@ def rank_documents(
                 "WHERE docs MATCH ? ORDER BY rank, rowid",
                 (match_expr,),
             ).fetchall()
-    except sqlite3.OperationalError:
+    except sqlite3.OperationalError:  # pragma: no cover - defensive: quoted MATCH is well-formed
         return []
     finally:
         conn.close()

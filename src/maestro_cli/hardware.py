@@ -170,7 +170,7 @@ def _detect_llama_models() -> list[str]:
         if not path.is_dir():
             return []
         return sorted(p.name for p in path.glob("*.gguf"))
-    except OSError:
+    except OSError:  # pragma: no cover - defensive: glob rarely raises
         return []
 
 
@@ -254,7 +254,7 @@ def select_local_model(
             for model in installed:
                 if _name_matches(tier_model, model.name):
                     return model.size_bytes
-            return None
+            return None  # pragma: no cover - only called after a match is confirmed
 
         def _usable(tier_model: str) -> bool:
             if not any(_name_matches(tier_model, m.name) for m in installed):

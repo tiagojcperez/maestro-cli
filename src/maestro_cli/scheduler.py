@@ -1821,7 +1821,7 @@ def run_plan(
         try:
             from .hardware import detect_hardware
             _hardware_info = detect_hardware()
-        except Exception:
+        except Exception:  # pragma: no cover - detect_hardware is internally graceful
             pass  # graceful degradation: no hardware signal = tier default stands
 
     # Load cross-run knowledge for prompt injection (T1.3)

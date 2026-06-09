@@ -160,20 +160,20 @@ def _resolve_prompt_text(
         if path is not None and path.is_file():
             try:
                 raw = path.read_text(encoding="utf-8")
-            except OSError:
+            except OSError:  # pragma: no cover - defensive: file exists but unreadable
                 raw = None
     elif task.prompt_md_file and task.prompt_md_heading:
         path = resolve_path(
             Path(plan.workspace_root) if plan.workspace_root else plan.source_dir,
             task.prompt_md_file,
         )
-        if path is None or not path.is_file():
+        if path is None or not path.is_file():  # pragma: no cover - md outside workspace_root
             path = resolve_path(plan.source_dir, task.prompt_md_file)
         if path is not None and path.is_file():
             try:
                 md_text = path.read_text(encoding="utf-8")
                 raw = extract_prompt_from_markdown(md_text, task.prompt_md_heading)
-            except OSError:
+            except OSError:  # pragma: no cover - defensive: file exists but unreadable
                 raw = None
 
     if raw is None:
