@@ -5,7 +5,7 @@
   ██   ██ ██  ██ ██        ██   ██   ██ ██  ██  ██
   ██   ██ ██  ██ ██████ ████    ██   ██  ██  ████
 
-  Maestro CLI -- Version 2.5.3
+  Maestro CLI -- Version 2.5.4
   CLI orchestrator for multi-step AI execution plans
 ```
 
@@ -461,7 +461,7 @@ For Windows-specific pitfalls, see [docs/PITFALLS.md](docs/PITFALLS.md).
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history and [docs/ROADMAP.md](docs/ROADMAP.md) for planned features.
 
-**Current repo state**: `v2.5.3` is the latest release — a retrieval + local-models tranche: **`maestro estimate`** (offline cost preflight, history-aware), **hardware-aware local routing** + `maestro doctor --hardware` (VRAM/Ollama/gguf detection so `model: auto` lands on an installed model that fits), the new **`context_mode: scip`** (SCIP code-intelligence interop, JSON form, 11th mode), FTS5 ranking extended to `context_mode: selective` plus opt-in prefix matching, and a `MAESTRO_FTS` master switch. Builds on `v2.5.2` (FTS5 knowledge ranking) and `v2.5.1` (`codebase_map`). 7 engines, **11 context modes**, SQLite-backed memory, and ~13.5K tests in the latest full-suite run.
+**Current repo state**: `v2.5.4` is the latest release — **parameter-scoped tool grants**: `allowed_tools` entries like `Bash(git *)` or `Write(src/*)` are now *enforced* (natively via Claude's `--allowedTools`, plus post-hoc verification of the observed tool-call stream on every engine that exposes one), with a new `on_grant_violation: warn|fail` gate, a `tool_grant_violation` event, and a `has_scoped_tools` policy field. Also: `context_mode: codebase_map`/`scip` now work standalone (without `context_from`), and CI tooling is pinned via a Dependabot-maintained constraints file. Builds on `v2.5.3` (estimate, hardware-aware routing, scip, FTS5 selective) and `v2.5.2`/`v2.5.1` (FTS5 knowledge ranking, `codebase_map`). 7 engines, **11 context modes**, SQLite-backed memory, and ~13.6K tests in the latest full-suite run.
 
 ## Requirements
 

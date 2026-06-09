@@ -8,8 +8,8 @@ Maestro CLI follows [Semantic Versioning 2.0.0](https://semver.org/).
 MAJOR.MINOR.PATCH
 ```
 
-The package is currently at **2.5.3**. The `2.x` line builds additively on the
-stable surface that was frozen at `1.0.0`; the `2.0.0` through `2.5.3` releases
+The package is currently at **2.5.4**. The `2.x` line builds additively on the
+stable surface that was frozen at `1.0.0`; the `2.0.0` through `2.5.4` releases
 have all shipped (see `CHANGELOG.md`).
 
 Maestro's bump policy is **deliberately looser than strict SemVer**: the PATCH
@@ -23,7 +23,7 @@ Maestro has **two independent version numbers**. Do not conflate them.
 
 | What | Where | Current value | Governed by |
 |------|-------|---------------|-------------|
-| **Package version** | `pyproject.toml`, `src/maestro_cli/__init__.py` (`__version__`) | `2.5.3` | SemVer (this document) |
+| **Package version** | `pyproject.toml`, `src/maestro_cli/__init__.py` (`__version__`) | `2.5.4` | SemVer (this document) |
 | **Plan-schema version** | the `version:` key inside an authored plan YAML | `1` | Plan schema contract |
 
 These are decoupled on purpose:

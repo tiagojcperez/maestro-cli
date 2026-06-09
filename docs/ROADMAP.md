@@ -255,6 +255,19 @@ tasks:
   Gemini/Copilot/Qwen/Ollama/Llama: system-prompt injection.
 - Inheritable via `defaults.<engine>.allowed_tools`
 
+**Parameter-scoped grants** — **Shipped in v2.5.4**:
+- `Tool(pattern)` specifiers (`Bash(git *)`, `Write(src/*)`) grant a
+  tool only for arguments matching the glob pattern — Progent-style
+  least privilege over tool *arguments*, not just tool names
+- Claude: scoped specifiers passed natively via `--allowedTools`
+  (non-matching calls denied in headless mode)
+- Post-hoc verification of the observed tool-call stream
+  (`check_tool_grants()`); violations recorded on the result, emitted
+  as `tool_grant_violation` events, and `on_grant_violation: fail`
+  turns them into task failure
+- Policy engine: `has_scoped_tools` field for rules that require
+  scoped grants on untrusted paths
+
 **Why first**: security prerequisite for remote execution and A2A.
 Without tool restrictions, sandboxed agents can still invoke arbitrary
 tools. References: Progent (DSL), MiniScope (least-privilege), AC4A.

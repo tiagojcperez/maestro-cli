@@ -13,7 +13,13 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ---
 
-## [Unreleased]
+## [2.5.4] — 2026-06-09
+
+### Added
+- **Parameter-scoped tool grants** — `allowed_tools` entries of the form `Tool(pattern)` (e.g. `Bash(git *)`, `Write(src/*)`) are now *enforced*, not just suggested: for Claude the specifiers are passed natively via `--allowedTools` (non-matching calls are denied in headless mode), and every engine with an observable tool-call stream gets a post-hoc verification pass (`check_tool_grants()`) that matches each observed call's primary argument against the grants. Violations land in `TaskResult.grant_violations` and emit a new `tool_grant_violation` event. New per-task `on_grant_violation: warn|fail` (default `warn`; `fail` marks an otherwise-successful task failed, feeding quality gates) with E073 validation, and a new `has_scoped_tools` field in policy-engine rules. Inspired by Progent's least-privilege tool policies; groundwork for hardened MCP/A2A surfaces.
+
+### Changed
+- **CI tooling is now pinned via a constraints file** — all GitHub Actions workflows install against `.github/requirements-ci.txt` (`pip install -c`), which pins the dev tooling (pytest, pytest-cov, coverage, mypy, types-PyYAML, build, twine) and the optional extras' top-level packages to the versions the suite is verified against. A new Dependabot `pip` entry bumps the pins weekly as reviewable PRs, so toolchain upgrades run the full suite instead of drifting silently. Runtime lower bounds in `pyproject.toml` stay deliberately loose and are unaffected.
 
 ### Fixed
 - **`context_mode: codebase_map` / `scip` now work standalone** — these workspace-derived modes read a pre-built index from `workspace_root` and are independent of upstream output, but their dispatch was gated behind `if task.context_from`, so a task *without* `context_from` silently received no injected map (a latent bug since `codebase_map` shipped in 2.5.1; `scip` inherited it in 2.5.3). Widened the gate so both modes inject their map whether or not the task declares `context_from`.
