@@ -16,6 +16,7 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 ## [Unreleased]
 
 ### Added
+- **`maestro estimate` — offline cost preflight** — estimate what a plan will cost to run *before* running it, read-only and deterministic (no engine is invoked). History-aware: when a task has prior-run cost in `run_manifest.json`, it reports the average actual spend; otherwise it falls back to a transparent token heuristic from the prompt size and the per-model pricing tables. Shell tasks are free, `ollama`/`llama` are zero-cost (local), `copilot` is subscription-based. Text + `--json` output; `--run-dir` and `--set KEY=VALUE` supported. New `estimate.py` module (28th subcommand).
 - **`MAESTRO_FTS` master switch** — a global env kill-switch for all FTS5-backed ranking (`fts.fts_enabled()`). Set `MAESTRO_FTS=0` (or `false`/`no`/`off`) to fall back to the in-Python rankers everywhere. The knowledge-specific `MAESTRO_KNOWLEDGE_FTS=0` still works and now also defers to this master switch.
 
 ### Changed

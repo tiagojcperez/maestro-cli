@@ -92,6 +92,7 @@ def _print_commands() -> None:
             ("status", "Show task staleness vs last run"),
             ("diff", "Compare two runs side-by-side"),
             ("suggest", "Suggest optimizations from history"),
+            ("estimate", "Estimate run cost before running"),
         ]),
         ("Generate", [
             ("scaffold", "Generate a plan from a brief"),
@@ -550,6 +551,32 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Override run directory for finding latest run",
     )
     status_p.add_argument(
+        "--json",
+        action="store_true",
+        default=False,
+        help="Output in JSON format",
+    )
+
+    estimate_p = sub.add_parser(
+        "estimate",
+        help="Estimate the cost of running a plan before running it",
+    )
+    estimate_p.add_argument("plan", help="Path to plan YAML")
+    estimate_p.add_argument(
+        "--run-dir",
+        default=None,
+        metavar="DIR",
+        help="Override run directory for prior-run cost history",
+    )
+    estimate_p.add_argument(
+        "--set",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        dest="set_vars",
+        help="Inject a template variable (repeatable) for prompt rendering",
+    )
+    estimate_p.add_argument(
         "--json",
         action="store_true",
         default=False,
@@ -1332,6 +1359,22 @@ def _cmd_suggest(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_estimate(args: argparse.Namespace) -> int:
+    from .estimate import estimate_plan, format_estimate, format_estimate_json
+
+    plan = load_plan(args.plan)
+    run_dir = Path(args.run_dir) if args.run_dir else Path(plan.run_dir)
+    extra_vars = _parse_set_vars(getattr(args, "set_vars", []))
+    report = estimate_plan(plan, run_dir, extra_template_vars=extra_vars)
+
+    if args.json:
+        print(format_estimate_json(report))
+    else:
+        print(format_estimate(report))
+
+    return 0
+
+
 def _cmd_ci_analyze(args: argparse.Namespace) -> int:
     from .ci_agent import analyze_ci_failure, format_ci_analysis
 
@@ -1760,8 +1803,8 @@ def main(argv: list[str] | None = None) -> int:
     _SUBCOMMANDS = {
         "validate", "check", "run", "cleanup", "backfill-costs",
         "scaffold", "ci", "doctor", "ui", "report", "diff",
-        "explain", "status", "eval", "suggest", "shell", "chat", "replan", "watch",
-        "audit", "verify", "blame", "export-otel",
+        "explain", "status", "eval", "suggest", "estimate", "shell", "chat",
+        "replan", "watch", "audit", "verify", "blame", "export-otel",
     }
     if any(a in ("-h", "--help") for a in effective) and not (
         _SUBCOMMANDS & set(effective)
@@ -1811,6 +1854,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_eval(args)
         if args.command == "suggest":
             return _cmd_suggest(args)
+        if args.command == "estimate":
+            return _cmd_estimate(args)
         if args.command == "shell":
             return _cmd_shell(args)
         if args.command == "skill":

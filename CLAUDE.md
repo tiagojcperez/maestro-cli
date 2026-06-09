@@ -38,7 +38,7 @@ Migration guidance for users coming from `0.x` lives in
 | `AGENTS.md` | Agent role catalog with collaboration map |
 | `CHANGELOG.md` | Full release history |
 | `docs/AGENT_OPS.md` | **Operations manual for AI agents** — decision trees, pitfalls, checklists |
-| `docs/CLI_REFERENCE.md` | Full CLI flag tables for all 27 subcommands |
+| `docs/CLI_REFERENCE.md` | Full CLI flag tables for all 28 subcommands |
 | `docs/PLAN_GUIDE.md` | Plan schema, context, reliability, judge, policies (authoring guide) |
 | `docs/PLAYBOOK.md` | Curated recipes by task type (12 recipes, anti-patterns, cost checklist) |
 | `docs/MODELS.md` | Engine model alias tables, routing, pricing |
@@ -52,7 +52,7 @@ Migration guidance for users coming from `0.x` lives in
 
 ```
 src/maestro_cli/
-├── cli.py            # argparse CLI — 27 shipped subcommands (`ci`, `verify`, `audit`, `chat`, `blame`, `check` included), 16 frozen in the v1 contract, plus `--version` and the ASCII art banner
+├── cli.py            # argparse CLI — 28 shipped subcommands (`ci`, `verify`, `audit`, `chat`, `blame`, `check`, `estimate` included), 16 frozen in the v1 contract, plus `--version` and the ASCII art banner
 ├── models.py         # Dataclasses: PlanSpec, TaskSpec, TaskResult, PlanRunResult, WorkflowVariant, TokenUsage, JudgeSpec, JudgeResult, RubricLevel, RubricCriterion, FailureRecord, HandoffReport, WorkspaceExtraction, WorkspaceBrief, PlanBrief, TaskBrief, PlanImport, Suggestion, PlanSuggestions, ReplanAttempt, ReplanState, MultiPlanResult, WatchSpec, WatchIteration, WatchState, EventRecord, VerifyStatus, CircuitBreakerSpec, PolicySpec, PolicyViolation, BlameNode, BlameChain, ContextSelectionEntry, ContextTrajectoryReport
 ├── loader.py         # YAML parsing + validation + cycle detection (DFS) + matrix expansion + plan imports resolution + circuit_breaker/retry_strategy parsing
 ├── runners.py        # Command building + task execution (subprocess) + pricing tables + recursive context pipeline + handoff reports + context compression + context compaction + guard_command + typed assertions + rubric eval + G-Eval + comparative eval + score aggregation + secrets masking + auto-escalation + cross-engine fallback + Codex token extraction (4 strategies)
@@ -101,6 +101,7 @@ src/maestro_cli/
 ├── diff.py           # Run comparison (RunDiff, TaskDiff, status/cost/token/duration deltas)
 ├── explain.py        # Cache explain (TaskExplanation, PlanExplanation, hit/miss/disabled)
 ├── status.py         # Pipeline status (TaskPipelineStatus, PlanPipelineStatus, stale detection)
+├── estimate.py       # Offline cost preflight (maestro estimate) — history-aware + token heuristic, reuses pricing tables
 ├── eval.py           # Batch judge evaluation (EvalResult, EvalSuiteResult, DimensionResult, multi-dimensional eval)
 ├── doctor.py         # Environment diagnostics (maestro doctor)
 ├── report.py         # Self-contained HTML report generation (maestro report)
@@ -382,6 +383,9 @@ maestro eval <eval.yaml> <run-path> [--json] [--verbose]
 
 # Analyze run history and suggest plan optimizations
 maestro suggest <plan.yaml> [--min-runs N] [--json]
+
+# Estimate run cost before running (read-only, offline)
+maestro estimate <plan.yaml> [--run-dir DIR] [--set KEY=VALUE] [--json]
 
 # Multi-model interactive chat
 maestro chat [--engine ENGINE] [--model MODEL] [--execution-profile PROFILE]
@@ -734,7 +738,7 @@ py -m pytest tests/ -v
 
 | File | Purpose | Key functions |
 |------|---------|--------------|
-| `cli.py` | CLI entry, argparse (27 shipped subcommands; 16 frozen in the v1 contract), `--version`, ASCII art banner | `main()`, `_build_parser()`, `_print_banner()`, `_parse_set_vars()`, `_cmd_validate()`, `_cmd_check()`, `_cmd_run()`, `_cmd_ci()`, `_cmd_ci_analyze()`, `_cmd_replan()`, `_cmd_scaffold()`, `_cmd_cleanup()`, `_cmd_backfill_costs()`, `_cmd_doctor()`, `_cmd_mcp_server()`, `_cmd_ui()`, `_cmd_report()`, `_cmd_diff()`, `_cmd_explain()`, `_cmd_status()`, `_cmd_eval()`, `_cmd_suggest()`, `_cmd_skill()`, `_cmd_shell()`, `_cmd_chat()`, `_cmd_watch()`, `_cmd_verify()`, `_cmd_audit()`, `_cmd_blame()`, `_cmd_budget()`, `_cmd_export_otel()` |
+| `cli.py` | CLI entry, argparse (28 shipped subcommands; 16 frozen in the v1 contract), `--version`, ASCII art banner | `main()`, `_build_parser()`, `_print_banner()`, `_parse_set_vars()`, `_cmd_validate()`, `_cmd_check()`, `_cmd_run()`, `_cmd_ci()`, `_cmd_ci_analyze()`, `_cmd_replan()`, `_cmd_scaffold()`, `_cmd_cleanup()`, `_cmd_backfill_costs()`, `_cmd_doctor()`, `_cmd_mcp_server()`, `_cmd_ui()`, `_cmd_report()`, `_cmd_diff()`, `_cmd_explain()`, `_cmd_status()`, `_cmd_eval()`, `_cmd_suggest()`, `_cmd_estimate()`, `_cmd_skill()`, `_cmd_shell()`, `_cmd_chat()`, `_cmd_watch()`, `_cmd_verify()`, `_cmd_audit()`, `_cmd_blame()`, `_cmd_budget()`, `_cmd_export_otel()` |
 | `models.py` | Data models (39+ dataclasses) | `PlanSpec`, `TaskSpec`, `TaskResult`, `PlanRunResult`, `TokenUsage`, `JudgeSpec`, `JudgeResult`, `RubricLevel`, `RubricCriterion`, `CriterionScore`, `FailureRecord`, `HandoffReport`, `WorkspaceExtraction`, `WorkspaceBrief`, `PlanBrief`, `TaskBrief`, `PlanImport`, `Suggestion`, `PlanSuggestions`, `SuggestionCategory`, `ShellState`, `ReplanAttempt`, `ReplanState`, `MultiPlanResult`, `WatchSpec`, `WatchIteration`, `WatchState`, `EventRecord`, `VerifyStatus`, `CircuitBreakerSpec`, `PolicySpec`, `PolicyViolation`, `BlameNode`, `BlameChain` |
 | `loader.py` | YAML → PlanSpec + validation + matrix expansion + imports + circuit_breaker/retry_strategy parsing | `load_plan()`, `validate_plan()`, `_expand_matrix_tasks()`, `_to_judge_spec()`, `_resolve_imports()` |
 | `runners.py` | Build + execute commands + pricing + judge + retry + recursive context + handoff reports + guard_command + typed assertions + rubric eval + G-Eval + comparative eval + score aggregation + secrets masking + auto-escalation + cross-engine fallback + Codex token extraction (4 strategies) | `build_command()`, `execute_task()`, `_classify_failure()`, `_next_escalation_model()`, `_is_engine_failure()`, `_run_judge_evaluation()`, `_evaluate_typed_assertion()`, `_run_guard_command()`, `_evaluate_rubric_criteria()`, `_format_rubric_criteria()`, `_generate_eval_steps()`, `_aggregate_scores()`, `_run_comparative_evaluation()`, `_build_recursive_context()`, `_run_workspace_extraction()`, `_run_workspace_brief()`, `_build_smart_retry_feedback()`, `_generate_handoff_report()`, `_compress_context_for_retry()`, `_build_secret_values()`, `_mask_secrets()`, `_extract_codex_cumulative_usage()`, `_compute_retry_delay()` |
@@ -767,6 +771,7 @@ py -m pytest tests/ -v
 | `diff.py` | Run comparison | `diff_runs()`, `format_diff()`, `format_diff_json()`, `RunDiff`, `TaskDiff` |
 | `explain.py` | Cache explain per task | `explain_plan()`, `format_explain()`, `format_explain_json()`, `TaskExplanation`, `PlanExplanation` |
 | `status.py` | Pipeline staleness detection | `plan_status()`, `format_status()`, `format_status_json()`, `TaskPipelineStatus`, `PlanPipelineStatus` |
+| `estimate.py` | Offline cost preflight (history-aware + token heuristic) | `estimate_plan()`, `format_estimate()`, `format_estimate_json()`, `TaskEstimate`, `PlanEstimate` |
 | `eval.py` | Batch judge evaluation + multi-dimensional eval | `load_eval_spec()`, `run_eval()`, `format_eval()`, `format_eval_json()`, `EvalResult`, `EvalSuiteResult`, `DimensionResult` |
 | `doctor.py` | Environment diagnostics | `run_doctor()` |
 | `report.py` | HTML report generation | `generate_report()` |

@@ -226,6 +226,16 @@ Suggest deterministic plan optimizations from run history.
 | `--min-runs N` | Minimum runs to analyse (default: `3`) |
 | `--json` | Machine-readable JSON output |
 
+### `maestro estimate <plan.yaml> [options]`
+
+Estimate the cost of running a plan **before** running it — read-only, offline, deterministic. Uses the average actual cost from prior runs when available (`history`), otherwise a transparent token heuristic from prompt size + the per-model pricing tables (`heuristic`, a lower bound). Shell tasks are free; `ollama`/`llama` are zero-cost (local); `copilot` is subscription-based.
+
+| Flag | Description |
+|------|-------------|
+| `--run-dir DIR` | Override run directory for prior-run cost history |
+| `--set KEY=VALUE` | Inject a template variable (repeatable) for prompt rendering |
+| `--json` | Machine-readable JSON output |
+
 ### `maestro blame <run-path> [options]`
 
 Trace failure causality in a completed run via dependency graph backward walk. Classifies root causes (timeout, budget, context, cascade), provides confidence scores and suggested fixes.
