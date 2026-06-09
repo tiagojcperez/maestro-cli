@@ -33,6 +33,7 @@ from .runners import (
     _build_structural_context,
     _build_knowledge_graph_context,
     _build_codebase_map_context,
+    _build_scip_context,
     _compact_context,
     _filter_context_fields,
     _mask_secrets,
@@ -2653,6 +2654,22 @@ def run_plan(
                                 or 6000
                             )
                             context_synthesis = _build_codebase_map_context(
+                                plan.workspace_root,
+                                task.prompt or "",
+                                effective_budget,
+                            )
+
+                        elif task.context_mode == "scip":
+                            # Workspace-derived (not from upstream): read the
+                            # pre-built SCIP index (JSON) and score its symbols
+                            # against this task's prompt. Zero LLM cost; "" when
+                            # no index exists (task runs without it).
+                            effective_budget = (
+                                task.context_budget_tokens
+                                or plan.defaults.context_budget_tokens
+                                or 6000
+                            )
+                            context_synthesis = _build_scip_context(
                                 plan.workspace_root,
                                 task.prompt or "",
                                 effective_budget,

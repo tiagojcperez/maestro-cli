@@ -347,7 +347,7 @@ class TestContextModeValidation:
         for mode in CONTEXT_MODES - {"council"}:
             workspace_root_line = (
                 f"workspace_root: {workspace_root.as_posix()}\n"
-                if mode in {"recursive", "codebase_map"}
+                if mode in {"recursive", "codebase_map", "scip"}
                 else ""
             )
             yaml_text = (

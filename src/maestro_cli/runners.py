@@ -1035,6 +1035,22 @@ def _build_codebase_map_context(
     return build_codebase_map_context(workspace_root, query, budget_tokens)
 
 
+def _build_scip_context(
+    workspace_root: str | None,
+    query: str,
+    budget_tokens: int,
+) -> str:
+    """Build context from a pre-built SCIP code-intelligence index (JSON).
+
+    Delegates to ``scip.build_scip_context`` — zero LLM cost, reads
+    ``<workspace_root>/index.scip.json``.  Returns ``""`` when no index exists
+    (graceful degradation).
+    """
+    from .scip import build_scip_context
+
+    return build_scip_context(workspace_root, query, budget_tokens)
+
+
 def _score_chunk_bm25(chunk: str, keywords: set[str]) -> float:
     """Score a text chunk against intent keywords using BM25-style matching."""
     if not keywords:
