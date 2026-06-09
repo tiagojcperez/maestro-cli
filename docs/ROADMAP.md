@@ -461,8 +461,7 @@ MAGMA (multi-graph), LightMem (sleep-time consolidation, 117×
 compression), Graph-based Agent Memory survey, AgentPoison (retrieval
 dominance detection), Memory Poisoning Attack (write gate design),
 Unit 42 Memory Poisoning PoC (persistent compromise via benign
-artifacts), Claude Code leaked source (index-and-detail memory
-pattern, typed taxonomy, exclusion rules).
+artifacts).
 
 #### Codebase Graph (`codebase_graph.py`) — Shipped in v2.2.0
 
@@ -566,10 +565,6 @@ state carried by persistent memory and cross-run knowledge.
   the same snapshot shape for `maestro chat` bootstrap rather than
   adding a second memory subsystem.
 
-References: Claude Code leaked source (microcompact + auto-compact
-+ session memory compaction, circuit breaker, post-compact
-restoration, scratchpad-then-strip pattern).
-
 #### Semantic Firewalls
 
 LLM-based input/output validation beyond static regex patterns.
@@ -663,8 +658,7 @@ References: Adaptive Attacks Break IPI (NAACL 2025), ToolHijacker
 multi-tool vulnerabilities), VIGIL + SIREN (verify-before-commit),
 WASP (agents follow malicious instructions even without completing
 them), Prompt Injection on Agentic Coding Assistants (trust boundary
-failures), Claude Code leaked source (wildcard tool patterns,
-agent tool filtering, concurrency safety declarations).
+failures).
 
 #### Observability v2
 
@@ -1018,9 +1012,7 @@ objectives, iterating on plan design based on execution feedback.
 The ultimate abstraction: describe what you want, Maestro figures
 out how.
 
-References: A2A Protocol, Claude Code leaked source (coordinator
-mode as system prompt + tool set flag, worker notification via
-message injection, deliberate context isolation).
+References: A2A Protocol.
 
 ---
 
@@ -1173,7 +1165,7 @@ Features in this roadmap were informed by these projects and papers.
 ### Context + Retrieval + Memory
 - **[OpenViking](https://github.com/volcengine/OpenViking)** -- L0/L1/L2 tiered context loading
 - **[FlashRAG](https://github.com/RUC-NLPIR/FlashRAG)** -- selective context refiners, IRCoT reasoning-based RAG
-- **[ContextBench](https://arxiv.org/html/2603.08835v1)** -- validates BM25 over embedding-based retrieval for coding agents
+- **[ContextBench](https://arxiv.org/abs/2602.05892)** -- validates BM25 over embedding-based retrieval for coding agents
 - **[MemoryOS](https://github.com/BAI-LAB/MemoryOS)** -- hierarchical memory OS, 48% F1 improvement (EMNLP 2025 Oral)
 - **[ReMe](https://github.com/agentscope-ai/ReMe)** -- "memory as files" paradigm, cross-session recall
 - **[SimpleMem](https://github.com/aiming-lab/SimpleMem)** -- lossless semantic compression for lifelong memory
@@ -1202,7 +1194,7 @@ Features in this roadmap were informed by these projects and papers.
 ### Security + Safety
 - **CaMeLs** -- control flow integrity
 - **AgentDojo** -- prompt injection in agent tools
-- **[CIBER](https://arxiv.org/html/2602.19547v1)** -- dual verification, memory poisoning, zero-trust taint
+- **[CIBER](https://arxiv.org/abs/2602.19547)** -- dual verification, memory poisoning, zero-trust taint
 - **[Security Considerations for MAS](https://arxiv.org/abs/2603.09002)** -- 193 risks across 9 categories
 - **[TrinityGuard](https://arxiv.org/abs/2603.15408)** -- unified safeguarding, 20 risk types
 - **[AgentDoG](https://github.com/AI45Lab/AgentDoG)** -- trajectory-level diagnostic guardrail
@@ -1237,9 +1229,9 @@ Features in this roadmap were informed by these projects and papers.
 ### Orchestration + Workflow
 - **[Kong](https://github.com/amruth-sn/kong)** -- batch LLM chunking, $0.019/function
 - **[Deep Agents](https://github.com/langchain-ai/deepagents)** -- autonomous compression, structured summaries
-- **[OpenDev](https://arxiv.org/html/2603.05344v1)** -- 5-stage progressive compaction, event reminders
-- **[AgentConductor](https://arxiv.org/html/2602.17100)** -- topology evolution, Plan Density Score
-- **[DOVA](https://arxiv.org/html/2603.13327v1)** -- deliberation-first, adversarial debate
+- **[OpenDev](https://arxiv.org/abs/2603.05344)** -- 5-stage progressive compaction, event reminders
+- **[AgentConductor](https://arxiv.org/abs/2602.17100)** -- topology evolution, Plan Density Score
+- **[DOVA](https://arxiv.org/abs/2603.13327)** -- deliberation-first, adversarial debate
 - **[AFlow](https://github.com/FoundationAgents/AFlow)** -- MCTS over workflow space
 - **[MARBLE/MultiAgentBench](https://github.com/ulab-uiuc/MARBLE)** -- star/chain/graph topologies (ACL 2025)
 - **[LLMSched](https://arxiv.org/abs/2504.03444)** -- DAG-structured LLM inference scheduler; resource-aware scheduling and queueing
