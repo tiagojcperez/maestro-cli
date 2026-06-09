@@ -284,6 +284,22 @@ class TestSelectRelevantKnowledgeFts:
 
         assert selected[0].task_id == "test"
 
+    def test_master_switch_disables_fts_ranker(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The global MAESTRO_FTS=0 switch also bypasses the FTS5 ranker."""
+        monkeypatch.setenv("MAESTRO_FTS", "0")
+
+        def _must_not_run(*_args: object, **_kwargs: object) -> dict[int, float]:
+            raise AssertionError("FTS path must be skipped when MAESTRO_FTS=0")
+
+        monkeypatch.setattr(knowledge_mod, "relevance_by_rank", _must_not_run)
+
+        records = {"test": [_record(task_id="test", insight="database tests pass")]}
+        selected = select_relevant_knowledge(records, "database tests", max_records=1)
+
+        assert selected[0].task_id == "test"
+
 
 # ---------------------------------------------------------------------------
 # record_knowledge_retrievals — empty input + backend error

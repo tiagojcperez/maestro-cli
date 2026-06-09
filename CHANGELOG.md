@@ -15,6 +15,15 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ## [Unreleased]
 
+### Added
+- **`MAESTRO_FTS` master switch** — a global env kill-switch for all FTS5-backed ranking (`fts.fts_enabled()`). Set `MAESTRO_FTS=0` (or `false`/`no`/`off`) to fall back to the in-Python rankers everywhere. The knowledge-specific `MAESTRO_KNOWLEDGE_FTS=0` still works and now also defers to this master switch.
+
+### Changed
+- **`context_mode: selective` now ranks chunks with SQLite FTS5 BM25 when available** — replaces the naive substring/TF heuristic (`_score_chunk_bm25`) with the indexed, IDF-weighted, length-normalised BM25 from `fts.py`, reusing the v2.5.2 retrieval primitive. A lexical hit clears the relevance gate (rank-position relevance then drives selection priority); graceful, byte-identical fallback to the heuristic when FTS5 is disabled/unavailable or yields no matches. Still zero LLM cost and deterministic.
+
+### Fixed
+- **`fts.py` — Codacy/Opengrep SQL-injection false positive** — the FTS5 query was already fully parameterized (match expression and limit bound via `?`), but the scanner flags `execute(<variable>, …)` on principle. Split the SELECT into two literal-string branches so static analysers can confirm there is no injection surface. Behavior unchanged.
+
 ---
 
 ## [2.5.2] — 2026-06-09

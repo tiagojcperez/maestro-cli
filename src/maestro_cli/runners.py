@@ -877,6 +877,10 @@ _COMPACTION_MARKER = "\n...[compacted: {n} chars removed]...\n"
 # Selective context constants (v1.30.0)
 _SELECTIVE_CHUNK_SIZE = 200  # chars per chunk for BM25 scoring
 _SELECTIVE_MIN_SCORE = 0.1   # minimum BM25 score to include a chunk
+# Lifts FTS5 rank-position relevance (0.0-1.0) into the heuristic's score band
+# (a strong 2-keyword chunk scores ~2.0 under _score_chunk_bm25) so the
+# per-upstream boost interplay is comparable whichever ranker is in play.
+_SELECTIVE_FTS_SCALE = 2.0
 
 
 def _build_selective_context(
@@ -895,35 +899,58 @@ def _build_selective_context(
     if not upstream_texts or budget_tokens <= 0:
         return ""
 
+    from .fts import fts_enabled, relevance_by_rank
+
     budget_chars = budget_tokens * _CHARS_PER_TOKEN
     scores_map = scores or {}
 
-    # Split all upstreams into scored chunks
-    scored_chunks: list[tuple[float, str, str]] = []  # (score, upstream_id, chunk_text)
-
+    # 1. Split every upstream into ~_SELECTIVE_CHUNK_SIZE-char chunks, keeping
+    #    each chunk's upstream id and original order.
+    chunks: list[tuple[str, str]] = []  # (upstream_id, chunk_text)
     for upstream_id, text in upstream_texts.items():
         if not text.strip():
             continue
-        upstream_boost = scores_map.get(upstream_id, 0.0)
         lines = text.splitlines(keepends=True)
-        # Build chunks of ~_SELECTIVE_CHUNK_SIZE chars
         chunk: list[str] = []
         chunk_len = 0
         for line in lines:
             chunk.append(line)
             chunk_len += len(line)
             if chunk_len >= _SELECTIVE_CHUNK_SIZE:
-                chunk_text = "".join(chunk)
-                chunk_score = _score_chunk_bm25(chunk_text, intent_keywords) + upstream_boost
-                if chunk_score >= _SELECTIVE_MIN_SCORE:
-                    scored_chunks.append((chunk_score, upstream_id, chunk_text))
+                chunks.append((upstream_id, "".join(chunk)))
                 chunk = []
                 chunk_len = 0
         if chunk:
-            chunk_text = "".join(chunk)
+            chunks.append((upstream_id, "".join(chunk)))
+
+    # 2. Score chunks. Prefer SQLite FTS5 BM25 (indexed, IDF-weighted, length-
+    #    normalised) over the naive substring heuristic; fall back transparently
+    #    when FTS5 is disabled/unavailable or yields no matches. The FTS5 query
+    #    is the stopword-filtered keyword set, sorted for deterministic term
+    #    truncation.
+    fts_relevance: dict[int, float] = {}
+    if fts_enabled() and intent_keywords:
+        fts_query = " ".join(sorted(intent_keywords))
+        fts_relevance = relevance_by_rank([c for _, c in chunks], fts_query)
+
+    scored_chunks: list[tuple[float, str, str]] = []  # (score, upstream_id, chunk_text)
+    for index, (upstream_id, chunk_text) in enumerate(chunks):
+        upstream_boost = scores_map.get(upstream_id, 0.0)
+        if fts_relevance:
+            # An FTS5 hit (matched >=1 keyword) always clears the relevance gate
+            # — rank-position relevance drives selection priority. A non-hit
+            # rides in only if its upstream boost is independently strong.
+            if index in fts_relevance:
+                chunk_score = fts_relevance[index] * _SELECTIVE_FTS_SCALE + upstream_boost
+            elif upstream_boost >= _SELECTIVE_MIN_SCORE:
+                chunk_score = upstream_boost
+            else:
+                continue
+        else:
             chunk_score = _score_chunk_bm25(chunk_text, intent_keywords) + upstream_boost
-            if chunk_score >= _SELECTIVE_MIN_SCORE:
-                scored_chunks.append((chunk_score, upstream_id, chunk_text))
+            if chunk_score < _SELECTIVE_MIN_SCORE:
+                continue
+        scored_chunks.append((chunk_score, upstream_id, chunk_text))
 
     if not scored_chunks:
         # Fallback: L0 summary of each upstream
@@ -949,8 +976,8 @@ def _build_selective_context(
     for uid in upstream_texts:
         if uid not in selected:
             continue
-        chunks = [c for _, c in selected[uid]]
-        body = "".join(chunks).strip()
+        selected_bodies = [c for _, c in selected[uid]]
+        body = "".join(selected_bodies).strip()
         result_parts.append(f"--- {uid} ---\n{body}")
 
     return "\n\n".join(result_parts)

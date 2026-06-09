@@ -6,6 +6,7 @@ from maestro_cli import fts
 from maestro_cli.fts import (
     FtsHit,
     fts5_available,
+    fts_enabled,
     rank_documents,
     relevance_by_rank,
 )
@@ -23,6 +24,26 @@ class TestFts5Available:
     def test_result_is_cached(self) -> None:
         # Two calls must agree (the probe is memoised in a module global).
         assert fts5_available() == fts5_available()
+
+
+class TestFtsEnabled:
+    def test_default_enabled(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("MAESTRO_FTS", raising=False)
+        assert fts_enabled() is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "off", "OFF", "False", " no "])
+    def test_disabled_values(
+        self, monkeypatch: pytest.MonkeyPatch, value: str
+    ) -> None:
+        monkeypatch.setenv("MAESTRO_FTS", value)
+        assert fts_enabled() is False
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "on", "anything"])
+    def test_enabled_values(
+        self, monkeypatch: pytest.MonkeyPatch, value: str
+    ) -> None:
+        monkeypatch.setenv("MAESTRO_FTS", value)
+        assert fts_enabled() is True
 
 
 class TestRankDocuments:

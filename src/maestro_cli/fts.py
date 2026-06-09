@@ -19,6 +19,7 @@ ranking" rather than "no relevant documents".
 
 from __future__ import annotations
 
+import os
 import re
 import sqlite3
 from collections.abc import Sequence
@@ -49,6 +50,22 @@ class FtsHit:
 
     index: int
     score: float
+
+
+def fts_enabled() -> bool:
+    """Master switch for FTS5-backed ranking across Maestro (default on).
+
+    Set ``MAESTRO_FTS=0`` (or ``false``/``no``/``off``) to disable FTS5
+    everywhere and fall back to the in-Python rankers. Subsystems may layer
+    additional, more specific switches on top (e.g. ``MAESTRO_KNOWLEDGE_FTS``
+    for knowledge retrieval).
+    """
+    return os.environ.get("MAESTRO_FTS", "1").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
 
 
 def fts5_available() -> bool:

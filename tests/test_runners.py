@@ -9962,6 +9962,38 @@ class TestBuildSelectiveContext:
         # Very tight budget — should still produce something or be truncated
         assert isinstance(result, str)
 
+    def test_fts5_excludes_irrelevant_upstream(self) -> None:
+        from maestro_cli.runners import _build_selective_context
+        upstreams = {
+            "task-a": "general logging utilities and helpers everywhere here. ",
+            "task-b": "the kafka consumer handles message offsets and commits. ",
+        }
+        result = _build_selective_context(upstreams, 5000, {"kafka", "consumer"})
+        # Only the lexically relevant upstream survives the relevance gate.
+        assert "task-b" in result
+        assert "task-a" not in result
+        assert "kafka" in result
+
+    def test_fts5_disabled_falls_back_to_heuristic(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from maestro_cli.runners import _build_selective_context
+        monkeypatch.setenv("MAESTRO_FTS", "0")
+        upstreams = {"task-a": "authentication and user login flow handling here."}
+        result = _build_selective_context(upstreams, 5000, {"authentication"})
+        assert "task-a" in result
+        assert "authentication" in result
+
+    def test_selective_ranking_is_deterministic(self) -> None:
+        from maestro_cli.runners import _build_selective_context
+        upstreams = {
+            "u1": "alpha beta gamma delta epsilon zeta eta theta. " * 3,
+            "u2": "beta gamma database query planner optimizer cache. " * 3,
+        }
+        first = _build_selective_context(upstreams, 300, {"beta", "gamma", "database"})
+        second = _build_selective_context(upstreams, 300, {"beta", "gamma", "database"})
+        assert first == second
+
 
 class TestScoreChunkBm25:
     def test_basic_scoring(self) -> None:

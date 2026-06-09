@@ -16,7 +16,7 @@ from .cache import (
     compute_simulation_plan_hash,
     simulation_model_families,
 )
-from .fts import relevance_by_rank
+from .fts import fts_enabled, relevance_by_rank
 from .models import (
     HistoricalPruningDecision,
     KnowledgeRecord,
@@ -140,8 +140,11 @@ def _knowledge_fts_enabled() -> bool:
 
     On by default (when the sqlite3 build supports FTS5); set
     ``MAESTRO_KNOWLEDGE_FTS=0`` to force the legacy in-Python BM25 ranker, e.g.
-    to reproduce pre-FTS5 ranking exactly.
+    to reproduce pre-FTS5 ranking exactly. The global ``MAESTRO_FTS=0`` master
+    switch disables it too.
     """
+    if not fts_enabled():
+        return False
     return os.environ.get("MAESTRO_KNOWLEDGE_FTS", "1").strip().lower() not in {
         "0",
         "false",
