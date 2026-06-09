@@ -38,7 +38,15 @@ jobs:
           pip install pytest
 
       - name: Install Ollama
-        run: curl -fsSL https://ollama.com/install.sh | sh
+        run: |
+          # Retry the network install — the weekly lane backs the per-area
+          # real-engine guarantees, so a transient ollama.com blip shouldn't red it.
+          for attempt in 1 2 3; do
+            curl -fsSL https://ollama.com/install.sh | sh && break
+            echo "ollama install attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          command -v ollama
 
       - name: Start Ollama and pull the model
         run: |

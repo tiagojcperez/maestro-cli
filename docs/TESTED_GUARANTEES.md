@@ -29,8 +29,9 @@ Runs on Python **3.11 / 3.12 / 3.13** plus a **Windows** lane:
 - Coverage upload to Codecov
 
 Plus a separate **weekly + on-demand** lane that runs the **free local Ollama**
-real-engine round-trip (`real-engine.yml`) — the one E2E leg cheap enough to run
-unattended.
+real-engine suite (`real-engine.yml`) — a round-trip plus end-to-end checks for
+context passing, the deterministic quality gates, and budget tracking. It is the
+one E2E leg cheap enough to run unattended.
 
 ## Per-engine coverage
 
@@ -69,9 +70,9 @@ MAESTRO_RUN_REAL_ENGINE_TESTS=1 MAESTRO_E2E_OLLAMA_MODEL=llama3.2:1b \
 |------|:----:|:-----------:|:-----------:|
 | DAG scheduling / dependency resolution | ✅ | ✅ | n/a |
 | Shell (`command`) tasks | ✅ | ✅ | n/a |
-| Context passing (11 modes) | ✅ | ✅ | partial |
-| Budgets / cost / token tracking | ✅ | ✅ | partial |
-| Quality gates (judge / verify / guard / assert) | ✅ | ✅ | partial |
+| Context passing (11 modes) | ✅ | ✅ | ✅ ollama † |
+| Budgets / cost / token tracking | ✅ | ✅ | ✅ ollama † |
+| Quality gates (judge / verify / guard / assert) | ✅ | ✅ | ✅ ollama † |
 | Retries / fallback / circuit breakers | ✅ | ✅ | n/a |
 | Secret masking | ✅ | ✅ | n/a |
 | Policy engine (safe AST evaluation) | ✅ (fuzzed) | ✅ | n/a |
@@ -79,6 +80,17 @@ MAESTRO_RUN_REAL_ENGINE_TESTS=1 MAESTRO_E2E_OLLAMA_MODEL=llama3.2:1b \
 | Cache / event sourcing / blame | ✅ | ✅ | n/a |
 | Python SDK surface (`__all__`, `py.typed`) | ✅ | ✅ | n/a |
 | Web UI / API path confinement + CORS default | ✅ | ✅ | n/a |
+
+**† Real-engine E2E (free Ollama lane).** Each is exercised end-to-end against a
+live engine by `tests/test_e2e_real_engines.py` on the free Ollama lane
+(`real-engine.yml`, weekly + on-demand, no secrets): **context passing** via a
+multi-task `context_from` plan, the deterministic **`verify_command` /
+`guard_command`** quality gates, and **zero-cost budget tracking**. These are
+deterministic assertions (run status, gate exit codes, tracked cost) — never on
+non-deterministic model text. Coverage is real but not yet exhaustive: it does
+not span all 11 context modes, the `judge` gate, or paid-engine cost extraction
+end-to-end (those remain unit + integration tested). Widening it is tracked in
+*Outstanding gaps*.
 
 The policy engine is additionally **fuzzed** (`tests/test_policy_fuzz.py`) to
 confirm the safe AST evaluator rejects `eval`/`exec`/`open`/`__import__`, dunder
@@ -116,3 +128,7 @@ access, comprehensions, lambdas, and arithmetic/bitwise abuse — it never calls
    currently manual; should become opt-in tests behind the existing flag.
 2. **Real-engine CI breadth** — only the free Ollama leg runs unattended; paid
    engines stay opt-in by deliberate cost choice (see `SECURITY_BASELINE.md`).
+3. **Wider per-area E2E** — the free Ollama lane now covers context passing,
+   the deterministic quality gates, and budget tracking end-to-end; still to add
+   are real-engine coverage of the remaining context modes, the `judge` gate,
+   and paid-engine cost extraction.
