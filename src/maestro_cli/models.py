@@ -41,6 +41,7 @@ QuorumStrategy = Literal["majority", "unanimous", "any"]
 ContextTrust = Literal["trusted", "untrusted"]
 ContextCompaction = Literal["none", "standard", "progressive"]
 TrajectoryGuardAction = Literal["warn", "abort", "escalate"]
+GrantViolationAction = Literal["warn", "fail"]
 PopulationStrategy = Literal["best", "first_passing", "majority"]
 VariantType = Literal["draft", "debug", "improve"]
 MctsSelectionPolicy = Literal["debug_prob", "ucb1"]
@@ -484,6 +485,9 @@ TOOL_CATEGORIES: dict[str, dict[str, list[str]]] = {
 
 # Regex for wildcard tool patterns: ToolName(pattern)
 _TOOL_PATTERN_RE_STR = r"^([A-Za-z]\w*)\((.+)\)$"
+
+# Actions when an observed tool call violates the allowed_tools grants
+GRANT_VIOLATION_ACTIONS: set[str] = {"warn", "fail"}
 
 
 @dataclass
@@ -1281,6 +1285,11 @@ class TaskSpec:
     # v2.0 -- Capability-Based Tool Access
     allowed_tools: list[str] | None = None
 
+    # v2.5.4 -- Parameter-Scoped Tool Grants: action when an observed tool
+    # call violates the allowed_tools grants (post-hoc verification against
+    # the tool-call stream; "fail" marks an otherwise-successful task failed)
+    on_grant_violation: GrantViolationAction = "warn"
+
     # v1.36.0 -- Council Mode
     council: Any | None = None  # CouncilSpec from council.py (avoids circular import)
 
@@ -1359,6 +1368,7 @@ class TaskSpec:
             "population": self.population.to_dict() if self.population else None,
             "mcp_tools": self.mcp_tools,
             "allowed_tools": self.allowed_tools,
+            "on_grant_violation": self.on_grant_violation,
         }
 
 
@@ -1523,6 +1533,9 @@ class TaskResult:
     checkpoint_count: int = 0
     tool_call_count: int = 0
     tool_failure_count: int = 0
+    # v2.5.4 -- Parameter-Scoped Tool Grants: observed tool calls that
+    # violated the task's allowed_tools grants (post-hoc verification)
+    grant_violations: list[str] = field(default_factory=list)
     judge_result: JudgeResult | None = None
     handoff_report: HandoffReport | None = None
     produced_contract: TaskContract | None = None
@@ -1599,6 +1612,8 @@ class TaskResult:
             d["context_trajectory"] = self.context_trajectory.to_dict()
         if self.output_envelope is not None:
             d["output_envelope"] = self.output_envelope.to_dict()
+        if self.grant_violations:
+            d["grant_violations"] = self.grant_violations
         if self.batch_results:
             d["batch_results"] = [r.to_dict() for r in self.batch_results]
             d["batch_chunks_total"] = self.batch_chunks_total

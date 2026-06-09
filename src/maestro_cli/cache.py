@@ -533,6 +533,7 @@ def _compute_task_hash(
         "honeypot": task.honeypot,
         "mcp_tools": sorted(task.mcp_tools),
         "allowed_tools": sorted(task.allowed_tools) if task.allowed_tools is not None else None,
+        "on_grant_violation": task.on_grant_violation,
         "output_scope": sorted(task.output_scope),
         "output_redact": sorted(task.output_redact),
         "context_allowlist": sorted(task.context_allowlist),

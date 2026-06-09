@@ -823,11 +823,44 @@ tool lists. Use these instead of enumerating individual tools.
 **Inheritance**: `defaults.<engine>.allowed_tools` provides the default;
 task-level `allowed_tools` overrides completely (no merging).
 
-**Validation**: E071 if set on command/group tasks. W27 for unknown tool
-names. SEC023 warns when untrusted context lacks `allowed_tools`.
+**Parameter-scoped grants** (v2.5.4): entries accept `Tool(pattern)`
+specifiers that grant a tool only for arguments matching a glob pattern —
+not just *which* tools, but *what they may be called with*:
 
-**Policy engine**: `task.has_allowed_tools` (bool) and
-`task.allowed_tools` (list) available in policy rules.
+```yaml
+tasks:
+  - id: scoped-fix
+    engine: claude
+    allowed_tools:
+      - Read                  # full read access
+      - "Write(src/*)"        # may only write under src/
+      - "Bash(git *)"         # shell restricted to git commands
+    on_grant_violation: fail  # violations fail the task (default: warn)
+    prompt: "Fix the bug in src/parser.py"
+```
+
+Enforcement is two-layer:
+
+1. **Native (Claude)**: scoped specifiers are passed via `--allowedTools`,
+   so matching calls are auto-approved and non-matching calls are denied in
+   headless mode. A permission-bypass flag (`--dangerously-skip-permissions`)
+   degrades this layer to advisory — avoid combining it with scoped grants.
+2. **Post-hoc (all engines with observable tool calls)**: after execution,
+   every observed tool call is matched against the grants. Violations are
+   recorded in `TaskResult.grant_violations`, emitted as the
+   `tool_grant_violation` event, and — with `on_grant_violation: fail` —
+   mark the task failed even when the command itself exited 0.
+
+Pattern matching targets the tool's primary argument (`Bash` → command,
+`Read`/`Write`/`Edit` → file path, `WebFetch` → URL); a bare grant for the
+same tool (`Bash` next to `Bash(git *)`) wins and allows everything.
+
+**Validation**: E071 if set on command/group tasks. W27 for unknown tool
+names. E073 if `on_grant_violation` is set without `allowed_tools`.
+SEC023 warns when untrusted context lacks `allowed_tools`.
+
+**Policy engine**: `task.has_allowed_tools` (bool), `task.has_scoped_tools`
+(bool) and `task.allowed_tools` (list) available in policy rules.
 
 ---
 

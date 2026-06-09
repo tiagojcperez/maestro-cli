@@ -73,6 +73,7 @@ from .errors import (
     E070,
     E071,
     E072,
+    E073,
     PlanValidationError,
 )
 from .models import (
@@ -86,6 +87,7 @@ from .models import (
     CONTEXT_MODES,
     CONTEXT_COMPACTION_VALUES,
     CONTEXT_TRUST_VALUES,
+    GRANT_VIOLATION_ACTIONS,
     MCP_TRANSPORTS,
     POPULATION_STRATEGIES,
     TOOL_CATEGORIES,
@@ -1679,6 +1681,23 @@ def load_plan(path: str | Path) -> PlanSpec:
             task.allowed_tools = _to_str_list(
                 _allowed_tools_raw, f"tasks[{idx}].allowed_tools"
             )
+
+        # v2.5.4 -- Parameter-Scoped Tool Grants
+        if "on_grant_violation" in item:
+            _ogv = str(item["on_grant_violation"])
+            if _ogv not in GRANT_VIOLATION_ACTIONS:
+                raise PlanValidationError(
+                    f"tasks[{idx}].on_grant_violation must be one of "
+                    f"{sorted(GRANT_VIOLATION_ACTIONS)}, got '{_ogv}'",
+                    code=E073,
+                )
+            if item.get("allowed_tools") is None:
+                raise PlanValidationError(
+                    f"tasks[{idx}].on_grant_violation requires allowed_tools "
+                    "(there are no grants to enforce without it)",
+                    code=E073,
+                )
+            task.on_grant_violation = _ogv  # type: ignore[assignment]
 
         # v1.36.0 -- Council Mode
         task.council = _to_council_spec(

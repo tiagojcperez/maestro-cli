@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 import operator
+import re
 from typing import Any, Callable
 
 from .models import (
@@ -12,7 +13,11 @@ from .models import (
     PlanSpec,
     TaskResult,
     TaskSpec,
+    _TOOL_PATTERN_RE_STR,
 )
+
+# Compiled wildcard tool pattern (ToolName(pattern)) for has_scoped_tools
+_TOOL_PATTERN_RE = re.compile(_TOOL_PATTERN_RE_STR)
 
 # Whitelisted task fields accessible via `task.<field>` in policy rules
 _SAFE_TASK_FIELDS: frozenset[str] = frozenset(
@@ -37,6 +42,7 @@ _SAFE_TASK_FIELDS: frozenset[str] = frozenset(
         "has_consistency_group",
         "allowed_tools",
         "has_allowed_tools",
+        "has_scoped_tools",
     }
 )
 
@@ -89,6 +95,11 @@ class _SafeEvaluator:
             return bool(self._task.consistency_group)
         if field == "has_allowed_tools":
             return self._task.allowed_tools is not None
+        if field == "has_scoped_tools":
+            return any(
+                _TOOL_PATTERN_RE.match(t)
+                for t in (self._task.allowed_tools or [])
+            )
         if field == "allowed_tools":
             return self._task.allowed_tools or []
         return getattr(self._task, field, None)

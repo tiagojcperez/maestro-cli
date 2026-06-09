@@ -65,6 +65,7 @@ E069 = "E069"  # Invalid MCP server configuration
 E070 = "E070"  # Unknown MCP server reference in mcp_tools
 E071 = "E071"  # allowed_tools on command/group task (engine only)
 E072 = "E072"  # Invalid council graph topology connections
+E073 = "E073"  # on_grant_violation set without allowed_tools (or invalid value)
 
 E052 = "E052"  # Invalid policy configuration (missing name/rule, bad action, duplicate name, bad rule syntax)
 E053 = "E053"  # Invalid routing_strategy value

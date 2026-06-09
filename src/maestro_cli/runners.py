@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import io
 import json
 import os
@@ -2581,6 +2582,86 @@ def _inject_tool_restriction(prompt: str, task: TaskSpec) -> str:
     )
 
 
+# Primary argument per tool for parameter-scoped grant matching (v2.5.4).
+# Tools not listed fall back to matching against the JSON-serialized input.
+_TOOL_PRIMARY_ARG: dict[str, str] = {
+    "Bash": "command",
+    "Read": "file_path",
+    "Write": "file_path",
+    "Edit": "file_path",
+    "Glob": "pattern",
+    "Grep": "pattern",
+    "WebFetch": "url",
+    "WebSearch": "query",
+}
+
+
+def _grant_match_value(tool: str, tool_input: dict[str, Any]) -> str:
+    """Extract the string a scoped grant pattern is matched against."""
+    arg = _TOOL_PRIMARY_ARG.get(tool)
+    if arg is not None:
+        value = tool_input.get(arg)
+        if isinstance(value, str):
+            return value
+    try:
+        return json.dumps(tool_input, ensure_ascii=True, sort_keys=True)
+    except (TypeError, ValueError):
+        return str(tool_input)
+
+
+def check_tool_grants(
+    task: TaskSpec,
+    observed_calls: list[tuple[str, dict[str, Any]]],
+) -> list[str]:
+    """Verify observed tool calls against the task's ``allowed_tools`` grants.
+
+    Post-hoc parameter-scoped enforcement (v2.5.4): each observed call must
+    be covered by a bare grant (full tool access) or match one of the tool's
+    argument patterns (e.g. ``Bash(git *)``) via glob matching against the
+    tool's primary argument.  A bare grant wins over a scoped grant for the
+    same tool.  Tools outside the known engine tool set are skipped —
+    mirroring the CLI behaviour, which only blocks known tools.  Returns
+    human-readable violation strings (empty list = all calls within grants).
+    """
+    if task.allowed_tools is None:
+        return []
+    expanded = _expand_tool_categories(task.allowed_tools, task.engine or "")
+    bare: set[str] = set()
+    patterns: dict[str, list[str]] = {}
+    for entry in expanded:
+        name, pattern = parse_tool_pattern(entry)
+        if pattern and pattern != "*":
+            patterns.setdefault(name, []).append(pattern)
+        else:
+            bare.add(name)
+
+    violations: list[str] = []
+    for tool, tool_input in observed_calls:
+        if tool in bare:
+            continue
+        if tool in patterns:
+            value = _grant_match_value(tool, tool_input)
+            # Path-bearing arguments: also try the forward-slash form so
+            # grants written with / match Windows paths.
+            candidates = [value]
+            if "\\" in value:
+                candidates.append(value.replace("\\", "/"))
+            if any(
+                fnmatch.fnmatchcase(c, p)
+                for c in candidates
+                for p in patterns[tool]
+            ):
+                continue
+            violations.append(
+                f"{tool} call '{value[:120]}' matches no grant pattern "
+                f"({', '.join(patterns[tool])})"
+            )
+            continue
+        if tool in CLAUDE_TOOLS:
+            violations.append(f"{tool} call outside allowed_tools grants")
+    return violations
+
+
 def _resolve_edit_policy(plan: PlanSpec, task: TaskSpec) -> EditPolicy:
     """Resolve the effective edit policy for a task (task-level > plan default)."""
     return task.edit_policy or plan.defaults.edit_policy
@@ -3212,7 +3293,7 @@ def _build_claude_command(context: EngineCommandContext) -> tuple[list[str], boo
     # Capability-Based Tool Access (v2.0 + v2.1 wildcard patterns)
     if task.allowed_tools is not None:
         expanded = _expand_tool_categories(task.allowed_tools, "claude")
-        allowed_names, _restricted = _split_tool_permissions(expanded)
+        allowed_names, restricted = _split_tool_permissions(expanded)
         disallowed = sorted(CLAUDE_TOOLS - allowed_names)
         if disallowed:
             # Remove any existing --disallowedTools (from edit_policy) and replace
@@ -3222,6 +3303,14 @@ def _build_claude_command(context: EngineCommandContext) -> tuple[list[str], boo
                 if idx < len(cmd):
                     cmd.pop(idx)  # remove value
             cmd += ["--disallowedTools", ",".join(disallowed)]
+        # v2.5.4 — Parameter-scoped grants: pass Tool(pattern) specifiers
+        # natively so matching calls are auto-approved; without a
+        # permission-bypass flag, non-matching calls are denied in headless
+        # --print mode. Under bypass flags this degrades to advisory and the
+        # post-hoc check (check_tool_grants) is the enforcement backstop.
+        if restricted:
+            specifiers = sorted({f"{name}({pattern})" for name, pattern in restricted})
+            cmd += ["--allowedTools", ",".join(specifiers)]
 
     # MCP-Native Tool Orchestration (v1.29.0)
     if task.mcp_tools and plan.mcp_servers:
@@ -7450,6 +7539,9 @@ def execute_task(
         retry_count = 0
         _tool_call_count = 0
         _tool_failure_count = 0
+        # v2.5.4 — observed (tool, input) pairs for parameter-scoped grant
+        # verification; accumulates across retry attempts
+        _observed_tool_calls: list[tuple[str, dict[str, Any]]] = []
         status: TaskStatus = "failed"
         message = ""
         returncode = 1
@@ -7580,25 +7672,35 @@ def execute_task(
                             "task_id": task.id,
                             "line": line,
                         })
-                        # Emit task_tool_call events from stream-json assistant messages
-                        if active_engine == "claude" and _evt is not None and _evt.get("type") == "assistant":
-                                _msg = _evt.get("message") or {}
-                                for _item in _msg.get("content") or []:
-                                    if (
-                                        isinstance(_item, dict)
-                                        and _item.get("type") == "tool_use"
-                                    ):
-                                        _tool_call_count += 1
-                                        try:
-                                            event_callback("task_tool_call", {
-                                                "task_id": task.id,
-                                                "tool": _item.get("name", ""),
-                                                "input_preview": str(
-                                                    _item.get("input", "")
-                                                )[:200],
-                                            })
-                                        except Exception:
-                                            pass
+
+                    # Tool calls from stream-json assistant messages: emitted
+                    # as task_tool_call events and collected for parameter-
+                    # scoped grant verification (v2.5.4).
+                    if active_engine == "claude" and _evt is not None and _evt.get("type") == "assistant":
+                        _msg = _evt.get("message") or {}
+                        for _item in _msg.get("content") or []:
+                            if (
+                                isinstance(_item, dict)
+                                and _item.get("type") == "tool_use"
+                            ):
+                                if task.allowed_tools is not None:
+                                    _input = _item.get("input")
+                                    _observed_tool_calls.append((
+                                        str(_item.get("name", "")),
+                                        _input if isinstance(_input, dict) else {},
+                                    ))
+                                if event_callback is not None:
+                                    _tool_call_count += 1
+                                    try:
+                                        event_callback("task_tool_call", {
+                                            "task_id": task.id,
+                                            "tool": _item.get("name", ""),
+                                            "input_preview": str(
+                                                _item.get("input", "")
+                                            )[:200],
+                                        })
+                                    except Exception:
+                                        pass
 
                 returncode, tail_output, stderr_tail = _stream_process(
                     proc,
@@ -8070,6 +8172,35 @@ def execute_task(
             )
         except Exception:
             pass
+
+        # v2.5.4 — Parameter-scoped tool grants: post-hoc verification of
+        # the observed tool-call stream against allowed_tools
+        if _observed_tool_calls and task.allowed_tools is not None:
+            _grant_violations = check_tool_grants(task, _observed_tool_calls)
+            if _grant_violations:
+                result.grant_violations = _grant_violations
+                if event_callback is not None:
+                    try:
+                        event_callback("tool_grant_violation", {
+                            "task_id": task.id,
+                            "violations": _grant_violations,
+                            "action": task.on_grant_violation,
+                        })
+                    except Exception:
+                        pass
+                _gv_msg = (
+                    f"tool grant violations ({len(_grant_violations)}): "
+                    + "; ".join(_grant_violations[:3])
+                )
+                if (
+                    task.on_grant_violation == "fail"
+                    and result.status in ("success", "soft_failed")
+                ):
+                    result.status = "failed"
+                    result.message = f"[tool grants] {_gv_msg}"
+                    print(f"[maestro] {_gv_msg} — task '{task.id}' failed")
+                else:
+                    print(f"[maestro] warning: task '{task.id}': {_gv_msg}")
 
         # Output envelope — hash + scope verification (best-effort)
         if task.output_scope and result.status in ("success", "soft_failed"):
