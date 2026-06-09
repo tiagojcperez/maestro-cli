@@ -32,13 +32,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            pyproject.toml
+            .github/requirements-ci.txt
       - name: Install + generate coverage.xml
         if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[live,web,tui,agui,mcp,otel]"
-          pip install pytest pytest-cov
+          pip install -e ".[live,web,tui,agui,mcp,otel]" -c .github/requirements-ci.txt
+          pip install pytest pytest-cov -c .github/requirements-ci.txt
           python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
       - name: Set up a JDK for the Sonar Scanner
         # The v6 action ships Sonar Scanner CLI 7.x, which otherwise tries to

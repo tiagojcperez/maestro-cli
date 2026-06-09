@@ -34,8 +34,8 @@ jobs:
 
       - name: Install package + pytest
         run: |
-          pip install -e .
-          pip install pytest
+          pip install -e . -c .github/requirements-ci.txt
+          pip install pytest -c .github/requirements-ci.txt
 
       - name: Install Ollama
         run: |
@@ -79,6 +79,6 @@ jobs:
   #     - uses: actions/setup-python@v6
   #       with:
   #         python-version: "3.12"
-  #     - run: pip install -e . && pip install pytest
+  #     - run: pip install -e . -c .github/requirements-ci.txt && pip install pytest -c .github/requirements-ci.txt
   #     # - name: Install the engine CLIs you want to validate here
   #     - run: python -m pytest tests/test_e2e_real_engines.py -v -m real_engine

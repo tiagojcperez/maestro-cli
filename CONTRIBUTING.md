@@ -95,6 +95,29 @@ same env vars only for the real-engine run. If `MAESTRO_E2E_OLLAMA_MODEL` is set
 in CI, the runner must also have `ollama` installed, the daemon reachable, and
 that model already pulled; otherwise the local-engine test skips cleanly.
 
+### CI dependency pinning
+
+GitHub Actions workflows install everything against
+`.github/requirements-ci.txt`, a pip **constraints** file
+(`pip install ... -c .github/requirements-ci.txt`) that pins the exact
+versions of the dev tooling (pytest, mypy, build, twine, ...) and the optional
+extras' top-level packages. This keeps CI runs reproducible; Dependabot bumps
+the pins weekly via PRs that run the full suite.
+
+Two things to know:
+
+- The loose lower bounds in `pyproject.toml` are what users get and are NOT
+  auto-bumped — the constraints file applies to CI only.
+- If you need a newer tool version in CI (e.g. a mypy upgrade), update the pin
+  in `.github/requirements-ci.txt` in the same PR as any code churn it causes.
+
+To reproduce the CI environment locally:
+
+```bash
+pip install -e ".[live,web,tui,agui,mcp,otel]" -c .github/requirements-ci.txt
+pip install pytest pytest-cov -c .github/requirements-ci.txt
+```
+
 ### Type Checking (mypy)
 
 The repository ships a strict mypy configuration in `pyproject.toml`. Strict

@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install maestro (with the TUI extra) for the demos
-        run: pip install -e ".[tui]"
+        run: pip install -e ".[tui]" -c .github/requirements-ci.txt
 
       - name: Install vhs and its dependencies
         run: |

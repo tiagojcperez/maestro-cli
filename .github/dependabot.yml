@@ -1,14 +1,19 @@
-# Dependabot configuration — weekly GitHub Actions updates.
+# Dependabot configuration — weekly GitHub Actions + CI-tooling updates.
 #
-# Python dependency security is handled by the repository-level Dependabot
-# *security* updates (driven by alerts), NOT by scheduled version bumps:
-# maestro-cli is a library, so its dependency lower bounds are kept deliberately
-# loose (the minimum that actually works) for maximum install compatibility and
-# are not raised automatically. See:
+# Python RUNTIME dependency security is handled by the repository-level
+# Dependabot *security* updates (driven by alerts), NOT by scheduled version
+# bumps: maestro-cli is a library, so the lower bounds in pyproject.toml are
+# kept deliberately loose (the minimum that actually works) for maximum install
+# compatibility and are not raised automatically. See:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates
+#
+# CI tooling is the exception: .github/requirements-ci.txt pins the exact
+# versions every workflow installs (via `pip install -c`), and the pip entry
+# below bumps those pins weekly so upgrades arrive as PRs that run the full
+# test suite instead of drifting silently.
 version: 2
 updates:
-  # GitHub Actions used by .github/workflows/ci.yml.
+  # GitHub Actions used by .github/workflows/*.yml.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -16,5 +21,17 @@ updates:
     open-pull-requests-limit: 5
     groups:
       github-actions:
+        patterns:
+          - "*"
+
+  # CI tooling pins in .github/requirements-ci.txt (constraints file for all
+  # workflow pip installs). Does NOT touch pyproject.toml runtime bounds.
+  - package-ecosystem: "pip"
+    directory: "/.github"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      ci-tooling:
         patterns:
           - "*"

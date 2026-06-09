@@ -1,0 +1,43 @@
+# CI tooling pins — used as a pip CONSTRAINTS file (`pip install -c`), never
+# installed directly. Workflows install the package from pyproject.toml and
+# this file pins the exact versions the suite is verified against, so CI runs
+# are reproducible and upstream releases arrive as reviewable Dependabot PRs
+# instead of silent drift.
+#
+# Deliberately NOT a full transitive lock: only the direct dev tools and the
+# optional extras' top-level packages are pinned. Unlisted transitive deps
+# still float — a full cross-platform lock (3 Python versions × Linux+Windows)
+# would need per-environment compiles for marginal extra safety.
+#
+# Runtime metadata in pyproject.toml keeps loose lower bounds on purpose
+# (maximum install compatibility for users); these pins apply to CI only.
+#
+# Named requirements-ci.txt (not constraints.txt) so Dependabot's pip
+# ecosystem picks it up — see .github/dependabot.yml.
+
+# --- test + type-check tooling ---
+pytest==9.0.2
+pytest-cov==7.1.0
+coverage==7.13.5
+# mypy pinned to the version the codebase is verified against; newer releases
+# change unused-ignore / attribute checks and flag churn unrelated to the code.
+mypy==1.19.1
+types-PyYAML==6.0.12.20250915
+
+# --- release tooling (publish.yml) ---
+build==1.5.0
+twine==6.2.0
+
+# --- runtime dependency ---
+PyYAML==6.0.3
+
+# --- optional extras (top-level packages of [live,web,tui,agui,mcp,otel]) ---
+rich==14.2.0
+textual==8.0.2
+fastapi==0.115.12
+uvicorn==0.34.0
+ag-ui-protocol==0.1.19
+mcp==1.26.0
+opentelemetry-api==1.42.1
+opentelemetry-sdk==1.42.1
+opentelemetry-exporter-otlp==1.42.1
