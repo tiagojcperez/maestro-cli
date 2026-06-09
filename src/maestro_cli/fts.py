@@ -131,15 +131,21 @@ def rank_documents(
         # build-independent: bm25 ties (e.g. identical documents) resolve to
         # ascending insertion order rather than SQLite's unspecified emission
         # order, so identical inputs always rank identically across platforms.
-        sql = (
-            "SELECT rowid, bm25(docs) AS rank FROM docs "
-            "WHERE docs MATCH ? ORDER BY rank, rowid"
-        )
-        params: list[object] = [match_expr]
+        # Both branches pass a string *literal* to execute() with the match
+        # expression (and limit) always bound as parameters, so there is no
+        # injection surface — and a static analyser can confirm it directly.
         if limit is not None and limit > 0:
-            sql += " LIMIT ?"
-            params.append(limit)
-        rows = conn.execute(sql, params).fetchall()
+            rows = conn.execute(
+                "SELECT rowid, bm25(docs) AS rank FROM docs "
+                "WHERE docs MATCH ? ORDER BY rank, rowid LIMIT ?",
+                (match_expr, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT rowid, bm25(docs) AS rank FROM docs "
+                "WHERE docs MATCH ? ORDER BY rank, rowid",
+                (match_expr,),
+            ).fetchall()
     except sqlite3.OperationalError:
         return []
     finally:
