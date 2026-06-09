@@ -460,6 +460,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run extended integration checks (cache, knowledge, skills, plans, prior runs)",
     )
+    doctor_parser.add_argument(
+        "--hardware",
+        action="store_true",
+        help="Report local hardware (GPU/VRAM) and installed local models, then exit",
+    )
 
     sub.add_parser("mcp-server", help="Launch the MCP protocol server (requires [mcp] extra)")
 
@@ -1160,6 +1165,13 @@ def _cmd_backfill_costs(args: argparse.Namespace) -> int:
 
 
 def _cmd_doctor(args: argparse.Namespace) -> int:
+    if getattr(args, "hardware", False):
+        from .hardware import detect_hardware, format_hardware, format_hardware_json
+
+        info = detect_hardware()
+        print(format_hardware_json(info) if args.json else format_hardware(info))
+        return 0
+
     from .doctor import run_doctor
 
     results = run_doctor(

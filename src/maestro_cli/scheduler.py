@@ -1811,6 +1811,18 @@ def run_plan(
         except Exception:
             pass  # graceful degradation: no history = pure heuristic routing
 
+    # Detect local hardware once for hardware-aware routing (v2.5.3) — only when
+    # a task actually auto-routes a local engine, so non-local plans pay nothing.
+    _hardware_info: object | None = None
+    if not dry_run and any(
+        t.model == "auto" and t.engine in ("ollama", "llama") for t in plan.tasks
+    ):
+        try:
+            from .hardware import detect_hardware
+            _hardware_info = detect_hardware()
+        except Exception:
+            pass  # graceful degradation: no hardware signal = tier default stands
+
     # Load cross-run knowledge for prompt injection (T1.3)
     _task_knowledge: dict[str, list[KnowledgeRecord]] = {}
     _knowledge_index = ""
@@ -3044,6 +3056,9 @@ def run_plan(
                     if _task_histories:
                         _dag_metadata["all_histories"] = _task_histories  # type: ignore[assignment]
                         _dag_metadata["task_map"] = task_map  # type: ignore[assignment]
+                    # Inject detected local hardware for hardware-aware routing (v2.5.3)
+                    if _hardware_info is not None:
+                        _dag_metadata["hardware"] = _hardware_info  # type: ignore[assignment]
                     task._dag_metadata = _dag_metadata  # type: ignore[attr-defined]
 
                     # --- Workspace-aware timeout adjustment (T0.1) ---

@@ -80,7 +80,8 @@ src/maestro_cli/
 ├── codebase_graph.py  # AST-backed codebase graph + blast radius analysis
 ├── council.py        # Multi-model deliberation for context_mode: council (star/chain/graph topologies)
 ├── symbols.py        # Regex-based code symbol extraction for context_mode: structural (10 languages)
-├── routing.py        # Semantic model routing (auto model selection by complexity/tags/DAG structure/routing_strategy/historical performance)
+├── routing.py        # Semantic model routing (auto model selection by complexity/tags/DAG structure/routing_strategy/historical performance + hardware-aware local model fit)
+├── hardware.py        # Zero-dep local hardware detection (nvidia-smi VRAM, Ollama /api/tags, gguf files) + hardware-aware local model selection (maestro doctor --hardware)
 ├── knowledge.py      # Cross-run knowledge accumulation (extract/load/store/format, auto-inject into prompts)
 ├── fts.py            # Zero-dep SQLite FTS5 ranked full-text search (rank_documents, relevance_by_rank, fts5_available) — indexed BM25 lexical ranker for knowledge retrieval
 ├── memory.py         # SQLite-backed Knowledge + Memory v2 (WAL, provenance, poisoning alerts, score history)
@@ -289,7 +290,7 @@ maestro scaffold <brief.yaml> [-o output.yaml] [--validate] [--cost-check] [--li
 maestro cleanup <plan.yaml> [--keep N] [--older-than DAYS] [--dry-run]
 
 # Diagnose environment
-maestro doctor [--json] [--run-dir DIR]
+maestro doctor [--json] [--run-dir DIR] [--full] [--hardware]
 
 # Verify event chain integrity
 maestro verify <run-path> [--json]
@@ -760,7 +761,8 @@ py -m pytest tests/ -v
 | `knowledge_graph.py` | Entity extraction + graph-based context | `build_knowledge_graph()`, `extract_entities()`, `Entity`, `Relation`, `KnowledgeGraph` |
 | `council.py` | Multi-model deliberation (star/chain/graph topologies) | `run_council()`, `_call_participant()`, `_build_round_prompt()`, `_build_consolidation_prompt()`, `CouncilParticipant`, `CouncilSpec`, `CouncilRound`, `CouncilResult`, `CouncilTopology` |
 | `symbols.py` | Regex-based code symbol extraction | `extract_symbols()`, `extract_changed_symbols()`, `build_structural_context()`, `detect_language_from_text()`, `detect_language_from_path()` |
-| `routing.py` | Semantic model routing + difficulty-aware routing + predictive routing | `resolve_auto_model()`, `_score_task_complexity()`, `_tier_from_score()`, `_COST_WEIGHTS`, `load_task_histories()`, `_apply_historical_signal()` |
+| `routing.py` | Semantic model routing + difficulty-aware routing + predictive routing + hardware-aware local fit | `resolve_auto_model()`, `_score_task_complexity()`, `_tier_from_score()`, `_COST_WEIGHTS`, `load_task_histories()`, `_apply_historical_signal()` |
+| `hardware.py` | Zero-dep local hardware detection + hardware-aware local model selection | `detect_hardware()`, `select_local_model()`, `format_hardware()`, `format_hardware_json()`, `HardwareInfo`, `GpuInfo`, `LocalModel` |
 | `knowledge.py` | Cross-run knowledge accumulation | `extract_knowledge()`, `load_knowledge()`, `store_knowledge()`, `format_knowledge()`, `consolidate_knowledge()`, `select_relevant_knowledge()`, `ConsolidatedLesson` |
 | `fts.py` | Zero-dep SQLite FTS5 ranked full-text search (indexed BM25 lexical ranker, graceful fallback) | `rank_documents()`, `relevance_by_rank()`, `fts5_available()`, `FtsHit` |
 | `scaffold.py` | Brief → plan YAML generation + workflow libraries | `scaffold_plan()`, `load_brief()`, `validate_plan_cost_safety()`, `list_workflow_libraries()`, `_load_library()`, `_merge_library_into_brief()`, `WORKFLOW_LIBRARY_NAMES` |

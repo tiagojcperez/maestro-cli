@@ -125,6 +125,7 @@ Diagnose environment health: Python version, PyYAML, engine CLIs on PATH, custom
 | `--json` | Machine-readable JSON output |
 | `--run-dir DIR` | Run directory to check (default: `.maestro-runs`) |
 | `--full` | Run extended checks for cache, knowledge, skills, plans, and prior runs |
+| `--hardware` | Report local hardware (GPU/VRAM via `nvidia-smi`), installed Ollama models, and llama.cpp `*.gguf` files, then exit. Powers hardware-aware `model: auto` routing for local engines. |
 
 `maestro doctor` always reports custom engine plugin discovery from the `maestro_cli.engines`
 entry-point group, even when no plugins are installed.

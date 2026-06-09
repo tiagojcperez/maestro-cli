@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from typing import Literal
 
@@ -47,6 +47,9 @@ _MODEL_TIERS: dict[str, dict[TierName, str]] = {
     "ollama": {"low": "phi3", "medium": "llama3", "high": "mixtral"},
     "llama": {"low": "llama-3.2-3b", "medium": "llama-3-8b", "high": "codellama-13b"},
 }
+
+# Engines whose auto-routed model is refined against detected local hardware.
+_LOCAL_ROUTING_ENGINES: frozenset[str] = frozenset({"ollama", "llama"})
 
 # Routing strategy cost adjustments per tier
 # cost_optimized: push scores UP → cheaper tiers selected
@@ -96,6 +99,24 @@ def resolve_auto_model(
             )
     tier = _tier_from_score(score)
     model = engine_tiers.get(tier, engine_tiers["medium"])
+
+    # Hardware-aware adjustment for local engines (v2.5.3): land on a model the
+    # user actually has installed and that fits available VRAM.  The scheduler
+    # detects hardware once and passes it via dag_metadata; absent that, this is
+    # a no-op and the tier default stands.
+    if engine in _LOCAL_ROUTING_ENGINES and dag_metadata:
+        hardware = dag_metadata.get("hardware")
+        if hardware is not None:
+            from .hardware import select_local_model
+
+            adjusted = select_local_model(
+                engine, tier, cast("dict[str, str]", engine_tiers), hardware
+            )
+            if adjusted is not None and adjusted != model:
+                if evidence is not None:
+                    evidence["hardware_adjusted_from"] = model
+                model = adjusted
+
     if evidence is not None:
         evidence["complexity_score"] = score
         evidence["tier"] = tier
