@@ -35,6 +35,10 @@ _TOKEN_RE = re.compile(r"\w+", re.UNICODE)
 # multi-thousand-clause MATCH expression.
 _MAX_QUERY_TERMS = 64
 
+# Minimum token length eligible for prefix matching — shorter tokens (e.g. "id",
+# "a") stay exact so a one-letter prefix can't match nearly everything.
+_MIN_PREFIX_LEN = 3
+
 _fts5_available: bool | None = None
 
 
@@ -68,6 +72,22 @@ def fts_enabled() -> bool:
     }
 
 
+def fts_prefix_enabled() -> bool:
+    """Whether FTS5 ranking should use prefix matching (default off).
+
+    Prefix matching lets a query token match longer tokens sharing its prefix
+    ("auth" → "authentication"), trading precision for recall. Off by default;
+    set ``MAESTRO_FTS_PREFIX=1`` (or ``true``/``yes``/``on``) to enable it for
+    knowledge and selective-context retrieval.
+    """
+    return os.environ.get("MAESTRO_FTS_PREFIX", "0").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
 def fts5_available() -> bool:
     """Return ``True`` when this interpreter's sqlite3 build includes FTS5.
 
@@ -86,11 +106,13 @@ def fts5_available() -> bool:
     return _fts5_available
 
 
-def _build_match_expression(query: str) -> str:
+def _build_match_expression(query: str, *, prefix: bool = False) -> str:
     """Turn free text into a safe FTS5 OR-of-terms MATCH expression.
 
     Each unique token is lowercased and wrapped as a quoted string literal so
-    reserved words (AND/OR/NOT/NEAR) and punctuation cannot break parsing.
+    reserved words (AND/OR/NOT/NEAR) and punctuation cannot break parsing. When
+    *prefix* is true, tokens of at least ``_MIN_PREFIX_LEN`` chars become FTS5
+    prefix tokens (``"token" *``) so they match longer tokens sharing the prefix.
     Returns an empty string when the query yields no usable terms.
     """
     seen: set[str] = set()
@@ -100,7 +122,10 @@ def _build_match_expression(query: str) -> str:
         if token in seen:
             continue
         seen.add(token)
-        terms.append(f'"{token}"')
+        if prefix and len(token) >= _MIN_PREFIX_LEN:
+            terms.append(f'"{token}" *')
+        else:
+            terms.append(f'"{token}"')
         if len(terms) >= _MAX_QUERY_TERMS:
             break
     return " OR ".join(terms)
@@ -111,6 +136,7 @@ def rank_documents(
     query: str,
     *,
     limit: int | None = None,
+    prefix: bool = False,
 ) -> list[FtsHit]:
     """Rank ``documents`` against ``query`` using SQLite FTS5 BM25.
 
@@ -118,6 +144,9 @@ def rank_documents(
     least one query term are included.  Returns an empty list when FTS5 is
     unavailable, the query has no usable terms, or nothing matches — callers
     should treat that as a signal to fall back to their own ranking.
+
+    When *prefix* is true, query tokens match longer tokens sharing their prefix
+    ("auth" → "authentication"), trading precision for recall.
 
     The match expression is bound as a query parameter, so document and query
     text can never be interpreted as SQL.
@@ -127,7 +156,7 @@ def rank_documents(
     if not fts5_available():
         return []
 
-    match_expr = _build_match_expression(query)
+    match_expr = _build_match_expression(query, prefix=prefix)
     if not match_expr:
         return []
 
@@ -178,6 +207,7 @@ def relevance_by_rank(
     query: str,
     *,
     limit: int | None = None,
+    prefix: bool = False,
 ) -> dict[int, float]:
     """Rank ``documents`` and return ``{index: relevance}`` in ``(0.0, 1.0]``.
 
@@ -189,7 +219,7 @@ def relevance_by_rank(
     from the mapping.  Returns ``{}`` whenever :func:`rank_documents` does, so it
     composes with the same fall-back contract.
     """
-    hits = rank_documents(documents, query, limit=limit)
+    hits = rank_documents(documents, query, limit=limit, prefix=prefix)
     if not hits:
         return {}
     count = len(hits)

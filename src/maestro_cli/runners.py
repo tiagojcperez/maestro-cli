@@ -899,7 +899,7 @@ def _build_selective_context(
     if not upstream_texts or budget_tokens <= 0:
         return ""
 
-    from .fts import fts_enabled, relevance_by_rank
+    from .fts import fts_enabled, fts_prefix_enabled, relevance_by_rank
 
     budget_chars = budget_tokens * _CHARS_PER_TOKEN
     scores_map = scores or {}
@@ -931,7 +931,9 @@ def _build_selective_context(
     fts_relevance: dict[int, float] = {}
     if fts_enabled() and intent_keywords:
         fts_query = " ".join(sorted(intent_keywords))
-        fts_relevance = relevance_by_rank([c for _, c in chunks], fts_query)
+        fts_relevance = relevance_by_rank(
+            [c for _, c in chunks], fts_query, prefix=fts_prefix_enabled()
+        )
 
     scored_chunks: list[tuple[float, str, str]] = []  # (score, upstream_id, chunk_text)
     for index, (upstream_id, chunk_text) in enumerate(chunks):

@@ -7,6 +7,7 @@ from maestro_cli.fts import (
     FtsHit,
     fts5_available,
     fts_enabled,
+    fts_prefix_enabled,
     rank_documents,
     relevance_by_rank,
 )
@@ -167,6 +168,48 @@ class TestRankDocuments:
     ) -> None:
         monkeypatch.setattr(fts, "fts5_available", lambda: False)
         assert rank_documents(["alpha beta"], "alpha") == []
+
+
+class TestFtsPrefixEnabled:
+    def test_default_disabled(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("MAESTRO_FTS_PREFIX", raising=False)
+        assert fts_prefix_enabled() is False
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "on", "ON"])
+    def test_enabled_values(
+        self, monkeypatch: pytest.MonkeyPatch, value: str
+    ) -> None:
+        monkeypatch.setenv("MAESTRO_FTS_PREFIX", value)
+        assert fts_prefix_enabled() is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "off", "no", ""])
+    def test_disabled_values(
+        self, monkeypatch: pytest.MonkeyPatch, value: str
+    ) -> None:
+        monkeypatch.setenv("MAESTRO_FTS_PREFIX", value)
+        assert fts_prefix_enabled() is False
+
+
+class TestPrefixMatching:
+    def test_exact_mode_does_not_match_longer_token(self) -> None:
+        # Default (exact): "auth" must NOT match "authentication".
+        assert rank_documents(["authentication module"], "auth") == []
+
+    def test_prefix_mode_matches_longer_tokens(self) -> None:
+        docs = ["authentication module", "authorize the user", "unrelated text"]
+        hits = rank_documents(docs, "auth", prefix=True)
+        assert {h.index for h in hits} == {0, 1}
+
+    def test_short_token_stays_exact_in_prefix_mode(self) -> None:
+        # "id" (2 chars, < _MIN_PREFIX_LEN) must stay exact, not match "identifier".
+        docs = ["identifier resolution", "the id card"]
+        hits = rank_documents(docs, "id", prefix=True)
+        assert {h.index for h in hits} == {1}
+
+    def test_relevance_by_rank_honours_prefix(self) -> None:
+        rel = relevance_by_rank(["configuration loader"], "config", prefix=True)
+        assert rel == {0: 1.0}
+        assert relevance_by_rank(["configuration loader"], "config") == {}
 
 
 class TestRelevanceByRank:

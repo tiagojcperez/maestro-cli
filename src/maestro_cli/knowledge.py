@@ -16,7 +16,7 @@ from .cache import (
     compute_simulation_plan_hash,
     simulation_model_families,
 )
-from .fts import fts_enabled, relevance_by_rank
+from .fts import fts_enabled, fts_prefix_enabled, relevance_by_rank
 from .models import (
     HistoricalPruningDecision,
     KnowledgeRecord,
@@ -629,7 +629,9 @@ def select_relevant_knowledge(
     fts_relevance: dict[int, float] = {}
     if _knowledge_fts_enabled():
         fts_query = " ".join(sorted(intent_keywords))
-        fts_relevance = relevance_by_rank(documents, fts_query)
+        fts_relevance = relevance_by_rank(
+            documents, fts_query, prefix=fts_prefix_enabled()
+        )
 
     idf: dict[str, float] | None = None
     avg_doc_len = 0.0
