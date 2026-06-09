@@ -424,13 +424,12 @@ class TestContextDispatchIntegration:
             }),
             encoding="utf-8",
         )
-        # The workspace-derived dispatch fires inside `if task.context_from`, so
-        # the consuming task lists an upstream (its output is ignored; the map
-        # comes from the workspace index).
+        # Standalone (no context_from): a workspace-derived mode must still
+        # inject its map from the workspace index.
         plan = load_plan(
             _write_plan(
                 tmp_path,
-                f"version: 1\nname: scip-run\nworkspace_root: {ws.as_posix()}\ntasks:\n  - id: a\n    command: echo up\n  - id: t1\n    engine: claude\n    model: sonnet\n    context_mode: scip\n    context_from: [a]\n    depends_on: [a]\n    prompt: authentication\n",
+                f"version: 1\nname: scip-run\nworkspace_root: {ws.as_posix()}\ntasks:\n  - id: t1\n    engine: claude\n    model: sonnet\n    context_mode: scip\n    prompt: authentication\n",
             )
         )
         captured: dict[str, str] = {}
@@ -452,16 +451,21 @@ class TestContextDispatchIntegration:
             ], "edges": []}),
             encoding="utf-8",
         )
+        # Standalone (no context_from) must inject the codebase map.
+        captured: dict[str, str] = {}
         plan = load_plan(
             _write_plan(
                 tmp_path,
-                f"version: 1\nname: cbm-run\nworkspace_root: {ws.as_posix()}\ntasks:\n  - id: a\n    command: echo up\n  - id: t1\n    engine: claude\n    model: sonnet\n    context_mode: codebase_map\n    context_from: [a]\n    depends_on: [a]\n    prompt: login\n",
+                f"version: 1\nname: cbm-run\nworkspace_root: {ws.as_posix()}\ntasks:\n  - id: t1\n    engine: claude\n    model: sonnet\n    context_mode: codebase_map\n    prompt: login\n",
             )
         )
-        monkeypatch.setattr(scheduler_mod, "execute_task", _mock_execute_factory())
+        monkeypatch.setattr(
+            scheduler_mod, "execute_task", _mock_execute_factory(captured)
+        )
         monkeypatch.setattr(scheduler_mod, "_preflight_checks", lambda *a, **kw: None)
         result = run_plan(plan, run_dir_override=str(tmp_path / "runs"))
         assert result.task_results["t1"].status == "success"
+        assert "login" in captured.get("cs", "")
 
     def test_hardware_detect_for_auto_local_engine(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

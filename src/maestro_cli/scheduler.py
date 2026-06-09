@@ -2392,7 +2392,12 @@ def run_plan(
                     effective_budget: int | None = None
                     selection_details_available = False
                     _task_prompt_text = _load_task_prompt_text(plan, task)
-                    if task.context_from:
+                    # Workspace-derived context modes (codebase_map / scip) read a
+                    # pre-built index from workspace_root and are independent of
+                    # upstream output, so they must run even with no context_from.
+                    # Empty context_from flows through the assembly harmlessly
+                    # (empty loops/dicts; all post-steps guard on upstream_for_task).
+                    if task.context_from or task.context_mode in ("codebase_map", "scip"):
                         context_ids: set[str] = set()
                         for ctx_entry in task.context_from:
                             if ctx_entry == "*":

@@ -15,6 +15,9 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ## [Unreleased]
 
+### Fixed
+- **`context_mode: codebase_map` / `scip` now work standalone** — these workspace-derived modes read a pre-built index from `workspace_root` and are independent of upstream output, but their dispatch was gated behind `if task.context_from`, so a task *without* `context_from` silently received no injected map (a latent bug since `codebase_map` shipped in 2.5.1; `scip` inherited it in 2.5.3). Widened the gate so both modes inject their map whether or not the task declares `context_from`.
+
 ---
 
 ## [2.5.3] — 2026-06-09
