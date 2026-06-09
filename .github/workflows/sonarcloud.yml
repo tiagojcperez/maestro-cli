@@ -51,13 +51,13 @@ jobs:
         # reach it), so the "Java 17 scanner support ends 2026-07" warning is
         # action-side — deferred until SonarSource ships a Java-21 action.
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
       - name: SonarQube Cloud scan
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io

@@ -65,7 +65,7 @@ jobs:
         run: python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml --cov-report=lcov --junitxml=junit.xml -o junit_family=legacy
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.xml
           fail_ci_if_error: false

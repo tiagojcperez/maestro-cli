@@ -79,7 +79,7 @@ jobs:
           PY
 
       - name: Open a PR with the generated GIFs
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: bot/demo-gifs
           title: "docs: add generated demo GIFs"
