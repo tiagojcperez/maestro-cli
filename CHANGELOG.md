@@ -17,6 +17,18 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ---
 
+## [2.5.2] — 2026-06-09
+
+### Added
+- **SQLite FTS5 lexical retrieval (`fts.py`)** — a new zero-dependency, reusable full-text ranked-search primitive backed by the FTS5 extension that ships with the standard-library `sqlite3` (indexed, standard BM25 via `bm25()`). Public surface: `rank_documents()`, `relevance_by_rank()`, `fts5_available()`. The MATCH expression is parameter-bound (injection-safe), reserved words and punctuation are quoted as literals, the tokenizer is pinned (`unicode61 remove_diacritics 2`) and ties resolve by insertion order (`ORDER BY rank, rowid`) — so results are deterministic and independent of the host's SQLite build. Returns `[]` / `{}` (a "fall back to your own ranking" signal) when FTS5 is unavailable, the query has no usable terms, or nothing matches.
+
+### Changed
+- **Knowledge retrieval now ranks with FTS5 BM25 when available** — `select_relevant_knowledge()` (the source of `{{ task_knowledge }}`) uses the FTS5 ranker for the lexical signal while preserving the existing domain boosts (task-match, confidence, occurrences), and falls back byte-for-byte to the in-Python BM25 when FTS5 is absent or yields no matches. The FTS5 query is built from the **stopword-filtered** keyword set (not the raw prompt), so common words like "the" no longer create spurious matches. Set **`MAESTRO_KNOWLEDGE_FTS=0`** to force the legacy in-Python ranker. This affects only advisory prompt context — it does **not** enter cache keys or the event hash chain, so run artifacts stay replayable.
+
+Full suite green (**13,442 tests**), strict mypy clean.
+
+---
+
 ## [2.5.1] — 2026-06-08
 
 ### Added

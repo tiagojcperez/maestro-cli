@@ -7,7 +7,7 @@ It schedules tasks as a DAG (Directed Acyclic Graph), running them via `codex`, 
 
 - **Package name**: `maestro-ai-cli` (importable as `maestro_cli`)
 - **CLI entry point**: `maestro` (or `py -m maestro_cli`)
-- **Version**: 2.5.1
+- **Version**: 2.5.2
 - **Python**: >=3.11 (uses PEP 604 `X | Y` unions, `from __future__ import annotations`)
 - **Dependencies**: PyYAML core only; optional `[live]` (rich), `[tui]` (textual), `[web]` (fastapi+uvicorn), `[agui]` (ag-ui-protocol), `[mcp]` (mcp SDK), `[otel]` (OpenTelemetry OTLP exporter)
 
@@ -82,6 +82,7 @@ src/maestro_cli/
 ├── symbols.py        # Regex-based code symbol extraction for context_mode: structural (10 languages)
 ├── routing.py        # Semantic model routing (auto model selection by complexity/tags/DAG structure/routing_strategy/historical performance)
 ├── knowledge.py      # Cross-run knowledge accumulation (extract/load/store/format, auto-inject into prompts)
+├── fts.py            # Zero-dep SQLite FTS5 ranked full-text search (rank_documents, relevance_by_rank, fts5_available) — indexed BM25 lexical ranker for knowledge retrieval
 ├── memory.py         # SQLite-backed Knowledge + Memory v2 (WAL, provenance, poisoning alerts, score history)
 ├── multi.py          # Multi-plan execution (sequential/parallel, shared budget, aggregated summary)
 ├── live.py           # Rich live output renderer + event-driven progress table
@@ -756,7 +757,8 @@ py -m pytest tests/ -v
 | `council.py` | Multi-model deliberation (star/chain/graph topologies) | `run_council()`, `_call_participant()`, `_build_round_prompt()`, `_build_consolidation_prompt()`, `CouncilParticipant`, `CouncilSpec`, `CouncilRound`, `CouncilResult`, `CouncilTopology` |
 | `symbols.py` | Regex-based code symbol extraction | `extract_symbols()`, `extract_changed_symbols()`, `build_structural_context()`, `detect_language_from_text()`, `detect_language_from_path()` |
 | `routing.py` | Semantic model routing + difficulty-aware routing + predictive routing | `resolve_auto_model()`, `_score_task_complexity()`, `_tier_from_score()`, `_COST_WEIGHTS`, `load_task_histories()`, `_apply_historical_signal()` |
-| `knowledge.py` | Cross-run knowledge accumulation | `extract_knowledge()`, `load_knowledge()`, `store_knowledge()`, `format_knowledge()`, `consolidate_knowledge()`, `ConsolidatedLesson` |
+| `knowledge.py` | Cross-run knowledge accumulation | `extract_knowledge()`, `load_knowledge()`, `store_knowledge()`, `format_knowledge()`, `consolidate_knowledge()`, `select_relevant_knowledge()`, `ConsolidatedLesson` |
+| `fts.py` | Zero-dep SQLite FTS5 ranked full-text search (indexed BM25 lexical ranker, graceful fallback) | `rank_documents()`, `relevance_by_rank()`, `fts5_available()`, `FtsHit` |
 | `scaffold.py` | Brief → plan YAML generation + workflow libraries | `scaffold_plan()`, `load_brief()`, `validate_plan_cost_safety()`, `list_workflow_libraries()`, `_load_library()`, `_merge_library_into_brief()`, `WORKFLOW_LIBRARY_NAMES` |
 | `suggest.py` | Run history analysis + optimization heuristics | `suggest_plan()`, `format_suggestions()`, `format_suggestions_json()`, `_load_run_history()`, `_analyze_task()` |
 | `chat.py` | Multi-model interactive terminal | `run_chat()`, `_run_chat_turn()`, `_build_chat_plan_stub()`, `_build_chat_task_stub()`, `_adjust_command_for_chat()`, `_format_engine_line()`, `_build_history_prompt()`, `_parse_engine_prefix()`, `_dispatch_chat_command()`, `_cmd_model()`, `_cmd_models()`, `_cmd_context()`, `_cmd_save()`, `_cmd_load()`, `_cmd_clear()`, `_cmd_cost()`, `_cmd_help_chat()`, `_setup_chat_readline()`, `_extract_turn_cost()`, `_session_to_dict()`, `_session_from_dict()`, `ChatMessage`, `ChatSession` |
@@ -1190,7 +1192,7 @@ All other variables must be explicitly set via `defaults.env` or `task.env`.
 - `{{ watch.lessons }}` — formatted lessons from knowledge archive (time-decayed confidence), injected in improve mode
 - `{{ watch.experiments_summary }}` — semantic analysis of experiment history (successes, failures, plateau alerts); auto-populated in watch loops; includes "Approaches that WORKED/FAILED" sections and escalating urgency near plateau threshold; helps improve agent avoid repeating failed strategies
 - `{{ improve.frozen_tasks }}` — comma-separated list of frozen task IDs, injected in improve mode
-- `{{ task_knowledge }}` — cross-run knowledge auto-injected into engine task prompts (T1.3); formatted bullet list of historical insights (failure patterns, timeout hints, success patterns) with confidence percentages; populated by `knowledge.py` from `.maestro-cache/knowledge/<plan_name>.jsonl`; auto-prepended to prompt as "## Previous Run Insights" section; zero config
+- `{{ task_knowledge }}` — cross-run knowledge auto-injected into engine task prompts (T1.3); formatted bullet list of historical insights (failure patterns, timeout hints, success patterns) with confidence percentages; populated by `knowledge.py` from `.maestro-cache/knowledge/<plan_name>.jsonl`; auto-prepended to prompt as "## Previous Run Insights" section; zero config. `select_relevant_knowledge()` ranks the lexical relevance with SQLite FTS5 BM25 (`fts.py`) when the build supports it — fed the stopword-filtered keyword set, deterministic (`ORDER BY rank, rowid`), tokenizer pinned (`unicode61 remove_diacritics 2`) — and falls back byte-for-byte to the in-Python BM25 otherwise; set `MAESTRO_KNOWLEDGE_FTS=0` to force the legacy ranker. Affects advisory prompt context only — never enters cache keys or the event hash chain.
 - `_build_improve_plan()` generates internal 1-task PlanSpec with embedded improvement rules (priority table, fix classification, safety constraints); `_watch_improve()` orchestrates the two-phase loop
 - `maestro watch` CLI subcommand — runs watch loop with full output mode support (text, jsonl, live, tui); `--resume-last` to continue from experiments.jsonl
 - Watch template variables: `{{ watch.iteration }}`, `{{ watch.best_metric }}`, `{{ watch.last_metric }}`, `{{ watch.history }}` (formatted table), `{{ watch.program }}` (program.md content), `{{ watch.blame }}` (JSON blame analysis from target plan's last run — requires `blame_plan`), `{{ watch.manifest }}` (compact task status summary from target plan's last run — requires `blame_plan`) — injected via `extra_template_vars` parameter

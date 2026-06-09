@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ from .cache import (
     compute_simulation_plan_hash,
     simulation_model_families,
 )
+from .fts import relevance_by_rank
 from .models import (
     HistoricalPruningDecision,
     KnowledgeRecord,
@@ -30,6 +32,11 @@ if TYPE_CHECKING:
 _KNOWLEDGE_DIR = ".maestro-cache/knowledge"
 _CONFIDENCE_DECAY_HALF_LIFE_DAYS = 30.0
 _MAX_RECORDS_PER_TASK = 5
+# Scale factor that lifts the FTS5 rank-position relevance (0.0-1.0) into the
+# same magnitude band as the in-Python BM25 base score, so the domain boosts
+# below (task match +2.0, confidence, occurrences) stay proportionate whichever
+# lexical ranker is in play.
+_FTS_RELEVANCE_SCALE = 5.0
 _INITIAL_CONFIDENCE = 0.5
 _CONFIDENCE_PER_OCCURRENCE = 0.1
 _MAX_CONFIDENCE = 1.0
@@ -126,6 +133,21 @@ def _tokenize_words(text: str) -> list[str]:
 
 def _knowledge_record_text(record: KnowledgeRecord) -> str:
     return f"{record.task_id} {record.kind} {record.insight}"
+
+
+def _knowledge_fts_enabled() -> bool:
+    """Whether to use the SQLite FTS5 lexical ranker for knowledge retrieval.
+
+    On by default (when the sqlite3 build supports FTS5); set
+    ``MAESTRO_KNOWLEDGE_FTS=0`` to force the legacy in-Python BM25 ranker, e.g.
+    to reproduce pre-FTS5 ranking exactly.
+    """
+    return os.environ.get("MAESTRO_KNOWLEDGE_FTS", "1").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
 
 
 def _compute_idf(documents: list[str]) -> dict[str, float]:
@@ -593,20 +615,40 @@ def select_relevant_knowledge(
         return fallback
 
     documents = [_knowledge_record_text(rec) for rec in flat]
-    idf = _compute_idf(documents)
-    avg_doc_len = (
-        sum(max(1, len(_tokenize_words(doc))) for doc in documents) / len(documents)
-    )
+
+    # Prefer SQLite FTS5 for the lexical ranking when the build supports it
+    # (indexed, standard BM25); an empty mapping means "FTS5 unavailable, no
+    # matches, or disabled via MAESTRO_KNOWLEDGE_FTS=0" and we transparently
+    # fall back to the in-Python BM25 below.  Feed FTS5 the *stopword-filtered*
+    # keywords (sorted for deterministic term selection) so both rankers operate
+    # on the same term set — passing the raw prompt would let common words like
+    # "the" create spurious matches.
+    fts_relevance: dict[int, float] = {}
+    if _knowledge_fts_enabled():
+        fts_query = " ".join(sorted(intent_keywords))
+        fts_relevance = relevance_by_rank(documents, fts_query)
+
+    idf: dict[str, float] | None = None
+    avg_doc_len = 0.0
+    if not fts_relevance:
+        idf = _compute_idf(documents)
+        avg_doc_len = (
+            sum(max(1, len(_tokenize_words(doc))) for doc in documents)
+            / len(documents)
+        )
+
     scored: list[tuple[float, KnowledgeRecord]] = []
 
-    for rec in flat:
-        document = _knowledge_record_text(rec)
-        score = _score_document(
-            document,
-            intent_keywords,
-            idf=idf,
-            avg_doc_len=avg_doc_len,
-        )
+    for index, rec in enumerate(flat):
+        if fts_relevance:
+            score = fts_relevance.get(index, 0.0) * _FTS_RELEVANCE_SCALE
+        else:
+            score = _score_document(
+                documents[index],
+                intent_keywords,
+                idf=idf,
+                avg_doc_len=avg_doc_len,
+            )
         if task_id and rec.task_id == task_id:
             score += 2.0
         score += rec.confidence * 0.5

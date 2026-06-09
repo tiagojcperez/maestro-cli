@@ -8,9 +8,14 @@ Maestro CLI follows [Semantic Versioning 2.0.0](https://semver.org/).
 MAJOR.MINOR.PATCH
 ```
 
-The package is currently at **2.4.0**. The `2.x` line builds additively on the
-stable surface that was frozen at `1.0.0`; the `2.0.0` through `2.4.0` releases
+The package is currently at **2.5.2**. The `2.x` line builds additively on the
+stable surface that was frozen at `1.0.0`; the `2.0.0` through `2.5.2` releases
 have all shipped (see `CHANGELOG.md`).
+
+Maestro's bump policy is **deliberately looser than strict SemVer**: the PATCH
+digit is the *default* release stream and MINOR is reserved for milestones (see
+the bump table below). Strict SemVer would make every additive feature a MINOR,
+which over-inflates MINORs and leaves the PATCH digit unused.
 
 ## Package Version vs Plan-Schema Version
 
@@ -18,7 +23,7 @@ Maestro has **two independent version numbers**. Do not conflate them.
 
 | What | Where | Current value | Governed by |
 |------|-------|---------------|-------------|
-| **Package version** | `pyproject.toml`, `src/maestro_cli/__init__.py` (`__version__`) | `2.4.0` | SemVer (this document) |
+| **Package version** | `pyproject.toml`, `src/maestro_cli/__init__.py` (`__version__`) | `2.5.2` | SemVer (this document) |
 | **Plan-schema version** | the `version:` key inside an authored plan YAML | `1` | Plan schema contract |
 
 These are decoupled on purpose:
@@ -40,8 +45,12 @@ documented schema break - it is not implied by any package major bump.
 | Bump | When | Examples |
 |------|------|----------|
 | **MAJOR** | Breaking changes to the frozen YAML schema, the documented CLI surface, or the frozen run artifacts | renumbering the plan schema to `version: 2`, removing a CLI flag, renaming a manifest key |
-| **MINOR** | Backward-compatible additions to the public surface | new optional YAML key, new CLI flag, new subcommand, new additive JSON field |
-| **PATCH** | Bug fixes, docs, performance, tests, or internal refactoring with no public-surface break | fix cost parsing, tighten validation, improve wording |
+| **MINOR** | A **significant milestone**: a sizable new capability, a headline batch of features, or a change to an existing *documented* default/behaviour | a new context-mode milestone batch, a notable subsystem, promoting a behaviour change worth headlining |
+| **PATCH** | The **default stream** — bug fixes, docs, performance, tests, internal refactoring with no public-surface break, **and** small backward-compatible *opt-in* additive features that don't change an existing documented default | fix cost parsing, tighten validation, a new opt-in `context_mode` (e.g. `codebase_map`), an internal indexed retriever with an env opt-out (e.g. FTS5 knowledge ranking, `MAESTRO_KNOWLEDGE_FTS`) |
+
+Litmus test for an additive change: small, opt-in, and behaviour-neutral for
+existing users (or with a documented opt-out) → **PATCH**. A headline capability
+or a shift to a documented default → **MINOR**. Most releases are PATCHes.
 
 Breaking changes to the frozen public surfaces are reserved for the next MAJOR
 release. Within a MAJOR line (e.g. all of `2.x`), the frozen surfaces stay

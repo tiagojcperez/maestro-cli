@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import maestro_cli.knowledge as knowledge_mod
 import maestro_cli.memory as memory_mod
 from maestro_cli.knowledge import (
     _KNOWLEDGE_DIR,
@@ -182,6 +183,106 @@ class TestSelectRelevantKnowledgeEarlyReturns:
         """No records across the whole mapping yields an empty list."""
         assert select_relevant_knowledge({}, "investigate timeout") == []
         assert select_relevant_knowledge({"t1": []}, "investigate timeout") == []
+
+
+# ---------------------------------------------------------------------------
+# select_relevant_knowledge — FTS5 lexical ranking (and its fall-back parity)
+# ---------------------------------------------------------------------------
+
+class TestSelectRelevantKnowledgeFts:
+    def test_stopwords_do_not_create_spurious_matches(self) -> None:
+        """A record matching only on a stopword must not outrank a real hit.
+
+        Regression guard: the FTS5 ranker is fed the stopword-filtered keyword
+        set, not the raw prompt — otherwise a record full of common words like
+        "the" would match on noise.
+        """
+        relevant = _record(
+            task_id="real",
+            insight="database migration tests pass in memory mode",
+            confidence=0.3,
+        )
+        stopword_noise = _record(
+            task_id="noise",
+            insight="the the over under after again before then once",
+            confidence=0.3,
+        )
+        knowledge = {"real": [relevant], "noise": [stopword_noise]}
+
+        selected = select_relevant_knowledge(
+            knowledge, "investigate the database tests", max_records=2
+        )
+
+        assert selected[0].task_id == "real"
+
+    def test_fts_and_fallback_agree_on_top_record(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """FTS5 and the Python BM25 fall-back pick the same most-relevant record."""
+        records = {
+            "build": [
+                _record(
+                    task_id="build",
+                    insight="Fails with timeout compiling the rust workspace",
+                    confidence=0.5,
+                )
+            ],
+            "test": [
+                _record(
+                    task_id="test",
+                    insight="database migration tests pass with sqlite memory mode",
+                    confidence=0.5,
+                )
+            ],
+            "deploy": [
+                _record(
+                    task_id="deploy",
+                    insight="Deploy succeeds when the docker image is pre-pulled",
+                    confidence=0.5,
+                )
+            ],
+        }
+        query = "the database tests keep failing"
+
+        fts_top = select_relevant_knowledge(records, query, max_records=1)
+
+        # Force the in-Python BM25 fall-back path.
+        monkeypatch.setattr(knowledge_mod, "relevance_by_rank", lambda *a, **k: {})
+        fallback_top = select_relevant_knowledge(records, query, max_records=1)
+
+        assert fts_top[0].task_id == "test"
+        assert fallback_top[0].task_id == "test"
+
+    def test_ranking_is_deterministic(self) -> None:
+        """Identical inputs yield identical ordering (replay invariant)."""
+        records = {
+            f"t{n}": [
+                _record(task_id=f"t{n}", insight=f"task {n} handles database tests")
+            ]
+            for n in range(6)
+        }
+        query = "database tests reliability"
+
+        first = [r.task_id for r in select_relevant_knowledge(records, query)]
+        second = [r.task_id for r in select_relevant_knowledge(records, query)]
+
+        assert first == second
+
+    def test_env_var_forces_python_bm25_fallback(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """MAESTRO_KNOWLEDGE_FTS=0 bypasses the FTS5 ranker entirely."""
+        monkeypatch.setenv("MAESTRO_KNOWLEDGE_FTS", "0")
+
+        def _must_not_run(*_args: object, **_kwargs: object) -> dict[int, float]:
+            raise AssertionError("FTS path must be skipped when disabled")
+
+        monkeypatch.setattr(knowledge_mod, "relevance_by_rank", _must_not_run)
+
+        records = {"test": [_record(task_id="test", insight="database tests pass")]}
+        selected = select_relevant_knowledge(records, "database tests", max_records=1)
+
+        assert selected[0].task_id == "test"
 
 
 # ---------------------------------------------------------------------------

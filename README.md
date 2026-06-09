@@ -5,7 +5,7 @@
   ██   ██ ██  ██ ██        ██   ██   ██ ██  ██  ██
   ██   ██ ██  ██ ██████ ████    ██   ██  ██  ████
 
-  Maestro CLI -- Version 2.5.1
+  Maestro CLI -- Version 2.5.2
   CLI orchestrator for multi-step AI execution plans
 ```
 
@@ -461,7 +461,7 @@ For Windows-specific pitfalls, see [docs/PITFALLS.md](docs/PITFALLS.md).
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history and [docs/ROADMAP.md](docs/ROADMAP.md) for planned features.
 
-**Current repo state**: `v2.5.1` is the latest release — adds the `codebase_map` context mode (consume an Understand-Anything knowledge graph) plus a quality/CI patch tranche (SonarCloud all-A, scan-action v6, 117 dead tests un-shadowed) on top of the v2.5.0 security hardening. 7 engines, 10 context modes, SQLite-backed memory, durable watch `session_snapshots`, and ~13.4K tests in the latest full-suite run.
+**Current repo state**: `v2.5.2` is the latest release — adds a zero-dependency **SQLite FTS5 lexical retriever** (`fts.py`) that now ranks cross-run knowledge (`{{ task_knowledge }}`) with indexed, standard BM25, falling back to the in-Python BM25 when FTS5 is absent (`MAESTRO_KNOWLEDGE_FTS=0` to force it). Builds on `v2.5.1` (the `codebase_map` context mode + quality/CI tranche) and the v2.5.0 security hardening. 7 engines, 10 context modes, SQLite-backed memory, durable watch `session_snapshots`, and ~13.4K tests in the latest full-suite run.
 
 ## Requirements
 

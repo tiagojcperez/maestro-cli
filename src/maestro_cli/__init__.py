@@ -45,7 +45,7 @@ __all__ = [
     "TaskExecutionError",
 ]
 
-__version__ = "2.5.1"
+__version__ = "2.5.2"
 
 # --- Core workflow functions ---
 from .loader import load_plan, validate_plan
