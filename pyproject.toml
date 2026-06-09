@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maestro-ai-cli"
-version = "2.5.2"
+version = "2.5.3"
 description = "CLI orchestrator for multi-step AI execution plans (Codex, Claude, Gemini, Copilot, Qwen, Ollama, Llama)"
 readme = "README.md"
 requires-python = ">=3.11"

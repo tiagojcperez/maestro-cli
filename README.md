@@ -5,7 +5,7 @@
   ██   ██ ██  ██ ██        ██   ██   ██ ██  ██  ██
   ██   ██ ██  ██ ██████ ████    ██   ██  ██  ████
 
-  Maestro CLI -- Version 2.5.2
+  Maestro CLI -- Version 2.5.3
   CLI orchestrator for multi-step AI execution plans
 ```
 
@@ -55,7 +55,7 @@ maestro run plan.yaml      # runs the DAG; one engine call, deterministic logs i
 
 - **One YAML, many engines** -- orchestrate Claude, Codex, Gemini, Copilot, Qwen, Ollama, and Llama (plus raw shell commands) in a single plan, with per-engine model aliases and reasoning-effort control.
 - **Parallel DAG scheduling** -- declare dependencies and Maestro runs tasks in the right order with configurable parallelism, matrix expansion, and nested sub-plans.
-- **Context that flows** -- pass outputs between tasks with 10 context modes, from zero-cost BM25 selection to multi-model council deliberation, with token budgets and progressive compaction.
+- **Context that flows** -- pass outputs between tasks with 11 context modes, from zero-cost BM25 selection to multi-model council deliberation, with token budgets and progressive compaction.
 - **Quality gates built in** -- LLM-as-Judge (rubrics, G-Eval, debate, quorum), zero-cost typed assertions, and `verify_command` retries with feedback injection keep results honest.
 - **Cost-aware and resilient** -- per-task and cross-run budgets, retries with backoff, auto-escalation to stronger models, cross-engine fallback, and circuit breakers.
 - **Deterministic and observable** -- every run is logged to JSON/JSONL with hash-chained, tamper-detectable events; watch it live in a TUI, a Web UI, or `maestro report`.
@@ -158,7 +158,7 @@ maestro audit examples/demo_plan.yaml --fix
 |----------|----------|
 | **Scheduling** | YAML DAG format, dependency validation, cycle detection (DFS), parallel execution with `max_parallel`, matrix expansion, batch task mode |
 | **Engines** | `codex exec`, `claude --print`, `gemini`, `copilot` (autopilot), `qwen`, `ollama` (local), `llama` (local via llama-cpp), raw shell commands; execution profiles (plan/safe/yolo) |
-| **Prompts & context** | Inline, file, or markdown extraction; inter-task context passing (10 modes: raw/selective/summarized/map_reduce/recursive/layered/structural/council/knowledge_graph/codebase_map); progressive compaction; privacy pipeline (`output_redact`, `context_allowlist`) |
+| **Prompts & context** | Inline, file, or markdown extraction; inter-task context passing (11 modes: raw/selective/summarized/map_reduce/recursive/layered/structural/council/knowledge_graph/codebase_map/scip); progressive compaction; privacy pipeline (`output_redact`, `context_allowlist`) |
 | **Reliability** | `verify_command`, workspace assertions (`assert:`), `max_retries` with feedback injection, retry strategies (constant/linear/exponential), `allow_failure`, auto-escalation, cross-engine fallback, circuit breakers, `checkpoint` protocol |
 | **Cost control** | Per-task cost/token tracking, budget limits (`max_cost_usd`), cross-run budget tracking (`budget_period`), per-engine pricing tables, budget warning thresholds |
 | **Quality gates** | LLM-as-Judge with typed assertions, Likert rubrics, G-Eval, adversarial debate judge, comparative eval, named presets, `guard_command`, quorum voting, timeout auto-scaling |
@@ -415,7 +415,7 @@ Codacy backends — see [docs/COVERAGE_PLATFORMS.md](docs/COVERAGE_PLATFORMS.md)
 | DAG scheduling / dependencies | ✅ | ✅ | n/a |
 | Shell tasks | ✅ | ✅ | n/a |
 | Engines (codex/claude/gemini/copilot/qwen/ollama/llama) | ✅ (mocked) | ✅ (command build) | opt-in |
-| Context passing (10 modes) | ✅ | ✅ | partial |
+| Context passing (11 modes) | ✅ | ✅ | partial |
 | Budgets / cost / token tracking | ✅ | ✅ | partial |
 | Quality gates (judge / verify / guard / assert) | ✅ | ✅ | partial |
 | Retries / fallback / circuit breakers | ✅ | ✅ | n/a |
@@ -461,7 +461,7 @@ For Windows-specific pitfalls, see [docs/PITFALLS.md](docs/PITFALLS.md).
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history and [docs/ROADMAP.md](docs/ROADMAP.md) for planned features.
 
-**Current repo state**: `v2.5.2` is the latest release — adds a zero-dependency **SQLite FTS5 lexical retriever** (`fts.py`) that now ranks cross-run knowledge (`{{ task_knowledge }}`) with indexed, standard BM25, falling back to the in-Python BM25 when FTS5 is absent (`MAESTRO_KNOWLEDGE_FTS=0` to force it). Builds on `v2.5.1` (the `codebase_map` context mode + quality/CI tranche) and the v2.5.0 security hardening. 7 engines, 10 context modes, SQLite-backed memory, durable watch `session_snapshots`, and ~13.4K tests in the latest full-suite run.
+**Current repo state**: `v2.5.3` is the latest release — a retrieval + local-models tranche: **`maestro estimate`** (offline cost preflight, history-aware), **hardware-aware local routing** + `maestro doctor --hardware` (VRAM/Ollama/gguf detection so `model: auto` lands on an installed model that fits), the new **`context_mode: scip`** (SCIP code-intelligence interop, JSON form, 11th mode), FTS5 ranking extended to `context_mode: selective` plus opt-in prefix matching, and a `MAESTRO_FTS` master switch. Builds on `v2.5.2` (FTS5 knowledge ranking) and `v2.5.1` (`codebase_map`). 7 engines, **11 context modes**, SQLite-backed memory, and ~13.5K tests in the latest full-suite run.
 
 ## Requirements
 

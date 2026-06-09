@@ -15,6 +15,10 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 
 ## [Unreleased]
 
+---
+
+## [2.5.3] — 2026-06-09
+
 ### Added
 - **`context_mode: scip` — SCIP code-intelligence interop (11th context mode)** — reads a pre-built SCIP index in its **JSON** form at `<workspace_root>/index.scip.json` (produce it with `scip print --json index.scip > index.scip.json`), scores its symbol definitions by keyword relevance to the task prompt, and injects a budget-bounded structural map as `{{ upstream_synthesis }}`. Multi-language by construction (any SCIP indexer — `scip-python`, `scip-typescript`, `scip-go`, `scip-java`, `rust-analyzer`, …) and needs **no protobuf library** because it ingests the JSON form (true to the zero-dependency core). Zero LLM cost; requires `workspace_root` (E021); degrades to empty when no index is present. New `scip.py` module — the same interop pattern as `codebase_map`.
 - **Hardware-aware local routing + `maestro doctor --hardware`** — a new zero-dependency `hardware.py` detects local GPUs/VRAM (via `nvidia-smi`), installed Ollama models (via the local `/api/tags` HTTP API), and llama.cpp `*.gguf` files (under `LLAMA_MODEL_DIR`). `maestro doctor --hardware` reports them (text or `--json`). When a task uses `model: auto` on a local engine (`ollama`/`llama`), routing now lands on a model the user actually has **installed and that fits available VRAM**, downgrading the tier default when needed (the scheduler detects hardware once per run; absent any signal the tier default stands). Graceful on every source — a missing GPU or a stopped Ollama server simply yields an empty section.
@@ -25,8 +29,13 @@ v1 compatibility contract is defined in [VERSIONING.md](docs/VERSIONING.md) and
 ### Changed
 - **`context_mode: selective` now ranks chunks with SQLite FTS5 BM25 when available** — replaces the naive substring/TF heuristic (`_score_chunk_bm25`) with the indexed, IDF-weighted, length-normalised BM25 from `fts.py`, reusing the v2.5.2 retrieval primitive. A lexical hit clears the relevance gate (rank-position relevance then drives selection priority); graceful, byte-identical fallback to the heuristic when FTS5 is disabled/unavailable or yields no matches. Still zero LLM cost and deterministic.
 
+### Changed
+- **`maestro doctor` gains `--hardware`**; the CLI now ships **28 subcommands** (`estimate` added) and **11 context modes** (`scip` added).
+
 ### Fixed
 - **`fts.py` — Codacy/Opengrep SQL-injection false positive** — the FTS5 query was already fully parameterized (match expression and limit bound via `?`), but the scanner flags `execute(<variable>, …)` on principle. Split the SELECT into two literal-string branches so static analysers can confirm there is no injection surface. Behavior unchanged.
+
+Full suite green (**13,538 tests**), strict mypy clean (69 source files). Three new modules: `estimate.py`, `hardware.py`, `scip.py`.
 
 ---
 

@@ -6,7 +6,7 @@ Project instructions for OpenAI Codex CLI tasks.
 
 - **Package**: `maestro-ai-cli` (import: `maestro_cli`)
 - **Path**: `src/maestro_cli/`
-- **Version**: 2.5.2
+- **Version**: 2.5.3
 - **Python**: >=3.11
 - **Deps**: PyYAML only (stdlib for everything else)
 - **Tests**: `py -m pytest tests/ -q` (~13.4K tests; offline by default)
