@@ -162,3 +162,37 @@ def real_engine_plan_runner(
         return manifest, manifest["task_results"]["probe"], manifests[0].parent
 
     return _run
+
+
+@pytest.fixture
+def real_engine_yaml_runner(
+    tmp_path: Path,
+) -> Callable[[str], tuple[int, dict[str, Any], Path]]:
+    """Run a full multi-task Maestro plan YAML against a real engine.
+
+    Unlike ``real_engine_plan_runner`` (one task), this drives an arbitrary plan
+    body so E2E tests can exercise context passing, quality gates, and budgets
+    end-to-end. Returns ``(exit_code, manifest, run_dir)``.
+    """
+
+    def _run(plan_body: str) -> tuple[int, dict[str, Any], Path]:
+        from maestro_cli.cli import main
+
+        plan_path = tmp_path / "e2e-plan.yaml"
+        run_root = tmp_path / "runs"
+        plan_path.write_text(plan_body, encoding="utf-8")
+
+        rc = main([
+            "run",
+            str(plan_path),
+            "--run-dir",
+            str(run_root),
+            "--quiet",
+        ])
+
+        manifests = sorted(run_root.glob("*/run_manifest.json"))
+        assert manifests, "no run manifest was produced"
+        manifest = json.loads(manifests[-1].read_text(encoding="utf-8"))
+        return rc, manifest, manifests[-1].parent
+
+    return _run
