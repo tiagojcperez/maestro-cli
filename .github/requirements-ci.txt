@@ -16,7 +16,7 @@
 # ecosystem picks it up — see .github/dependabot.yml.
 
 # --- test + type-check tooling ---
-pytest==9.0.2
+pytest==9.0.3
 pytest-cov==7.1.0
 coverage==7.13.5
 # mypy pinned to the version the codebase is verified against; newer releases
