@@ -23,12 +23,12 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
       - name: Set up Python
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.12"
           cache: pip
@@ -43,7 +43,7 @@ jobs:
           pip install pytest pytest-cov -c .github/requirements-ci.txt
           python -m pytest tests/ -q --cov=maestro_cli --cov-report=xml
       - name: Set up a JDK for the Sonar Scanner
-        # The v6 action ships Sonar Scanner CLI 7.x, which otherwise tries to
+        # The v8 action ships Sonar Scanner CLI 8.x, which otherwise tries to
         # auto-provision a JRE from scanner.sonarcloud.io (HTTP 403 on our
         # setup). We provide a JDK on the host and skip provisioning below to
         # avoid that download. NOTE: the scanner still runs on the action's own
@@ -51,13 +51,13 @@ jobs:
         # reach it), so the "Java 17 scanner support ends 2026-07" warning is
         # action-side — deferred until SonarSource ships a Java-21 action.
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: temurin
           java-version: "21"
       - name: SonarQube Cloud scan
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
