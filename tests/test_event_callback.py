@@ -448,7 +448,15 @@ def test_callback_slow_does_not_block_parallelism(
     plan_yaml.touch()
     tasks = [_make_task(f"task-{i}") for i in range(10)]
     plan = _make_plan(tasks, max_parallel=5, source_path=plan_yaml)
-    task_duration = 0.02
+    # task_duration is kept comfortably large (0.2s) on purpose: task_complete
+    # callbacks run serially on the main dispatch thread, so the only thing
+    # this test guards is that a slow callback OVERLAPS worker execution rather
+    # than serializing the pool. Tiny durations made the absolute 2x ceiling
+    # (~1.4s) collide with fixed scheduler/per-task file-hash/CI overhead and
+    # flake on loaded Windows runners (observed elapsed ~2.06s). Larger task
+    # work lifts the ceiling to ~5s, well clear of that overhead, while still
+    # catching the >2x-serial blow-up a real parallelism regression would cause.
+    task_duration = 0.2
     callback_delay = 0.05
     _configure_scheduler_mocks(monkeypatch, _make_mock_execute(sleep_sec=task_duration))
 

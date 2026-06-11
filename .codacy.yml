@@ -7,6 +7,14 @@
 # burying real signal. The tests are already analyzed by SonarCloud, strict
 # mypy, and pytest itself, so excluding them here keeps Codacy focused on the
 # code that actually ships.
+#
+# `.github/**` is excluded too: Codacy's generic security profile repeatedly
+# raised HIGH-RISK FALSE POSITIVES on CI plumbing — flagging a 40-char Action
+# commit SHA as a leaked API key, and an exact pinned dependency version as a
+# "dependency confusion" risk. Those threads blocked merges via the branch's
+# required-conversation-resolution rule with zero true positives. Workflow/CI
+# supply-chain hardening is covered by CodeQL, SHA-pinned actions and
+# Dependabot instead.
 exclude_paths:
   - 'tests/**'
   - 'docs/**'
@@ -14,4 +22,5 @@ exclude_paths:
   - 'mutations/**'
   - 'programs/**'
   - 'scripts/**'
+  - '.github/**'
   - '**/*.md'
